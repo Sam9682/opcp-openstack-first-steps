@@ -98,7 +98,64 @@ docker --version
         <a href="https://docs.docker.com/get-docker/" target="_blank" rel="noopener">docs.docker.com</a>.
       </p>
 
-      <h2>5. Identifiants OpenStack</h2>
+      <h3>Installation de Docker sur Ubuntu (si absent)</h3>
+      <p>
+        Si Docker n'est pas installé sur votre machine Ubuntu, suivez les étapes
+        ci-dessous pour l'installer proprement depuis le dépôt officiel Docker :
+      </p>
+      <pre><code class="language-bash"># Supprimer d'éventuelles configurations existantes cassées
+sudo rm -f /etc/apt/sources.list.d/docker.list
+sudo rm -f /etc/apt/sources.list.d/docker.sources
+
+# Ajouter le dépôt Docker avec le codename noble
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+  noble stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+# S'assurer que la clé GPG existe
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+sudo chmod a+r /etc/apt/keyrings/docker.gpg
+
+# Mettre à jour et installer Docker
+sudo apt-get update
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin</code></pre>
+
+      <h2>5. shai CLI (optionnel — assistant IA en terminal)</h2>
+      <p>
+        <a href="https://github.com/ovh/shai" target="_blank" rel="noopener">shai</a>
+        est un agent de programmation interactif qui vit dans votre terminal.
+        Il peut vous aider à écrire du code, corriger des bugs et répondre à
+        vos questions pendant les labs.
+      </p>
+      <pre><code class="language-bash"># Vérifier si shai est installé
+shai --version</code></pre>
+      <p>Si shai n'est pas installé, lancez la commande suivante :</p>
+      <pre><code class="language-bash"># Installer la dernière version stable
+curl -fsSL https://raw.githubusercontent.com/ovh/shai/main/install.sh | sh</code></pre>
+      <p>
+        Le binaire sera installé dans <code>$HOME/.local/bin</code>. Assurez-vous
+        que ce répertoire est dans votre <code>PATH</code> :
+      </p>
+      <pre><code class="language-bash"># Ajouter à votre PATH si nécessaire
+export PATH="$HOME/.local/bin:$PATH"</code></pre>
+
+      <h3>shai-dev — Extension VS Code (alternative)</h3>
+      <p>
+        Si vous préférez utiliser shai directement dans VS Code plutôt qu'en
+        terminal, vous pouvez installer l'extension
+        <a href="https://marketplace.visualstudio.com/items?itemName=shai-dev.shai-vscode" target="_blank" rel="noopener">shai-dev</a>.
+        Elle intègre les fonctionnalités de shai (assistance au code, corrections,
+        questions) directement dans votre éditeur.
+      </p>
+      <p>Pour l'installer :</p>
+      <ul>
+        <li>Ouvrez VS Code, allez dans l'onglet Extensions (<code>Ctrl+Shift+X</code>), recherchez <strong>shai-dev</strong> et cliquez sur <em>Installer</em>.</li>
+        <li>Ou installez-la en ligne de commande :</li>
+      </ul>
+      <pre><code class="language-bash">code --install-extension shai-dev.shai-vscode</code></pre>
+
+      <h2>6. Identifiants OpenStack</h2>
       <p>
         Le lanceur de labs a besoin d'identifiants OpenStack valides. Vous
         pouvez les fournir via des <strong>variables d'environnement</strong> ou
@@ -120,7 +177,7 @@ password: votre-mot-de-passe
 project_name: votre-projet
 domain_name: Default</code></pre>
 
-      <h2>6. Projet OVHcloud Public Cloud</h2>
+      <h2>7. Projet OVHcloud Public Cloud</h2>
       <p>
         Vous avez besoin d'un projet OVHcloud Public Cloud actif avec l'accès
         API activé. Assurez-vous que votre utilisateur dispose des rôles
@@ -128,7 +185,7 @@ domain_name: Default</code></pre>
         sécurité.
       </p>
 
-      <h2>7. Connaissances de base du terminal</h2>
+      <h2>8. Connaissances de base du terminal</h2>
       <p>
         Vous devez être à l'aise avec l'exécution de commandes dans un terminal
         (bash, zsh ou PowerShell). Tous les exercices se lancent en ligne de

@@ -98,7 +98,64 @@ docker --version
         <a href="https://docs.docker.com/get-docker/" target="_blank" rel="noopener">docs.docker.com</a>.
       </p>
 
-      <h2>5. OpenStack credentials</h2>
+      <h3>Installing Docker on Ubuntu (if not present)</h3>
+      <p>
+        If Docker is not installed on your Ubuntu machine, follow the steps
+        below to install it from the official Docker repository:
+      </p>
+      <pre><code class="language-bash"># Remove any existing broken configs
+sudo rm -f /etc/apt/sources.list.d/docker.list
+sudo rm -f /etc/apt/sources.list.d/docker.sources
+
+# Add the Docker repository with the noble codename
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+  noble stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+# Make sure the GPG key exists
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+sudo chmod a+r /etc/apt/keyrings/docker.gpg
+
+# Update and install Docker
+sudo apt-get update
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin</code></pre>
+
+      <h2>5. shai CLI (optional — AI terminal assistant)</h2>
+      <p>
+        <a href="https://github.com/ovh/shai" target="_blank" rel="noopener">shai</a>
+        is an interactive coding agent that lives in your terminal. It can help
+        you write code, fix bugs, and answer questions while working through the
+        labs.
+      </p>
+      <pre><code class="language-bash"># Check if shai is installed
+shai --version</code></pre>
+      <p>If shai is not installed, run the following command:</p>
+      <pre><code class="language-bash"># Install the latest stable release
+curl -fsSL https://raw.githubusercontent.com/ovh/shai/main/install.sh | sh</code></pre>
+      <p>
+        The binary will be installed in <code>$HOME/.local/bin</code>. Make sure
+        this directory is in your <code>PATH</code>:
+      </p>
+      <pre><code class="language-bash"># Add to your PATH if needed
+export PATH="$HOME/.local/bin:$PATH"</code></pre>
+
+      <h3>shai-dev — VS Code Extension (alternative)</h3>
+      <p>
+        If you prefer using shai directly inside VS Code rather than in the
+        terminal, you can install the
+        <a href="https://marketplace.visualstudio.com/items?itemName=shai-dev.shai-vscode" target="_blank" rel="noopener">shai-dev</a>
+        extension. It brings shai's capabilities (code assistance, fixes,
+        questions) right into your editor.
+      </p>
+      <p>To install it:</p>
+      <ul>
+        <li>Open VS Code, go to the Extensions tab (<code>Ctrl+Shift+X</code>), search for <strong>shai-dev</strong> and click <em>Install</em>.</li>
+        <li>Or install it from the command line:</li>
+      </ul>
+      <pre><code class="language-bash">code --install-extension shai-dev.shai-vscode</code></pre>
+
+      <h2>6. OpenStack credentials</h2>
       <p>
         The lab runner needs valid OpenStack credentials. You can provide them
         via <strong>environment variables</strong> or a
@@ -120,14 +177,14 @@ password: your-password
 project_name: your-project
 domain_name: Default</code></pre>
 
-      <h2>6. OVHcloud Public Cloud project</h2>
+      <h2>7. OVHcloud Public Cloud project</h2>
       <p>
         You need an active OVHcloud Public Cloud project with API access enabled.
         Make sure your user has the appropriate roles to create instances,
         networks, volumes, and security groups.
       </p>
 
-      <h2>7. Basic terminal knowledge</h2>
+      <h2>8. Basic terminal knowledge</h2>
       <p>
         You should be comfortable running commands in a terminal (bash, zsh, or
         PowerShell). All exercises are launched from the command line.
