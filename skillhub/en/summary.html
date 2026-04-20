@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkillHub — Summary & Next Steps</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <header class="site-header" role="banner">
+    <div class="logo"><a href="index.html" aria-label="SkillHub home">SkillHub</a></div>
+    <div class="header-right">
+      <div class="lang-toggle" aria-label="Language selector"></div>
+      <div class="progress-bar-container" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Learning progress">
+        <div class="progress-bar-fill"></div>
+      </div>
+      <span class="progress-text">0% complete</span>
+      <button class="hamburger-btn" aria-label="Toggle navigation menu" aria-expanded="false">☰</button>
+    </div>
+  </header>
+  <div class="sidebar-overlay" aria-hidden="true"></div>
+  <div class="site-wrapper">
+    <aside class="sidebar" role="navigation" aria-label="Lesson navigation">
+      <nav id="sidebar-nav"></nav>
+    </aside>
+    <main class="main-content" role="main">
+      <div class="breadcrumbs" aria-label="Breadcrumb navigation"></div>
+
+      <h1>Summary & Next Steps</h1>
+      <p class="lesson-meta">Difficulty: <strong>Beginner</strong> · Estimated time: <strong>5 min</strong></p>
+
+      <p>
+        Congratulations on completing the OpenStack First Steps training path.
+        Here is a recap of everything you have learned.
+      </p>
+
+      <h2>What You Learned</h2>
+      <ul>
+        <li><strong>Core Concepts</strong> — Projects, services (Nova, Neutron, Cinder, Keystone, Glance), and endpoints.</li>
+        <li><strong>User Management</strong> — Creating users in Keycloak and assigning roles and project attributes.</li>
+        <li><strong>Authentication</strong> — Authenticating via Keystone using application credentials and managing tokens.</li>
+        <li><strong>Networking</strong> — Creating networks, subnets, and routers with Neutron.</li>
+        <li><strong>Security Groups</strong> — Creating groups, managing rules, and applying them to instances.</li>
+        <li><strong>Storage</strong> — Creating volumes, attaching to instances, and managing snapshots with Cinder.</li>
+        <li><strong>Compute</strong> — Launching instances, resizing, and creating snapshots with Nova.</li>
+      </ul>
+
+      <h2>Next Steps</h2>
+      <p>Now that you have the fundamentals, consider exploring:</p>
+      <ul>
+        <li><strong>opcp-openstack-automation</strong> — The full automation project with Terraform, Ansible, and advanced deployment patterns.</li>
+        <li><strong>OpenStack CLI</strong> — The <code>openstack</code> command-line client for direct API interaction.</li>
+        <li><strong>Horizon Dashboard</strong> — The web-based UI for managing OpenStack resources visually.</li>
+        <li><strong>Heat Orchestration</strong> — Template-based resource orchestration for complex deployments.</li>
+      </ul>
+
+      <h2>Cleanup</h2>
+      <p>
+        Remember to clean up the resources you created during the exercises.
+        Head to the <a href="cleanup.html">Cleanup Resources</a> lesson for
+        step-by-step instructions and the automated cleanup script.
+      </p>
+
+      <button class="mark-complete-btn" type="button" aria-label="Mark this lesson as complete">
+        ✓ Mark as Complete
+      </button>
+      <div class="prev-next-nav" aria-label="Lesson navigation"></div>
+    </main>
+  </div>
+  <footer class="site-footer" role="contentinfo">
+    <a href="https://github.com/opcp-openstack-first-steps" aria-label="Project on GitHub">GitHub</a> ·
+    <a href="../../LICENSE" aria-label="Project license">License</a> ·
+    SkillHub Training — OVHcloud
+  </footer>
+  <script src="../assets/js/lessons.js"></script>
+  <script src="../assets/js/i18n.js"></script>
+  <script src="../assets/js/navigation.js"></script>
+  <script src="../assets/js/code-highlight.js"></script>
+  <script src="../assets/js/main.js"></script>
+</body>
+</html>

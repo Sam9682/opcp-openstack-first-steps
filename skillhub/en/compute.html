@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkillHub — Compute</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <header class="site-header" role="banner">
+    <div class="logo"><a href="index.html" aria-label="SkillHub home">SkillHub</a></div>
+    <div class="header-right">
+      <div class="lang-toggle" aria-label="Language selector"></div>
+      <div class="progress-bar-container" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Learning progress">
+        <div class="progress-bar-fill"></div>
+      </div>
+      <span class="progress-text">0% complete</span>
+      <button class="hamburger-btn" aria-label="Toggle navigation menu" aria-expanded="false">☰</button>
+    </div>
+  </header>
+  <div class="sidebar-overlay" aria-hidden="true"></div>
+  <div class="site-wrapper">
+    <aside class="sidebar" role="navigation" aria-label="Lesson navigation">
+      <nav id="sidebar-nav"></nav>
+    </aside>
+    <main class="main-content" role="main">
+      <div class="breadcrumbs" aria-label="Breadcrumb navigation"></div>
+
+      <h1>Compute</h1>
+      <p class="lesson-meta">Difficulty: <strong>Intermediate</strong> · Estimated time: <strong>25 min</strong></p>
+
+      <p>
+        The Nova compute service manages virtual machine instances. In this lesson
+        you will launch instances, resize them to different flavors, and create
+        snapshots for backup and recovery.
+      </p>
+
+      <h2>1. Exercise 1 — Launch an Instance</h2>
+      <p>
+        Use <code>compute_manager</code> to launch an instance with a specified
+        flavor and image. Name it <code>{student_id}-compute-instance</code>.
+      </p>
+
+      <pre><code class="language-python">compute = self.managers.get("compute_manager")
+
+instance = compute.create(
+    name=f"{student_id}-compute-instance",
+    flavor="s1-2",
+    image="Ubuntu 24.04",
+)
+print(f"Instance launched: {instance}")</code></pre>
+
+      <h2>2. Exercise 2 — Resize an Instance</h2>
+      <p>
+        Resize your running instance to a different flavor. This is useful when
+        your workload needs more (or fewer) resources.
+      </p>
+
+      <pre><code class="language-python">result = compute.resize(
+    name=f"{student_id}-compute-instance",
+    flavor="s1-4",  # target flavor
+)
+print(f"Instance resized: {result}")</code></pre>
+
+      <h2>3. Exercise 3 — Manage Snapshots</h2>
+      <p>
+        Create a snapshot of your instance. Snapshots capture the current state
+        and can be used to restore or clone instances later.
+      </p>
+
+      <pre><code class="language-python">snapshot = compute.create_snapshot(
+    instance_name=f"{student_id}-compute-instance",
+    snapshot_name=f"{student_id}-compute-snapshot",
+)
+print(f"Snapshot created: {snapshot}")</code></pre>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Use <strong>compute_manager</strong> to launch, resize, and snapshot instances.</li>
+        <li>Flavors define the <strong>CPU, RAM, and disk</strong> allocated to an instance.</li>
+        <li>Snapshots capture the <strong>current state</strong> for backup and recovery.</li>
+        <li>Missing flavor or image errors are caught with <strong>clear messages</strong>.</li>
+      </ul>
+
+      <button class="mark-complete-btn" type="button" aria-label="Mark this lesson as complete">
+        ✓ Mark as Complete
+      </button>
+      <div class="prev-next-nav" aria-label="Lesson navigation"></div>
+    </main>
+  </div>
+  <footer class="site-footer" role="contentinfo">
+    <a href="https://github.com/opcp-openstack-first-steps" aria-label="Project on GitHub">GitHub</a> ·
+    <a href="../../LICENSE" aria-label="Project license">License</a> ·
+    SkillHub Training — OVHcloud
+  </footer>
+  <script src="../assets/js/lessons.js"></script>
+  <script src="../assets/js/i18n.js"></script>
+  <script src="../assets/js/navigation.js"></script>
+  <script src="../assets/js/code-highlight.js"></script>
+  <script src="../assets/js/main.js"></script>
+</body>
+</html>

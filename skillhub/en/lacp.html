@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkillHub — LACP Configuration</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <header class="site-header" role="banner">
+    <div class="logo"><a href="index.html" aria-label="SkillHub home">SkillHub</a></div>
+    <div class="header-right">
+      <div class="lang-toggle" aria-label="Language selector"></div>
+      <div class="progress-bar-container" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Learning progress">
+        <div class="progress-bar-fill"></div>
+      </div>
+      <span class="progress-text">0% complete</span>
+      <button class="hamburger-btn" aria-label="Toggle navigation menu" aria-expanded="false">☰</button>
+    </div>
+  </header>
+  <div class="sidebar-overlay" aria-hidden="true"></div>
+  <div class="site-wrapper">
+    <aside class="sidebar" role="navigation" aria-label="Lesson navigation">
+      <nav id="sidebar-nav"></nav>
+    </aside>
+    <main class="main-content" role="main">
+      <div class="breadcrumbs" aria-label="Breadcrumb navigation"></div>
+
+      <h1>LACP Configuration</h1>
+      <p class="lesson-meta">Difficulty: <strong>Advanced</strong> · Estimated time: <strong>30 min</strong></p>
+
+      <p>
+        Link Aggregation Control Protocol (LACP) allows you to bond multiple physical
+        network interfaces into a single logical link, providing increased bandwidth
+        and redundancy. In this lesson you will configure LACP bonds on OpenStack
+        using the Neutron API through the lab framework.
+      </p>
+
+      <h2>Background — What is LACP?</h2>
+      <p>
+        LACP (IEEE 802.3ad) negotiates link aggregation between two endpoints
+        automatically. In an OpenStack context this is typically used to bond
+        ports on bare-metal or SR-IOV instances, or to configure trunk ports
+        that carry multiple VLANs over an aggregated link.
+      </p>
+      <ul>
+        <li><strong>Active mode</strong> — the interface sends LACPDU frames to initiate negotiation.</li>
+        <li><strong>Passive mode</strong> — the interface responds to LACPDU frames but does not initiate.</li>
+        <li><strong>Bond modes</strong> — <code>balance-rr</code>, <code>active-backup</code>, <code>balance-xor</code>, <code>802.3ad</code> (LACP).</li>
+      </ul>
+
+      <h2>1. Exercise 1 — Create a LACP Bond Port</h2>
+      <p>
+        Use <code>network_manager</code> to create two Neutron ports on the same
+        network, then create a trunk port that aggregates them using LACP
+        (<code>802.3ad</code> bond mode).
+      </p>
+
+      <pre><code class="language-python">net = self.managers.get("network_manager")
+
+# Create the base network
+network = net.create(name=f"{student_id}-lacp-network")
+
+# Create two member ports
+port1 = net.create_port(
+    network_name=f"{student_id}-lacp-network",
+    name=f"{student_id}-lacp-port-1",
+)
+port2 = net.create_port(
+    network_name=f"{student_id}-lacp-network",
+    name=f"{student_id}-lacp-port-2",
+)
+
+# Create the LACP bond
+bond = net.create_bond(
+    name=f"{student_id}-lacp-bond",
+    port_names=[f"{student_id}-lacp-port-1", f"{student_id}-lacp-port-2"],
+    bond_mode="802.3ad",
+)
+print(f"LACP bond created: {bond}")</code></pre>
+
+      <h2>2. Exercise 2 — Configure LACP Parameters</h2>
+      <p>
+        Fine-tune the LACP bond by setting the LACP rate, transmit hash policy,
+        and LACP activity mode. These parameters control how the bond negotiates
+        and distributes traffic.
+      </p>
+
+      <pre><code class="language-python"># Update LACP parameters on the bond
+net.update_bond(
+    bond_name=f"{student_id}-lacp-bond",
+    lacp_rate="fast",              # fast = 1s, slow = 30s
+    transmit_hash_policy="layer3+4",  # hash on IP + port
+    lacp_activity="active",        # active LACPDU negotiation
+)
+print("LACP parameters configured")</code></pre>
+
+      <h2>3. Exercise 3 — Attach LACP Bond to an Instance</h2>
+      <p>
+        Attach the LACP bond to a compute instance so the instance benefits from
+        the aggregated bandwidth and link redundancy.
+      </p>
+
+      <pre><code class="language-python">compute = self.managers.get("compute_manager")
+
+# Launch an instance
+instance = compute.create(
+    name=f"{student_id}-lacp-instance",
+    image="ubuntu-22.04",
+    flavor="s1-4",
+)
+
+# Attach the bond to the instance
+net.attach_bond_to_instance(
+    bond_name=f"{student_id}-lacp-bond",
+    instance_name=f"{student_id}-lacp-instance",
+)
+print(f"Bond attached to instance: {instance}")</code></pre>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>LACP (<strong>802.3ad</strong>) bonds multiple ports into a single logical link.</li>
+        <li>Use <strong>network_manager</strong> to create ports, bonds, and configure LACP parameters.</li>
+        <li>Key parameters: <strong>lacp_rate</strong> (fast/slow), <strong>transmit_hash_policy</strong>, and <strong>lacp_activity</strong> (active/passive).</li>
+        <li>Bonds can be <strong>attached to instances</strong> for increased bandwidth and failover.</li>
+      </ul>
+
+      <button class="mark-complete-btn" type="button" aria-label="Mark this lesson as complete">
+        ✓ Mark as Complete
+      </button>
+      <div class="prev-next-nav" aria-label="Lesson navigation"></div>
+    </main>
+  </div>
+  <footer class="site-footer" role="contentinfo">
+    <a href="https://github.com/opcp-openstack-first-steps" aria-label="Project on GitHub">GitHub</a> ·
+    <a href="../../LICENSE" aria-label="Project license">License</a> ·
+    SkillHub Training — OVHcloud
+  </footer>
+  <script src="../assets/js/lessons.js"></script>
+  <script src="../assets/js/i18n.js"></script>
+  <script src="../assets/js/navigation.js"></script>
+  <script src="../assets/js/code-highlight.js"></script>
+  <script src="../assets/js/main.js"></script>
+</body>
+</html>

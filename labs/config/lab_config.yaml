@@ -1,0 +1,24 @@
+# OpenStack First Steps Labs - Configuration
+# See lab_config.example.yaml for documentation of all parameters.
+
+openstack:
+  endpoint: "https://cloud.example.com:5000/v3"
+  default_flavor: "m1.small"
+  default_image: "ubuntu-22.04"
+
+modules:
+  order:
+    - first_steps
+    - authentication
+    - compute
+    - networking
+    - storage
+    - security_groups
+
+session:
+  timeout_minutes: 120
+  resource_limits:
+    max_instances: 3
+    max_networks: 2
+    max_volumes: 3
+    max_security_groups: 5

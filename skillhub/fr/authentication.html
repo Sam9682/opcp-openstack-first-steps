@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkillHub — Authentification</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <header class="site-header" role="banner">
+    <div class="logo"><a href="index.html" aria-label="Accueil SkillHub">SkillHub</a></div>
+    <div class="header-right">
+      <div class="lang-toggle" aria-label="Sélecteur de langue"></div>
+      <div class="progress-bar-container" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Progression de l'apprentissage">
+        <div class="progress-bar-fill"></div>
+      </div>
+      <span class="progress-text">0% terminé</span>
+      <button class="hamburger-btn" aria-label="Ouvrir le menu de navigation" aria-expanded="false">☰</button>
+    </div>
+  </header>
+  <div class="sidebar-overlay" aria-hidden="true"></div>
+  <div class="site-wrapper">
+    <aside class="sidebar" role="navigation" aria-label="Navigation des leçons">
+      <nav id="sidebar-nav"></nav>
+    </aside>
+    <main class="main-content" role="main">
+      <div class="breadcrumbs" aria-label="Fil d'Ariane"></div>
+
+      <h1>Authentification</h1>
+      <p class="lesson-meta">Difficulté : <strong>Débutant</strong> · Durée estimée : <strong>15 min</strong></p>
+
+      <p>
+        Avant de gérer une ressource OpenStack, vous avez besoin d'une connexion
+        authentifiée. Le service d'identité Keystone gère l'authentification et
+        émet des tokens qui autorisent les appels API suivants. Dans ce cours,
+        nous utilisons les <strong>application credentials</strong> — une alternative
+        plus sûre aux identifiants utilisateur, pouvant être limitée et révoquée
+        indépendamment.
+      </p>
+
+      <h2>1. Qu'est-ce qu'un Application Credential ?</h2>
+      <p>
+        Les application credentials sont des secrets liés à un projet, créés à
+        partir de votre compte utilisateur OpenStack. Ils permettent aux scripts
+        et à l'automatisation de s'authentifier sans exposer votre nom d'utilisateur
+        et mot de passe principaux. Avantages clés :
+      </p>
+      <ul>
+        <li>Peuvent être restreints à des rôles et règles d'accès spécifiques</li>
+        <li>Révocables à tout moment sans changer votre mot de passe utilisateur</li>
+        <li>Idéaux pour les pipelines CI/CD, les environnements de lab et l'automatisation</li>
+      </ul>
+
+      <h2>2. Variables d'environnement</h2>
+      <p>Exportez vos valeurs d'application credential pour que le framework de lab puisse s'authentifier automatiquement.</p>
+
+      <pre><code class="language-bash">export OS_AUTH_URL="https://auth.cloud.ovh.net/v3"
+export OS_AUTH_TYPE="v3applicationcredential"
+export OS_APPLICATION_CREDENTIAL_ID="${OS_APPLICATION_CREDENTIAL_ID}"
+export OS_APPLICATION_CREDENTIAL_SECRET="${OS_APPLICATION_CREDENTIAL_SECRET}"
+export OS_REGION_NAME="GRA7"</code></pre>
+
+      <h2>3. Exercice 1 — S'authentifier avec un Application Credential</h2>
+      <p>
+        Utilisez <code>auth_manager</code> pour vous authentifier auprès de Keystone
+        avec votre application credential et obtenir un token.
+      </p>
+
+      <pre><code class="language-python">auth = self.managers.get("auth_manager")
+
+token = auth.authenticate(
+    application_credential_id="votre-credential-id",
+    application_credential_secret="votre-credential-secret",
+)
+print(f"Token obtenu : {token}")</code></pre>
+
+      <h2>4. Exercice 2 — Gestion des tokens</h2>
+      <p>
+        Apprenez à valider et révoquer les tokens d'authentification.
+        C'est essentiel pour comprendre le cycle de vie des tokens dans l'automatisation.
+      </p>
+
+      <pre><code class="language-python">auth = self.managers.get("auth_manager")
+
+# Valider un token
+is_valid = auth.validate_token(token)
+print(f"Token valide : {is_valid}")
+
+# Révoquer un token
+auth.revoke_token(token)
+print("Token révoqué avec succès")</code></pre>
+
+      <h2>5. Gestion des erreurs</h2>
+      <p>
+        Les échecs d'authentification sont capturés par le framework d'exercices
+        et signalés avec des messages d'erreur clairs.
+      </p>
+
+      <pre><code class="language-python">try:
+    token = auth.authenticate(
+        application_credential_id="mauvais-id",
+        application_credential_secret="mauvais-secret",
+    )
+except Exception as exc:
+    print(f"Échec de l'authentification : {exc}")</code></pre>
+
+      <h2>Résumé</h2>
+      <ul>
+        <li>Utilisez les <strong>application credentials</strong> plutôt que les identifiants utilisateur pour une automatisation plus sûre.</li>
+        <li>Définissez <code>OS_AUTH_TYPE=v3applicationcredential</code> avec votre ID et secret de credential.</li>
+        <li>Keystone émet des <strong>tokens</strong> qui autorisent les appels API.</li>
+        <li>Les tokens peuvent être <strong>validés et révoqués</strong> programmatiquement.</li>
+        <li>Gérez toujours les erreurs d'authentification de manière élégante.</li>
+      </ul>
+
+      <button class="mark-complete-btn" type="button" aria-label="Marquer cette leçon comme terminée">
+        ✓ Marquer comme terminé
+      </button>
+      <div class="prev-next-nav" aria-label="Navigation entre les leçons"></div>
+    </main>
+  </div>
+  <footer class="site-footer" role="contentinfo">
+    <a href="https://github.com/opcp-openstack-first-steps" aria-label="Projet sur GitHub">GitHub</a> ·
+    <a href="../../LICENSE" aria-label="Licence du projet">Licence</a> ·
+    SkillHub Training — OVHcloud
+  </footer>
+  <script src="../assets/js/lessons.js"></script>
+  <script src="../assets/js/i18n.js"></script>
+  <script src="../assets/js/navigation.js"></script>
+  <script src="../assets/js/code-highlight.js"></script>
+  <script src="../assets/js/main.js"></script>
+</body>
+</html>

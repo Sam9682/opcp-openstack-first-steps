@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkillHub — Configuration LACP</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <header class="site-header" role="banner">
+    <div class="logo"><a href="index.html" aria-label="Accueil SkillHub">SkillHub</a></div>
+    <div class="header-right">
+      <div class="lang-toggle" aria-label="Sélecteur de langue"></div>
+      <div class="progress-bar-container" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Progression de l'apprentissage">
+        <div class="progress-bar-fill"></div>
+      </div>
+      <span class="progress-text">0% terminé</span>
+      <button class="hamburger-btn" aria-label="Ouvrir le menu de navigation" aria-expanded="false">☰</button>
+    </div>
+  </header>
+  <div class="sidebar-overlay" aria-hidden="true"></div>
+  <div class="site-wrapper">
+    <aside class="sidebar" role="navigation" aria-label="Navigation des leçons">
+      <nav id="sidebar-nav"></nav>
+    </aside>
+    <main class="main-content" role="main">
+      <div class="breadcrumbs" aria-label="Fil d'Ariane"></div>
+
+      <h1>Configuration LACP</h1>
+      <p class="lesson-meta">Difficulté : <strong>Avancé</strong> · Durée estimée : <strong>30 min</strong></p>
+
+      <p>
+        Le protocole LACP (Link Aggregation Control Protocol) permet de regrouper
+        plusieurs interfaces réseau physiques en un seul lien logique, offrant une
+        bande passante accrue et de la redondance. Dans cette leçon, vous allez
+        configurer des bonds LACP sur OpenStack via l'API Neutron.
+      </p>
+
+      <h2>Contexte — Qu'est-ce que le LACP ?</h2>
+      <p>
+        Le LACP (IEEE 802.3ad) négocie automatiquement l'agrégation de liens entre
+        deux points. Dans un contexte OpenStack, il est généralement utilisé pour
+        agréger des ports sur des instances bare-metal ou SR-IOV, ou pour configurer
+        des ports trunk transportant plusieurs VLANs sur un lien agrégé.
+      </p>
+      <ul>
+        <li><strong>Mode actif</strong> — l'interface envoie des trames LACPDU pour initier la négociation.</li>
+        <li><strong>Mode passif</strong> — l'interface répond aux trames LACPDU sans les initier.</li>
+        <li><strong>Modes de bond</strong> — <code>balance-rr</code>, <code>active-backup</code>, <code>balance-xor</code>, <code>802.3ad</code> (LACP).</li>
+      </ul>
+
+      <h2>1. Exercice 1 — Créer un port bond LACP</h2>
+      <p>
+        Utilisez <code>network_manager</code> pour créer deux ports Neutron sur le
+        même réseau, puis créez un port trunk qui les agrège en utilisant le mode
+        LACP (<code>802.3ad</code>).
+      </p>
+
+      <pre><code class="language-python">net = self.managers.get("network_manager")
+
+# Créer le réseau de base
+network = net.create(name=f"{student_id}-lacp-network")
+
+# Créer deux ports membres
+port1 = net.create_port(
+    network_name=f"{student_id}-lacp-network",
+    name=f"{student_id}-lacp-port-1",
+)
+port2 = net.create_port(
+    network_name=f"{student_id}-lacp-network",
+    name=f"{student_id}-lacp-port-2",
+)
+
+# Créer le bond LACP
+bond = net.create_bond(
+    name=f"{student_id}-lacp-bond",
+    port_names=[f"{student_id}-lacp-port-1", f"{student_id}-lacp-port-2"],
+    bond_mode="802.3ad",
+)
+print(f"Bond LACP créé : {bond}")</code></pre>
+
+      <h2>2. Exercice 2 — Configurer les paramètres LACP</h2>
+      <p>
+        Ajustez le bond LACP en définissant le débit LACP, la politique de hachage
+        de transmission et le mode d'activité LACP. Ces paramètres contrôlent la
+        négociation et la distribution du trafic.
+      </p>
+
+      <pre><code class="language-python"># Mettre à jour les paramètres LACP du bond
+net.update_bond(
+    bond_name=f"{student_id}-lacp-bond",
+    lacp_rate="fast",              # fast = 1s, slow = 30s
+    transmit_hash_policy="layer3+4",  # hachage sur IP + port
+    lacp_activity="active",        # négociation LACPDU active
+)
+print("Paramètres LACP configurés")</code></pre>
+
+      <h2>3. Exercice 3 — Attacher le bond LACP à une instance</h2>
+      <p>
+        Attachez le bond LACP à une instance de calcul afin que celle-ci bénéficie
+        de la bande passante agrégée et de la redondance de lien.
+      </p>
+
+      <pre><code class="language-python">compute = self.managers.get("compute_manager")
+
+# Lancer une instance
+instance = compute.create(
+    name=f"{student_id}-lacp-instance",
+    image="ubuntu-22.04",
+    flavor="s1-4",
+)
+
+# Attacher le bond à l'instance
+net.attach_bond_to_instance(
+    bond_name=f"{student_id}-lacp-bond",
+    instance_name=f"{student_id}-lacp-instance",
+)
+print(f"Bond attaché à l'instance : {instance}")</code></pre>
+
+      <h2>Résumé</h2>
+      <ul>
+        <li>Le LACP (<strong>802.3ad</strong>) agrège plusieurs ports en un seul lien logique.</li>
+        <li>Utilisez <strong>network_manager</strong> pour créer des ports, des bonds et configurer les paramètres LACP.</li>
+        <li>Paramètres clés : <strong>lacp_rate</strong> (fast/slow), <strong>transmit_hash_policy</strong> et <strong>lacp_activity</strong> (active/passive).</li>
+        <li>Les bonds peuvent être <strong>attachés aux instances</strong> pour une bande passante accrue et du basculement automatique.</li>
+      </ul>
+
+      <button class="mark-complete-btn" type="button" aria-label="Marquer cette leçon comme terminée">
+        ✓ Marquer comme terminé
+      </button>
+      <div class="prev-next-nav" aria-label="Navigation entre les leçons"></div>
+    </main>
+  </div>
+  <footer class="site-footer" role="contentinfo">
+    <a href="https://github.com/opcp-openstack-first-steps" aria-label="Projet sur GitHub">GitHub</a> ·
+    <a href="../../LICENSE" aria-label="Licence du projet">Licence</a> ·
+    SkillHub Training — OVHcloud
+  </footer>
+  <script src="../assets/js/lessons.js"></script>
+  <script src="../assets/js/i18n.js"></script>
+  <script src="../assets/js/navigation.js"></script>
+  <script src="../assets/js/code-highlight.js"></script>
+  <script src="../assets/js/main.js"></script>
+</body>
+</html>

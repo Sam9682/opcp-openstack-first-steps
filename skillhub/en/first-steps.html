@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkillHub — First Steps</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <header class="site-header" role="banner">
+    <div class="logo"><a href="index.html" aria-label="SkillHub home">SkillHub</a></div>
+    <div class="header-right">
+      <div class="lang-toggle" aria-label="Language selector"></div>
+      <div class="progress-bar-container" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Learning progress">
+        <div class="progress-bar-fill"></div>
+      </div>
+      <span class="progress-text">0% complete</span>
+      <button class="hamburger-btn" aria-label="Toggle navigation menu" aria-expanded="false">☰</button>
+    </div>
+  </header>
+  <div class="sidebar-overlay" aria-hidden="true"></div>
+  <div class="site-wrapper">
+    <aside class="sidebar" role="navigation" aria-label="Lesson navigation">
+      <nav id="sidebar-nav"></nav>
+    </aside>
+    <main class="main-content" role="main">
+      <div class="breadcrumbs" aria-label="Breadcrumb navigation"></div>
+
+      <h1>First Steps</h1>
+      <p class="lesson-meta">Difficulty: <strong>Beginner</strong> · Estimated time: <strong>20 min</strong></p>
+
+      <p>
+        Before diving into individual services, let's review the foundational
+        concepts of OpenStack and run through three introductory exercises:
+        creating an instance, a network, and a volume.
+      </p>
+
+      <h2>1. Core Concepts</h2>
+
+      <h3>Projects</h3>
+      <p>
+        A project (also called a tenant) is an organizational unit in OpenStack.
+        Resources such as instances, networks, and volumes belong to a project.
+      </p>
+
+      <h3>Services</h3>
+      <p>OpenStack is composed of independent services:</p>
+      <ul>
+        <li><strong>Nova</strong> — Compute (virtual machine instances)</li>
+        <li><strong>Neutron</strong> — Networking (virtual networks, subnets, routers)</li>
+        <li><strong>Cinder</strong> — Block Storage (volumes, snapshots)</li>
+        <li><strong>Keystone</strong> — Identity (authentication, authorization)</li>
+        <li><strong>Glance</strong> — Image (virtual machine images)</li>
+      </ul>
+
+      <h3>Endpoints</h3>
+      <p>
+        Each service exposes HTTP endpoints listed in the Keystone service catalog.
+        Clients discover service URLs by querying the catalog after authentication.
+      </p>
+
+      <h2>2. Exercise 1 — Create an Instance</h2>
+      <p>
+        Use <code>compute_manager</code> to launch your first compute instance via the Nova API.
+        Name it <code>{student_id}-first-instance</code>.
+      </p>
+
+      <pre><code class="language-python">from labs.templates.exercise_template import Exercise
+
+# The exercise framework provides managers via self.managers
+compute = self.managers.get("compute_manager")
+
+instance = compute.create(
+    name=f"{student_id}-first-instance",
+    flavor="s1-2",        # from config
+    image="Ubuntu 24.04", # from config
+)
+print(f"Instance created: {instance}")</code></pre>
+
+      <h2>3. Exercise 2 — Create a Network</h2>
+      <p>
+        Use <code>network_manager</code> to create a virtual network via the Neutron API.
+        Name it <code>{student_id}-first-network</code>.
+      </p>
+
+      <pre><code class="language-python">network_mgr = self.managers.get("network_manager")
+
+network = network_mgr.create(
+    name=f"{student_id}-first-network",
+)
+print(f"Network created: {network}")</code></pre>
+
+      <h2>4. Exercise 3 — Create a Volume</h2>
+      <p>
+        Use <code>volume_manager</code> to create a 1 GB block storage volume via the Cinder API.
+        Name it <code>{student_id}-first-volume</code>.
+      </p>
+
+      <pre><code class="language-python">volume_mgr = self.managers.get("volume_manager")
+
+volume = volume_mgr.create(
+    name=f"{student_id}-first-volume",
+    size=1,  # 1 GB
+)
+print(f"Volume created: {volume}")</code></pre>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>OpenStack is composed of independent services (Nova, Neutron, Cinder, Keystone, Glance).</li>
+        <li>Each exercise uses a <strong>manager</strong> provided by the lab framework.</li>
+        <li>Resources are named with your <code>student_id</code> prefix for isolation.</li>
+      </ul>
+
+      <button class="mark-complete-btn" type="button" aria-label="Mark this lesson as complete">
+        ✓ Mark as Complete
+      </button>
+      <div class="prev-next-nav" aria-label="Lesson navigation"></div>
+    </main>
+  </div>
+  <footer class="site-footer" role="contentinfo">
+    <a href="https://github.com/opcp-openstack-first-steps" aria-label="Project on GitHub">GitHub</a> ·
+    <a href="../../LICENSE" aria-label="Project license">License</a> ·
+    SkillHub Training — OVHcloud
+  </footer>
+  <script src="../assets/js/lessons.js"></script>
+  <script src="../assets/js/i18n.js"></script>
+  <script src="../assets/js/navigation.js"></script>
+  <script src="../assets/js/code-highlight.js"></script>
+  <script src="../assets/js/main.js"></script>
+</body>
+</html>

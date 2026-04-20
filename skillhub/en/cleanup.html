@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkillHub — Cleanup Resources</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <header class="site-header" role="banner">
+    <div class="logo"><a href="index.html" aria-label="SkillHub home">SkillHub</a></div>
+    <div class="header-right">
+      <div class="lang-toggle" aria-label="Language selector"></div>
+      <div class="progress-bar-container" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Learning progress">
+        <div class="progress-bar-fill"></div>
+      </div>
+      <span class="progress-text">0% complete</span>
+      <button class="hamburger-btn" aria-label="Toggle navigation menu" aria-expanded="false">☰</button>
+    </div>
+  </header>
+  <div class="sidebar-overlay" aria-hidden="true"></div>
+  <div class="site-wrapper">
+    <aside class="sidebar" role="navigation" aria-label="Lesson navigation">
+      <nav id="sidebar-nav"></nav>
+    </aside>
+    <main class="main-content" role="main">
+      <div class="breadcrumbs" aria-label="Breadcrumb navigation"></div>
+
+      <h1>Cleanup Resources</h1>
+      <p class="lesson-meta">Difficulty: <strong>Beginner</strong> · Estimated time: <strong>10 min</strong></p>
+
+      <p>
+        Now that you have completed all the labs, it is time to clean up every
+        OpenStack resource created during the exercises. All lab resources follow
+        the naming convention <code>{student_id}-*</code>, which makes them easy
+        to identify and delete.
+      </p>
+
+      <h2>1. Naming Convention</h2>
+      <p>
+        Every resource created throughout the labs is prefixed with your
+        <code>student_id</code>. Here is the full list:
+      </p>
+
+      <table>
+        <thead>
+          <tr><th>Module</th><th>Resource type</th><th>Name pattern</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>First Steps</td><td>Instance</td><td><code>{student_id}-first-instance</code></td></tr>
+          <tr><td>First Steps</td><td>Network</td><td><code>{student_id}-first-network</code></td></tr>
+          <tr><td>First Steps</td><td>Volume</td><td><code>{student_id}-first-volume</code></td></tr>
+          <tr><td>Compute</td><td>Instance</td><td><code>{student_id}-compute-instance</code></td></tr>
+          <tr><td>Compute</td><td>Snapshot</td><td><code>{student_id}-compute-snapshot</code></td></tr>
+          <tr><td>Storage</td><td>Volume</td><td><code>{student_id}-storage-volume</code></td></tr>
+          <tr><td>Storage</td><td>Snapshot</td><td><code>{student_id}-storage-snapshot</code></td></tr>
+          <tr><td>Security Groups</td><td>Security Group</td><td><code>{student_id}-sg-web</code></td></tr>
+          <tr><td>LACP</td><td>Network</td><td><code>{student_id}-lacp-network</code></td></tr>
+          <tr><td>LACP</td><td>Ports</td><td><code>{student_id}-lacp-port-1</code>, <code>{student_id}-lacp-port-2</code></td></tr>
+          <tr><td>LACP</td><td>Bond</td><td><code>{student_id}-lacp-bond</code></td></tr>
+          <tr><td>LACP</td><td>Instance</td><td><code>{student_id}-lacp-instance</code></td></tr>
+          <tr><td>Setup</td><td>Networks</td><td><code>{student_id}-compute-network</code>, <code>{student_id}-storage-network</code>, <code>{student_id}-sg-network</code></td></tr>
+          <tr><td>Setup</td><td>Security Group</td><td><code>{student_id}-default-sg</code></td></tr>
+        </tbody>
+      </table>
+
+      <h2>2. Deletion Order</h2>
+      <p>
+        OpenStack resources have dependencies. Deleting them in the wrong order
+        will fail. The correct order is:
+      </p>
+      <ol>
+        <li><strong>Detach volumes</strong> from instances (Cinder).</li>
+        <li><strong>Delete snapshots</strong> — both instance snapshots (Glance/Nova) and volume snapshots (Cinder).</li>
+        <li><strong>Delete instances</strong> (Nova).</li>
+        <li><strong>Delete bonds and ports</strong> (Neutron).</li>
+        <li><strong>Delete volumes</strong> (Cinder).</li>
+        <li><strong>Delete security groups</strong> (Neutron).</li>
+        <li><strong>Delete networks</strong> (Neutron) — subnets are removed automatically.</li>
+      </ol>
+
+      <h2>3. Automated Cleanup</h2>
+      <p>
+        The lab framework provides a cleanup script that deletes all resources
+        matching the <code>{student_id}-*</code> prefix in the correct dependency
+        order:
+      </p>
+
+      <pre><code class="language-bash"># Clean up all resources for your student session
+python -m labs.scripts.cleanup_lab --student-id your-student-id</code></pre>
+
+      <p>
+        The script uses a best-effort approach: if a single resource fails to
+        delete, it logs the error and continues with the remaining resources.
+      </p>
+
+      <h2>4. Manual Cleanup with Python</h2>
+      <p>
+        You can also clean up resources programmatically. The following snippet
+        lists all resources matching your prefix and deletes them in the correct
+        order:
+      </p>
+
+      <pre><code class="language-python">from labs.scripts.cleanup_lab import LabCleanup
+
+# managers is provided by the lab framework
+cleanup = LabCleanup(managers, student_id="your-student-id")
+
+# Delete all resources across every module
+failures = cleanup.cleanup_all()
+
+if failures:
+    print("Some resources could not be deleted:")
+    for f in failures:
+        print(f"  - {f}")
+else:
+    print("All resources cleaned up successfully!")
+
+# Revoke session tokens
+cleanup.revoke_session_tokens()</code></pre>
+
+      <h2>5. Verify Cleanup</h2>
+      <p>
+        After running the cleanup, verify that no resources remain by listing
+        them with the OpenStack CLI:
+      </p>
+
+      <pre><code class="language-bash"># List any remaining instances
+openstack server list --name "your-student-id-*"
+
+# List any remaining volumes
+openstack volume list --name "your-student-id-*"
+
+# List any remaining networks
+openstack network list --name "your-student-id-*"
+
+# List any remaining security groups
+openstack security group list --project your-project-id | grep "your-student-id"</code></pre>
+
+      <p>
+        If any resources remain, delete them manually using the
+        <code>openstack</code> CLI or re-run the cleanup script.
+      </p>
+
+      <button class="mark-complete-btn" type="button" aria-label="Mark this lesson as complete">
+        ✓ Mark as Complete
+      </button>
+      <div class="prev-next-nav" aria-label="Lesson navigation"></div>
+    </main>
+  </div>
+  <footer class="site-footer" role="contentinfo">
+    <a href="https://github.com/opcp-openstack-first-steps" aria-label="Project on GitHub">GitHub</a> ·
+    <a href="../../LICENSE" aria-label="Project license">License</a> ·
+    SkillHub Training — OVHcloud
+  </footer>
+  <script src="../assets/js/lessons.js"></script>
+  <script src="../assets/js/i18n.js"></script>
+  <script src="../assets/js/navigation.js"></script>
+  <script src="../assets/js/code-highlight.js"></script>
+  <script src="../assets/js/main.js"></script>
+</body>
+</html>

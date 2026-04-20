@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkillHub — Networking</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <header class="site-header" role="banner">
+    <div class="logo"><a href="index.html" aria-label="SkillHub home">SkillHub</a></div>
+    <div class="header-right">
+      <div class="lang-toggle" aria-label="Language selector"></div>
+      <div class="progress-bar-container" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Learning progress">
+        <div class="progress-bar-fill"></div>
+      </div>
+      <span class="progress-text">0% complete</span>
+      <button class="hamburger-btn" aria-label="Toggle navigation menu" aria-expanded="false">☰</button>
+    </div>
+  </header>
+  <div class="sidebar-overlay" aria-hidden="true"></div>
+  <div class="site-wrapper">
+    <aside class="sidebar" role="navigation" aria-label="Lesson navigation">
+      <nav id="sidebar-nav"></nav>
+    </aside>
+    <main class="main-content" role="main">
+      <div class="breadcrumbs" aria-label="Breadcrumb navigation"></div>
+
+      <h1>Networking</h1>
+      <p class="lesson-meta">Difficulty: <strong>Intermediate</strong> · Estimated time: <strong>20 min</strong></p>
+
+      <p>
+        Networks are the foundation of any cloud deployment. In this lesson you will
+        create virtual networks, configure subnets with CIDR validation, and set up
+        routers — all using the Neutron API through the lab framework.
+      </p>
+
+      <h2>1. Exercise 1 — Create a Network</h2>
+      <p>
+        Use <code>network_manager</code> to create a virtual network named
+        <code>{student_id}-net-network</code>.
+      </p>
+
+      <pre><code class="language-python">net = self.managers.get("network_manager")
+
+network = net.create(name=f"{student_id}-net-network")
+print(f"Network created: {network}")</code></pre>
+
+      <h2>2. Exercise 2 — Create a Subnet</h2>
+      <p>
+        Create a subnet within your network. The CIDR is validated before the API
+        call is made. Use <code>10.0.0.0/24</code> as the address range.
+      </p>
+
+      <pre><code class="language-python">from labs.core.validators import validate_cidr
+
+cidr = "10.0.0.0/24"
+valid, err = validate_cidr(cidr)
+if not valid:
+    print(f"Invalid CIDR: {err}")
+
+subnet = net.create_subnet(
+    network_name=f"{student_id}-net-network",
+    name=f"{student_id}-net-subnet",
+    cidr=cidr,
+)
+print(f"Subnet created: {subnet}")</code></pre>
+
+      <h2>3. Exercise 3 — Configure a Router</h2>
+      <p>
+        Create a router and attach it to your subnet. This enables traffic routing
+        between subnets and external networks.
+      </p>
+
+      <pre><code class="language-python">router = net.create_router(name=f"{student_id}-net-router")
+
+net.add_router_interface(
+    router_name=f"{student_id}-net-router",
+    subnet_name=f"{student_id}-net-subnet",
+)
+print(f"Router created and attached: {router}")</code></pre>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Use <strong>network_manager</strong> to create networks, subnets, and routers.</li>
+        <li>CIDR notation is <strong>validated</strong> before any API call.</li>
+        <li>Routers connect subnets and enable <strong>external connectivity</strong>.</li>
+      </ul>
+
+      <button class="mark-complete-btn" type="button" aria-label="Mark this lesson as complete">
+        ✓ Mark as Complete
+      </button>
+      <div class="prev-next-nav" aria-label="Lesson navigation"></div>
+    </main>
+  </div>
+  <footer class="site-footer" role="contentinfo">
+    <a href="https://github.com/opcp-openstack-first-steps" aria-label="Project on GitHub">GitHub</a> ·
+    <a href="../../LICENSE" aria-label="Project license">License</a> ·
+    SkillHub Training — OVHcloud
+  </footer>
+  <script src="../assets/js/lessons.js"></script>
+  <script src="../assets/js/i18n.js"></script>
+  <script src="../assets/js/navigation.js"></script>
+  <script src="../assets/js/code-highlight.js"></script>
+  <script src="../assets/js/main.js"></script>
+</body>
+</html>

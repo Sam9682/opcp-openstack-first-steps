@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkillHub — Stockage</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <header class="site-header" role="banner">
+    <div class="logo"><a href="index.html" aria-label="Accueil SkillHub">SkillHub</a></div>
+    <div class="header-right">
+      <div class="lang-toggle" aria-label="Sélecteur de langue"></div>
+      <div class="progress-bar-container" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Progression de l'apprentissage">
+        <div class="progress-bar-fill"></div>
+      </div>
+      <span class="progress-text">0% terminé</span>
+      <button class="hamburger-btn" aria-label="Ouvrir le menu de navigation" aria-expanded="false">☰</button>
+    </div>
+  </header>
+  <div class="sidebar-overlay" aria-hidden="true"></div>
+  <div class="site-wrapper">
+    <aside class="sidebar" role="navigation" aria-label="Navigation des leçons">
+      <nav id="sidebar-nav"></nav>
+    </aside>
+    <main class="main-content" role="main">
+      <div class="breadcrumbs" aria-label="Fil d'Ariane"></div>
+
+      <h1>Stockage</h1>
+      <p class="lesson-meta">Difficulté : <strong>Intermédiaire</strong> · Durée estimée : <strong>20 min</strong></p>
+
+      <p>
+        Le service de stockage bloc Cinder gère les volumes persistants. Dans cette
+        leçon, vous allez créer des volumes, les attacher à des instances et gérer
+        les snapshots de volumes.
+      </p>
+
+      <h2>1. Exercice 1 — Créer un volume</h2>
+      <p>
+        Utilisez <code>volume_manager</code> pour créer un volume de stockage bloc de 1 Go
+        nommé <code>{student_id}-storage-volume</code>.
+      </p>
+
+      <pre><code class="language-python">vol = self.managers.get("volume_manager")
+
+volume = vol.create(
+    name=f"{student_id}-storage-volume",
+    size=1,
+)
+print(f"Volume créé : {volume}")</code></pre>
+
+      <h2>2. Exercice 2 — Attacher un volume</h2>
+      <p>
+        Attachez votre volume à une instance en cours d'exécution. Le statut du volume
+        passera de <code>available</code> à <code>in-use</code>.
+      </p>
+
+      <pre><code class="language-python">result = vol.attach(
+    volume_name=f"{student_id}-storage-volume",
+    instance_name=f"{student_id}-compute-instance",
+)
+print(f"Volume attaché : {result}")</code></pre>
+
+      <h2>3. Exercice 3 — Gérer les snapshots</h2>
+      <p>
+        Créez un snapshot de votre volume. Les snapshots de volumes sont des copies
+        à un instant donné qui peuvent servir à créer de nouveaux volumes ou restaurer des données.
+      </p>
+
+      <pre><code class="language-python">snapshot = vol.create_snapshot(
+    volume_name=f"{student_id}-storage-volume",
+    snapshot_name=f"{student_id}-storage-snapshot",
+)
+print(f"Snapshot créé : {snapshot}")</code></pre>
+
+      <h2>Résumé</h2>
+      <ul>
+        <li>Utilisez <strong>volume_manager</strong> pour créer, attacher et snapshotter des volumes.</li>
+        <li>Les volumes sont du <strong>stockage bloc persistant</strong> qui survit à la suppression d'instance.</li>
+        <li>Attacher un volume change son statut de <code>available</code> à <code>in-use</code>.</li>
+        <li>Les snapshots fournissent des <strong>sauvegardes à un instant donné</strong> des données du volume.</li>
+      </ul>
+
+      <button class="mark-complete-btn" type="button" aria-label="Marquer cette leçon comme terminée">
+        ✓ Marquer comme terminé
+      </button>
+      <div class="prev-next-nav" aria-label="Navigation entre les leçons"></div>
+    </main>
+  </div>
+  <footer class="site-footer" role="contentinfo">
+    <a href="https://github.com/opcp-openstack-first-steps" aria-label="Projet sur GitHub">GitHub</a> ·
+    <a href="../../LICENSE" aria-label="Licence du projet">Licence</a> ·
+    SkillHub Training — OVHcloud
+  </footer>
+  <script src="../assets/js/lessons.js"></script>
+  <script src="../assets/js/i18n.js"></script>
+  <script src="../assets/js/navigation.js"></script>
+  <script src="../assets/js/code-highlight.js"></script>
+  <script src="../assets/js/main.js"></script>
+</body>
+</html>

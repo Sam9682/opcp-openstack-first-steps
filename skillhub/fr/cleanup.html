@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkillHub — Nettoyage des ressources</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <header class="site-header" role="banner">
+    <div class="logo"><a href="index.html" aria-label="Accueil SkillHub">SkillHub</a></div>
+    <div class="header-right">
+      <div class="lang-toggle" aria-label="Sélecteur de langue"></div>
+      <div class="progress-bar-container" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Progression de l'apprentissage">
+        <div class="progress-bar-fill"></div>
+      </div>
+      <span class="progress-text">0% terminé</span>
+      <button class="hamburger-btn" aria-label="Ouvrir le menu de navigation" aria-expanded="false">☰</button>
+    </div>
+  </header>
+  <div class="sidebar-overlay" aria-hidden="true"></div>
+  <div class="site-wrapper">
+    <aside class="sidebar" role="navigation" aria-label="Navigation des leçons">
+      <nav id="sidebar-nav"></nav>
+    </aside>
+    <main class="main-content" role="main">
+      <div class="breadcrumbs" aria-label="Fil d'Ariane"></div>
+
+      <h1>Nettoyage des ressources</h1>
+      <p class="lesson-meta">Difficulté : <strong>Débutant</strong> · Durée estimée : <strong>10 min</strong></p>
+
+      <p>
+        Maintenant que vous avez terminé tous les labs, il est temps de nettoyer
+        toutes les ressources OpenStack créées pendant les exercices. Toutes les
+        ressources suivent la convention de nommage <code>{student_id}-*</code>,
+        ce qui les rend faciles à identifier et supprimer.
+      </p>
+
+      <h2>1. Convention de nommage</h2>
+      <p>
+        Chaque ressource créée au cours des labs est préfixée par votre
+        <code>student_id</code>. Voici la liste complète :
+      </p>
+
+      <table>
+        <thead>
+          <tr><th>Module</th><th>Type de ressource</th><th>Nom</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Premiers pas</td><td>Instance</td><td><code>{student_id}-first-instance</code></td></tr>
+          <tr><td>Premiers pas</td><td>Réseau</td><td><code>{student_id}-first-network</code></td></tr>
+          <tr><td>Premiers pas</td><td>Volume</td><td><code>{student_id}-first-volume</code></td></tr>
+          <tr><td>Calcul</td><td>Instance</td><td><code>{student_id}-compute-instance</code></td></tr>
+          <tr><td>Calcul</td><td>Snapshot</td><td><code>{student_id}-compute-snapshot</code></td></tr>
+          <tr><td>Stockage</td><td>Volume</td><td><code>{student_id}-storage-volume</code></td></tr>
+          <tr><td>Stockage</td><td>Snapshot</td><td><code>{student_id}-storage-snapshot</code></td></tr>
+          <tr><td>Groupes de sécurité</td><td>Groupe de sécurité</td><td><code>{student_id}-sg-web</code></td></tr>
+          <tr><td>LACP</td><td>Réseau</td><td><code>{student_id}-lacp-network</code></td></tr>
+          <tr><td>LACP</td><td>Ports</td><td><code>{student_id}-lacp-port-1</code>, <code>{student_id}-lacp-port-2</code></td></tr>
+          <tr><td>LACP</td><td>Bond</td><td><code>{student_id}-lacp-bond</code></td></tr>
+          <tr><td>LACP</td><td>Instance</td><td><code>{student_id}-lacp-instance</code></td></tr>
+          <tr><td>Setup</td><td>Réseaux</td><td><code>{student_id}-compute-network</code>, <code>{student_id}-storage-network</code>, <code>{student_id}-sg-network</code></td></tr>
+          <tr><td>Setup</td><td>Groupe de sécurité</td><td><code>{student_id}-default-sg</code></td></tr>
+        </tbody>
+      </table>
+
+      <h2>2. Ordre de suppression</h2>
+      <p>
+        Les ressources OpenStack ont des dépendances. Les supprimer dans le
+        mauvais ordre provoquera des erreurs. L'ordre correct est :
+      </p>
+      <ol>
+        <li><strong>Détacher les volumes</strong> des instances (Cinder).</li>
+        <li><strong>Supprimer les snapshots</strong> — snapshots d'instances (Glance/Nova) et de volumes (Cinder).</li>
+        <li><strong>Supprimer les instances</strong> (Nova).</li>
+        <li><strong>Supprimer les bonds et ports</strong> (Neutron).</li>
+        <li><strong>Supprimer les volumes</strong> (Cinder).</li>
+        <li><strong>Supprimer les groupes de sécurité</strong> (Neutron).</li>
+        <li><strong>Supprimer les réseaux</strong> (Neutron) — les sous-réseaux sont supprimés automatiquement.</li>
+      </ol>
+
+      <h2>3. Nettoyage automatisé</h2>
+      <p>
+        Le framework de lab fournit un script de nettoyage qui supprime toutes
+        les ressources correspondant au préfixe <code>{student_id}-*</code> dans
+        le bon ordre de dépendances :
+      </p>
+
+      <pre><code class="language-bash"># Nettoyer toutes les ressources de votre session
+python -m labs.scripts.cleanup_lab --student-id votre-student-id</code></pre>
+
+      <p>
+        Le script utilise une approche best-effort : si une ressource ne peut
+        pas être supprimée, l'erreur est journalisée et le script continue avec
+        les ressources restantes.
+      </p>
+
+      <h2>4. Nettoyage manuel avec Python</h2>
+      <p>
+        Vous pouvez aussi nettoyer les ressources de manière programmatique.
+        Le code suivant liste toutes les ressources correspondant à votre préfixe
+        et les supprime dans le bon ordre :
+      </p>
+
+      <pre><code class="language-python">from labs.scripts.cleanup_lab import LabCleanup
+
+# managers est fourni par le framework de lab
+cleanup = LabCleanup(managers, student_id="votre-student-id")
+
+# Supprimer toutes les ressources de tous les modules
+failures = cleanup.cleanup_all()
+
+if failures:
+    print("Certaines ressources n'ont pas pu être supprimées :")
+    for f in failures:
+        print(f"  - {f}")
+else:
+    print("Toutes les ressources ont été nettoyées avec succès !")
+
+# Révoquer les tokens de session
+cleanup.revoke_session_tokens()</code></pre>
+
+      <h2>5. Vérifier le nettoyage</h2>
+      <p>
+        Après le nettoyage, vérifiez qu'il ne reste aucune ressource en les
+        listant avec le CLI OpenStack :
+      </p>
+
+      <pre><code class="language-bash"># Lister les instances restantes
+openstack server list --name "votre-student-id-*"
+
+# Lister les volumes restants
+openstack volume list --name "votre-student-id-*"
+
+# Lister les réseaux restants
+openstack network list --name "votre-student-id-*"
+
+# Lister les groupes de sécurité restants
+openstack security group list --project votre-project-id | grep "votre-student-id"</code></pre>
+
+      <p>
+        Si des ressources subsistent, supprimez-les manuellement avec le CLI
+        <code>openstack</code> ou relancez le script de nettoyage.
+      </p>
+
+      <button class="mark-complete-btn" type="button" aria-label="Marquer cette leçon comme terminée">
+        ✓ Marquer comme terminé
+      </button>
+      <div class="prev-next-nav" aria-label="Navigation entre les leçons"></div>
+    </main>
+  </div>
+  <footer class="site-footer" role="contentinfo">
+    <a href="https://github.com/opcp-openstack-first-steps" aria-label="Projet sur GitHub">GitHub</a> ·
+    <a href="../../LICENSE" aria-label="Licence du projet">Licence</a> ·
+    SkillHub Training — OVHcloud
+  </footer>
+  <script src="../assets/js/lessons.js"></script>
+  <script src="../assets/js/i18n.js"></script>
+  <script src="../assets/js/navigation.js"></script>
+  <script src="../assets/js/code-highlight.js"></script>
+  <script src="../assets/js/main.js"></script>
+</body>
+</html>

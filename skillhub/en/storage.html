@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkillHub — Storage</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <header class="site-header" role="banner">
+    <div class="logo"><a href="index.html" aria-label="SkillHub home">SkillHub</a></div>
+    <div class="header-right">
+      <div class="lang-toggle" aria-label="Language selector"></div>
+      <div class="progress-bar-container" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Learning progress">
+        <div class="progress-bar-fill"></div>
+      </div>
+      <span class="progress-text">0% complete</span>
+      <button class="hamburger-btn" aria-label="Toggle navigation menu" aria-expanded="false">☰</button>
+    </div>
+  </header>
+  <div class="sidebar-overlay" aria-hidden="true"></div>
+  <div class="site-wrapper">
+    <aside class="sidebar" role="navigation" aria-label="Lesson navigation">
+      <nav id="sidebar-nav"></nav>
+    </aside>
+    <main class="main-content" role="main">
+      <div class="breadcrumbs" aria-label="Breadcrumb navigation"></div>
+
+      <h1>Storage</h1>
+      <p class="lesson-meta">Difficulty: <strong>Intermediate</strong> · Estimated time: <strong>20 min</strong></p>
+
+      <p>
+        The Cinder block storage service manages persistent volumes. In this lesson
+        you will create volumes, attach them to running instances, and manage
+        volume snapshots.
+      </p>
+
+      <h2>1. Exercise 1 — Create a Volume</h2>
+      <p>
+        Use <code>volume_manager</code> to create a 1 GB block storage volume named
+        <code>{student_id}-storage-volume</code>.
+      </p>
+
+      <pre><code class="language-python">vol = self.managers.get("volume_manager")
+
+volume = vol.create(
+    name=f"{student_id}-storage-volume",
+    size=1,  # 1 GB
+)
+print(f"Volume created: {volume}")</code></pre>
+
+      <h2>2. Exercise 2 — Attach a Volume</h2>
+      <p>
+        Attach your volume to a running compute instance. The volume status will
+        change from <code>available</code> to <code>in-use</code>.
+      </p>
+
+      <pre><code class="language-python">result = vol.attach(
+    volume_name=f"{student_id}-storage-volume",
+    instance_name=f"{student_id}-compute-instance",
+)
+print(f"Volume attached: {result}")</code></pre>
+
+      <h2>3. Exercise 3 — Manage Snapshots</h2>
+      <p>
+        Create a snapshot of your volume. Volume snapshots are point-in-time copies
+        that can be used to create new volumes or restore data.
+      </p>
+
+      <pre><code class="language-python">snapshot = vol.create_snapshot(
+    volume_name=f"{student_id}-storage-volume",
+    snapshot_name=f"{student_id}-storage-snapshot",
+)
+print(f"Snapshot created: {snapshot}")</code></pre>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Use <strong>volume_manager</strong> to create, attach, and snapshot volumes.</li>
+        <li>Volumes are <strong>persistent block storage</strong> that survive instance deletion.</li>
+        <li>Attaching a volume changes its status from <code>available</code> to <code>in-use</code>.</li>
+        <li>Snapshots provide <strong>point-in-time backups</strong> of volume data.</li>
+      </ul>
+
+      <button class="mark-complete-btn" type="button" aria-label="Mark this lesson as complete">
+        ✓ Mark as Complete
+      </button>
+      <div class="prev-next-nav" aria-label="Lesson navigation"></div>
+    </main>
+  </div>
+  <footer class="site-footer" role="contentinfo">
+    <a href="https://github.com/opcp-openstack-first-steps" aria-label="Project on GitHub">GitHub</a> ·
+    <a href="../../LICENSE" aria-label="Project license">License</a> ·
+    SkillHub Training — OVHcloud
+  </footer>
+  <script src="../assets/js/lessons.js"></script>
+  <script src="../assets/js/i18n.js"></script>
+  <script src="../assets/js/navigation.js"></script>
+  <script src="../assets/js/code-highlight.js"></script>
+  <script src="../assets/js/main.js"></script>
+</body>
+</html>

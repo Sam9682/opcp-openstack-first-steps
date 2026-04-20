@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkillHub — Gestion des utilisateurs</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <header class="site-header" role="banner">
+    <div class="logo"><a href="index.html" aria-label="Accueil SkillHub">SkillHub</a></div>
+    <div class="header-right">
+      <div class="lang-toggle" aria-label="Sélecteur de langue"></div>
+      <div class="progress-bar-container" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Progression de l'apprentissage">
+        <div class="progress-bar-fill"></div>
+      </div>
+      <span class="progress-text">0% terminé</span>
+      <button class="hamburger-btn" aria-label="Ouvrir le menu de navigation" aria-expanded="false">☰</button>
+    </div>
+  </header>
+  <div class="sidebar-overlay" aria-hidden="true"></div>
+  <div class="site-wrapper">
+    <aside class="sidebar" role="navigation" aria-label="Navigation des leçons">
+      <nav id="sidebar-nav"></nav>
+    </aside>
+    <main class="main-content" role="main">
+      <div class="breadcrumbs" aria-label="Fil d'Ariane"></div>
+
+      <h1>Gestion des utilisateurs</h1>
+      <p class="lesson-meta">Difficulté : <strong>Débutant</strong> · Durée estimée : <strong>20 min</strong></p>
+
+      <p>
+        Avant de vous authentifier auprès d'OpenStack, vous avez besoin d'un
+        compte utilisateur. OPCP Core s'appuie sur <strong>Keycloak</strong>
+        comme fournisseur d'identité. Cette leçon vous guide dans la création
+        d'utilisateurs et l'attribution des rôles et attributs de projet
+        appropriés.
+      </p>
+
+      <h2>1. Rôles intégrés</h2>
+      <p>
+        Après la toute première installation d'OPCP, un compte super-admin
+        (login / mot de passe) vous est communiqué. Ce compte sert à se
+        connecter à l'interface Keycloak (ou à son API) pour gérer les
+        utilisateurs.
+      </p>
+      <p>
+        Les realms, rôles et groupes Keycloak sont pré-configurés. La
+        solution OPCP est livrée avec les rôles intégrés suivants :
+      </p>
+      <ul>
+        <li><strong>Master Admin role</strong> — le super-admin pré-configuré livré avec OPCP.</li>
+        <li><strong>IT Admin</strong> — administre les projets OpenStack et gère les ressources pour les utilisateurs finaux.</li>
+        <li><strong>DC Operator</strong> — opère la couche d'infrastructure du data-center.</li>
+      </ul>
+
+      <h2>2. Créer un utilisateur dans Keycloak</h2>
+      <p>
+        Connectez-vous à la console d'administration Keycloak avec les
+        identifiants super-admin, puis naviguez vers
+        <strong>Users → Add user</strong>. Remplissez les champs requis
+        (nom d'utilisateur, email, prénom / nom) et enregistrez.
+      </p>
+
+      <h3>Définir un mot de passe</h3>
+      <p>
+        Après la création de l'utilisateur, ouvrez l'onglet
+        <strong>Credentials</strong> et cliquez sur
+        <strong>Set Password</strong>. Saisissez le mot de passe initial.
+        Activez l'option <strong>Temporary</strong> si vous souhaitez que
+        l'utilisateur soit invité à réinitialiser son mot de passe à la
+        première connexion.
+      </p>
+
+      <h2>3. Configurer un utilisateur IT Admin</h2>
+      <p>
+        Lorsque vous devez créer un IT Admin — quelqu'un qui administre les
+        projets OpenStack et gère les ressources pour les utilisateurs
+        finaux — vous devez ajouter un attribut de projet à l'utilisateur.
+      </p>
+      <p>
+        Ouvrez l'onglet <strong>Attributes</strong> de l'utilisateur et
+        ajoutez une paire clé-valeur :
+      </p>
+      <ul>
+        <li><strong>Clé :</strong> <code>project</code></li>
+        <li><strong>Valeur :</strong> un objet JSON sur une seule ligne (voir ci-dessous)</li>
+      </ul>
+
+      <pre><code class="language-json">{"domain": {"name": "Default"}, "name": "admin", "roles": [{"name": "admin"}, {"name": "service"}]}</code></pre>
+
+      <p>Adaptez les valeurs à votre configuration :</p>
+      <ul>
+        <li><strong>domain → name</strong> — le domaine OpenStack (ex. <code>Default</code>).</li>
+        <li><strong>name</strong> — le nom du projet OpenStack (ex. <code>admin</code>).</li>
+        <li><strong>roles</strong> — les rôles OpenStack à accorder (ex. <code>admin</code>, <code>service</code>).</li>
+      </ul>
+
+      <h2>4. Configurer un utilisateur final</h2>
+      <p>
+        Les utilisateurs finaux ont besoin d'accéder à des projets
+        spécifiques sur OpenStack dans un domaine restreint. Après la
+        création de l'utilisateur, ouvrez l'onglet
+        <strong>Attributes</strong> et ajoutez une paire clé-valeur :
+      </p>
+      <ul>
+        <li><strong>Clé :</strong> <code>project</code></li>
+        <li><strong>Valeur :</strong> un objet JSON sur une seule ligne (voir ci-dessous)</li>
+      </ul>
+
+      <pre><code class="language-json">{"domain": {"name": "keycloak"}, "name": "$project", "roles": [{"name": "member"}, {"name": "reader"}]}</code></pre>
+
+      <p>
+        Le domaine <code>keycloak</code> est le domaine restreint accessible
+        aux utilisateurs finaux. Remplacez <code>$project</code> par le nom
+        réel du projet OpenStack auquel l'utilisateur doit avoir accès.
+      </p>
+
+      <h2>Résumé</h2>
+      <ul>
+        <li>OPCP est livré avec des realms, rôles et groupes Keycloak pré-configurés.</li>
+        <li>Trois rôles intégrés : <strong>Master Admin role</strong>, <strong>IT Admin</strong> et <strong>DC Operator</strong>.</li>
+        <li>Les mots de passe sont définis dans l'onglet <strong>Credentials</strong> ; activez <strong>Temporary</strong> pour forcer une réinitialisation à la première connexion.</li>
+        <li>Les IT Admins reçoivent un attribut <code>project</code> sur le domaine <code>Default</code> avec les rôles <code>admin</code> / <code>service</code>.</li>
+        <li>Les utilisateurs finaux reçoivent un attribut <code>project</code> sur le domaine <code>keycloak</code> avec les rôles <code>member</code> / <code>reader</code>.</li>
+      </ul>
+
+      <button class="mark-complete-btn" type="button" aria-label="Marquer cette leçon comme terminée">
+        ✓ Marquer comme terminé
+      </button>
+      <div class="prev-next-nav" aria-label="Navigation entre les leçons"></div>
+    </main>
+  </div>
+  <footer class="site-footer" role="contentinfo">
+    <a href="https://github.com/opcp-openstack-first-steps" aria-label="Projet sur GitHub">GitHub</a> ·
+    <a href="../../LICENSE" aria-label="Licence du projet">Licence</a> ·
+    SkillHub Training — OVHcloud
+  </footer>
+  <script src="../assets/js/lessons.js"></script>
+  <script src="../assets/js/i18n.js"></script>
+  <script src="../assets/js/navigation.js"></script>
+  <script src="../assets/js/code-highlight.js"></script>
+  <script src="../assets/js/main.js"></script>
+</body>
+</html>

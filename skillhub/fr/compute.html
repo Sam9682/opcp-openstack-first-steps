@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkillHub — Calcul</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <header class="site-header" role="banner">
+    <div class="logo"><a href="index.html" aria-label="Accueil SkillHub">SkillHub</a></div>
+    <div class="header-right">
+      <div class="lang-toggle" aria-label="Sélecteur de langue"></div>
+      <div class="progress-bar-container" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Progression de l'apprentissage">
+        <div class="progress-bar-fill"></div>
+      </div>
+      <span class="progress-text">0% terminé</span>
+      <button class="hamburger-btn" aria-label="Ouvrir le menu de navigation" aria-expanded="false">☰</button>
+    </div>
+  </header>
+  <div class="sidebar-overlay" aria-hidden="true"></div>
+  <div class="site-wrapper">
+    <aside class="sidebar" role="navigation" aria-label="Navigation des leçons">
+      <nav id="sidebar-nav"></nav>
+    </aside>
+    <main class="main-content" role="main">
+      <div class="breadcrumbs" aria-label="Fil d'Ariane"></div>
+
+      <h1>Calcul</h1>
+      <p class="lesson-meta">Difficulté : <strong>Intermédiaire</strong> · Durée estimée : <strong>25 min</strong></p>
+
+      <p>
+        Le service de calcul Nova gère les instances de machines virtuelles. Dans cette
+        leçon, vous allez lancer des instances, les redimensionner et créer des snapshots.
+      </p>
+
+      <h2>1. Exercice 1 — Lancer une instance</h2>
+      <p>
+        Utilisez <code>compute_manager</code> pour lancer une instance avec un flavor
+        et une image spécifiés. Nommez-la <code>{student_id}-compute-instance</code>.
+      </p>
+
+      <pre><code class="language-python">compute = self.managers.get("compute_manager")
+
+instance = compute.create(
+    name=f"{student_id}-compute-instance",
+    flavor="s1-2",
+    image="Ubuntu 24.04",
+)
+print(f"Instance lancée : {instance}")</code></pre>
+
+      <h2>2. Exercice 2 — Redimensionner une instance</h2>
+      <p>
+        Redimensionnez votre instance en cours d'exécution vers un flavor différent.
+        Utile quand votre charge de travail nécessite plus (ou moins) de ressources.
+      </p>
+
+      <pre><code class="language-python">result = compute.resize(
+    name=f"{student_id}-compute-instance",
+    flavor="s1-4",
+)
+print(f"Instance redimensionnée : {result}")</code></pre>
+
+      <h2>3. Exercice 3 — Gérer les snapshots</h2>
+      <p>
+        Créez un snapshot de votre instance. Les snapshots capturent l'état actuel
+        et peuvent être utilisés pour restaurer ou cloner des instances.
+      </p>
+
+      <pre><code class="language-python">snapshot = compute.create_snapshot(
+    instance_name=f"{student_id}-compute-instance",
+    snapshot_name=f"{student_id}-compute-snapshot",
+)
+print(f"Snapshot créé : {snapshot}")</code></pre>
+
+      <h2>Résumé</h2>
+      <ul>
+        <li>Utilisez <strong>compute_manager</strong> pour lancer, redimensionner et snapshotter des instances.</li>
+        <li>Les flavors définissent le <strong>CPU, la RAM et le disque</strong> alloués à une instance.</li>
+        <li>Les snapshots capturent l'<strong>état actuel</strong> pour la sauvegarde et la récupération.</li>
+        <li>Les erreurs de flavor ou d'image manquants sont capturées avec des <strong>messages clairs</strong>.</li>
+      </ul>
+
+      <button class="mark-complete-btn" type="button" aria-label="Marquer cette leçon comme terminée">
+        ✓ Marquer comme terminé
+      </button>
+      <div class="prev-next-nav" aria-label="Navigation entre les leçons"></div>
+    </main>
+  </div>
+  <footer class="site-footer" role="contentinfo">
+    <a href="https://github.com/opcp-openstack-first-steps" aria-label="Projet sur GitHub">GitHub</a> ·
+    <a href="../../LICENSE" aria-label="Licence du projet">Licence</a> ·
+    SkillHub Training — OVHcloud
+  </footer>
+  <script src="../assets/js/lessons.js"></script>
+  <script src="../assets/js/i18n.js"></script>
+  <script src="../assets/js/navigation.js"></script>
+  <script src="../assets/js/code-highlight.js"></script>
+  <script src="../assets/js/main.js"></script>
+</body>
+</html>

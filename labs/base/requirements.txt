@@ -1,0 +1,5 @@
+# OpenStack First Steps Labs - Python Dependencies
+openstacksdk==3.3.0
+PyYAML==6.0.2
+hypothesis==6.112.5
+pytest==8.3.4

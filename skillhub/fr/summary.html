@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkillHub — Résumé & Prochaines étapes</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <header class="site-header" role="banner">
+    <div class="logo"><a href="index.html" aria-label="Accueil SkillHub">SkillHub</a></div>
+    <div class="header-right">
+      <div class="lang-toggle" aria-label="Sélecteur de langue"></div>
+      <div class="progress-bar-container" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Progression de l'apprentissage">
+        <div class="progress-bar-fill"></div>
+      </div>
+      <span class="progress-text">0% terminé</span>
+      <button class="hamburger-btn" aria-label="Ouvrir le menu de navigation" aria-expanded="false">☰</button>
+    </div>
+  </header>
+  <div class="sidebar-overlay" aria-hidden="true"></div>
+  <div class="site-wrapper">
+    <aside class="sidebar" role="navigation" aria-label="Navigation des leçons">
+      <nav id="sidebar-nav"></nav>
+    </aside>
+    <main class="main-content" role="main">
+      <div class="breadcrumbs" aria-label="Fil d'Ariane"></div>
+
+      <h1>Résumé & Prochaines étapes</h1>
+      <p class="lesson-meta">Difficulté : <strong>Débutant</strong> · Durée estimée : <strong>5 min</strong></p>
+
+      <p>
+        Félicitations pour avoir terminé le parcours de formation OpenStack Premiers pas.
+        Voici un récapitulatif de tout ce que vous avez appris.
+      </p>
+
+      <h2>Ce que vous avez appris</h2>
+      <ul>
+        <li><strong>Concepts fondamentaux</strong> — Projets, services (Nova, Neutron, Cinder, Keystone, Glance) et endpoints.</li>
+        <li><strong>Gestion des utilisateurs</strong> — Créer des utilisateurs dans Keycloak et attribuer les rôles et attributs de projet.</li>
+        <li><strong>Authentification</strong> — S'authentifier via Keystone avec des application credentials et gérer les tokens.</li>
+        <li><strong>Réseau</strong> — Créer des réseaux, sous-réseaux et routeurs avec Neutron.</li>
+        <li><strong>Groupes de sécurité</strong> — Créer des groupes, gérer les règles et les appliquer aux instances.</li>
+        <li><strong>Stockage</strong> — Créer des volumes, les attacher aux instances et gérer les snapshots avec Cinder.</li>
+        <li><strong>Calcul</strong> — Lancer des instances, redimensionner et créer des snapshots avec Nova.</li>
+      </ul>
+
+      <h2>Prochaines étapes</h2>
+      <p>Maintenant que vous maîtrisez les fondamentaux, explorez :</p>
+      <ul>
+        <li><strong>opcp-openstack-automation</strong> — Le projet d'automatisation complet avec Terraform, Ansible et des patterns de déploiement avancés.</li>
+        <li><strong>CLI OpenStack</strong> — Le client en ligne de commande <code>openstack</code> pour l'interaction directe avec l'API.</li>
+        <li><strong>Tableau de bord Horizon</strong> — L'interface web pour gérer visuellement les ressources OpenStack.</li>
+        <li><strong>Orchestration Heat</strong> — Orchestration de ressources basée sur des templates pour les déploiements complexes.</li>
+      </ul>
+
+      <h2>Nettoyage</h2>
+      <p>
+        N'oubliez pas de nettoyer les ressources créées pendant les exercices.
+        Rendez-vous sur la leçon <a href="cleanup.html">Nettoyage des ressources</a>
+        pour les instructions détaillées et le script de nettoyage automatisé.
+      </p>
+
+      <button class="mark-complete-btn" type="button" aria-label="Marquer cette leçon comme terminée">
+        ✓ Marquer comme terminé
+      </button>
+      <div class="prev-next-nav" aria-label="Navigation entre les leçons"></div>
+    </main>
+  </div>
+  <footer class="site-footer" role="contentinfo">
+    <a href="https://github.com/opcp-openstack-first-steps" aria-label="Projet sur GitHub">GitHub</a> ·
+    <a href="../../LICENSE" aria-label="Licence du projet">Licence</a> ·
+    SkillHub Training — OVHcloud
+  </footer>
+  <script src="../assets/js/lessons.js"></script>
+  <script src="../assets/js/i18n.js"></script>
+  <script src="../assets/js/navigation.js"></script>
+  <script src="../assets/js/code-highlight.js"></script>
+  <script src="../assets/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+# OpenStack First Steps Labs - Example Configuration
+#
+# Copy this file to lab_config.yaml and adjust values for your environment.
+# All parameters shown below are required unless noted otherwise.
+
+openstack:
+  # Identity (Keystone) endpoint URL for the target OpenStack cloud.
+  endpoint: "https://cloud.example.com:5000/v3"
+
+  # Default Nova flavor used when exercises do not specify one.
+  default_flavor: "m1.small"
+
+  # Default Glance image used when exercises do not specify one.
+  default_image: "ubuntu-22.04"
+
+modules:
+  # Recommended progression order. Each entry must match a directory name
+  # under labs/modules/.
+  order:
+    - first_steps
+    - authentication
+    - compute
+    - networking
+    - storage
+    - security_groups
+
+session:
+  # Maximum session duration in minutes. The lab runner will warn the
+  # student when the timeout approaches and clean up resources on expiry.
+  timeout_minutes: 120
+
+  # Per-student resource caps. The platform rejects resource creation
+  # requests that would exceed these limits.
+  resource_limits:
+    max_instances: 3
+    max_networks: 2
+    max_volumes: 3
+    max_security_groups: 5

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkillHub — Prerequisites</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <header class="site-header" role="banner">
+    <div class="logo"><a href="index.html" aria-label="SkillHub home">SkillHub</a></div>
+    <div class="header-right">
+      <div class="lang-toggle" aria-label="Language selector"></div>
+      <div class="progress-bar-container" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Learning progress">
+        <div class="progress-bar-fill"></div>
+      </div>
+      <span class="progress-text">0% complete</span>
+      <button class="hamburger-btn" aria-label="Toggle navigation menu" aria-expanded="false">☰</button>
+    </div>
+  </header>
+  <div class="sidebar-overlay" aria-hidden="true"></div>
+  <div class="site-wrapper">
+    <aside class="sidebar" role="navigation" aria-label="Lesson navigation">
+      <nav id="sidebar-nav"></nav>
+    </aside>
+    <main class="main-content" role="main">
+      <div class="breadcrumbs" aria-label="Breadcrumb navigation"></div>
+
+      <h1>Prerequisites</h1>
+      <p class="lesson-meta">Difficulty: <strong>Beginner</strong> · Estimated time: <strong>15 min</strong></p>
+
+      <p>
+        Before running the labs, make sure your environment meets the following
+        requirements. This page walks you through each dependency and how to
+        verify it is correctly installed.
+      </p>
+
+      <h2>1. Python 3.9+</h2>
+      <p>
+        The lab framework and all exercises are written in Python. You need
+        Python <strong>3.9 or later</strong> (3.11 recommended).
+      </p>
+      <pre><code class="language-bash"># Check your Python version
+python3 --version
+# Expected output: Python 3.11.x (or any 3.9+)</code></pre>
+      <p>
+        If Python is not installed, download it from
+        <a href="https://www.python.org/downloads/" target="_blank" rel="noopener">python.org</a>
+        or use your system package manager:
+      </p>
+      <pre><code class="language-bash"># Debian / Ubuntu
+sudo apt update &amp;&amp; sudo apt install -y python3 python3-pip python3-venv
+
+# macOS (Homebrew)
+brew install python@3.11</code></pre>
+
+      <h2>2. pip (Python package manager)</h2>
+      <p>
+        <code>pip</code> is used to install the Python dependencies required by
+        the labs (openstacksdk, PyYAML, pytest, etc.).
+      </p>
+      <pre><code class="language-bash"># Verify pip is available
+pip3 --version
+# Expected output: pip 2x.x from … (python 3.x)</code></pre>
+      <p>If pip is missing, install it with:</p>
+      <pre><code class="language-bash">python3 -m ensurepip --upgrade</code></pre>
+
+      <h2>3. OpenStack SDK &amp; Python dependencies</h2>
+      <p>
+        The labs rely on the following Python packages (defined in
+        <code>labs/base/requirements.txt</code>):
+      </p>
+      <ul>
+        <li><strong>openstacksdk 3.3.0</strong> — official Python SDK for OpenStack APIs</li>
+        <li><strong>PyYAML 6.0.2</strong> — YAML configuration parsing</li>
+        <li><strong>pytest 8.3.4</strong> — test runner used by the assessment engine</li>
+        <li><strong>hypothesis 6.112.5</strong> — property-based testing library</li>
+      </ul>
+      <p>Install them in a virtual environment:</p>
+      <pre><code class="language-bash"># Create and activate a virtual environment
+python3 -m venv .venv
+source .venv/bin/activate   # Linux / macOS
+# .venv\Scripts\activate    # Windows
+
+# Install dependencies
+pip install -r labs/base/requirements.txt</code></pre>
+
+      <h2>4. Docker (optional — for containerised labs)</h2>
+      <p>
+        The labs can run inside a Docker container that bundles all dependencies.
+        If you prefer this approach, install Docker:
+      </p>
+      <pre><code class="language-bash"># Check Docker is installed
+docker --version
+# Expected output: Docker version 2x.x.x</code></pre>
+      <p>
+        Install Docker from
+        <a href="https://docs.docker.com/get-docker/" target="_blank" rel="noopener">docs.docker.com</a>.
+      </p>
+
+      <h2>5. OpenStack credentials</h2>
+      <p>
+        The lab runner needs valid OpenStack credentials. You can provide them
+        via <strong>environment variables</strong> or a
+        <strong>credentials file</strong>.
+      </p>
+
+      <h3>Option A — Environment variables</h3>
+      <pre><code class="language-bash">export OS_AUTH_URL="https://auth.cloud.ovh.net/v3"
+export OS_USERNAME="your-username"
+export OS_PASSWORD="your-password"
+export OS_PROJECT_NAME="your-project"
+export OS_DOMAIN_NAME="Default"</code></pre>
+
+      <h3>Option B — Credentials file</h3>
+      <p>Create <code>~/.openstack/credentials.yaml</code>:</p>
+      <pre><code class="language-yaml">auth_url: https://auth.cloud.ovh.net/v3
+username: your-username
+password: your-password
+project_name: your-project
+domain_name: Default</code></pre>
+
+      <h2>6. OVHcloud Public Cloud project</h2>
+      <p>
+        You need an active OVHcloud Public Cloud project with API access enabled.
+        Make sure your user has the appropriate roles to create instances,
+        networks, volumes, and security groups.
+      </p>
+
+      <h2>7. Basic terminal knowledge</h2>
+      <p>
+        You should be comfortable running commands in a terminal (bash, zsh, or
+        PowerShell). All exercises are launched from the command line.
+      </p>
+
+      <h2>Quick validation script</h2>
+      <p>Run this script to verify everything is in place:</p>
+      <pre><code class="language-python">"""Validate lab prerequisites."""
+import shutil
+import sys
+
+checks = {
+    "Python 3.9+": sys.version_info >= (3, 9),
+    "pip available": shutil.which("pip3") is not None or shutil.which("pip") is not None,
+}
+
+try:
+    import openstack  # noqa: F401
+    checks["openstacksdk installed"] = True
+except ImportError:
+    checks["openstacksdk installed"] = False
+
+try:
+    import yaml  # noqa: F401
+    checks["PyYAML installed"] = True
+except ImportError:
+    checks["PyYAML installed"] = False
+
+all_ok = True
+for name, ok in checks.items():
+    status = "OK" if ok else "MISSING"
+    print(f"  [{status}] {name}")
+    if not ok:
+        all_ok = False
+
+sys.exit(0 if all_ok else 1)</code></pre>
+
+      <button class="mark-complete-btn" type="button" aria-label="Mark this lesson as complete">
+        ✓ Mark as Complete
+      </button>
+      <div class="prev-next-nav" aria-label="Lesson navigation"></div>
+    </main>
+  </div>
+  <footer class="site-footer" role="contentinfo">
+    <a href="https://github.com/opcp-openstack-first-steps" aria-label="Project on GitHub">GitHub</a> ·
+    <a href="../../LICENSE" aria-label="Project license">License</a> ·
+    SkillHub Training — OVHcloud
+  </footer>
+  <script src="../assets/js/lessons.js"></script>
+  <script src="../assets/js/i18n.js"></script>
+  <script src="../assets/js/navigation.js"></script>
+  <script src="../assets/js/code-highlight.js"></script>
+  <script src="../assets/js/main.js"></script>
+</body>
+</html>
