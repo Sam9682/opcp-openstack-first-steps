@@ -56,31 +56,16 @@
       </ul>
 
       <h2>Démarrage rapide — Validez votre configuration</h2>
-      <p>Exécutez ce petit script pour confirmer que votre environnement est prêt :</p>
+      <p>Exécutez ces commandes pour confirmer que votre environnement est prêt :</p>
 
-      <pre><code class="language-python">"""Validation rapide pour opcp-openstack-first-steps."""
-import os
-import sys
+      <pre><code class="language-bash"># Vérifier que le CLI OpenStack est installé
+openstack --version
 
-required_vars = [
-    "OS_AUTH_URL",
-    "OS_APPLICATION_CREDENTIAL_ID",
-    "OS_APPLICATION_CREDENTIAL_SECRET",
-    "OS_PROJECT_NAME",
-]
+# Vérifier que vos identifiants sont configurés
+env | grep OS_
 
-missing = [v for v in required_vars if not os.environ.get(v)]
-
-if missing:
-    print("Variables d'environnement manquantes :")
-    for var in missing:
-        print(f"  - {var}")
-    sys.exit(1)
-
-print("Toutes les variables d'environnement sont définies.")
-print(f"Auth URL : {os.environ['OS_AUTH_URL']}")
-print(f"Projet   : {os.environ['OS_PROJECT_NAME']}")
-print("Vous êtes prêt à commencer !")</code></pre>
+# Tester l'authentification en émettant un token
+openstack token issue</code></pre>
 
       <button class="mark-complete-btn" type="button" aria-label="Marquer cette leçon comme terminée">
         ✓ Marquer comme terminé

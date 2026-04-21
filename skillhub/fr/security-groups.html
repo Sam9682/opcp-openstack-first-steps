@@ -37,38 +37,39 @@
 
       <h2>1. Exercice 1 — Créer un groupe de sécurité</h2>
       <p>
-        Utilisez <code>security_group_manager</code> pour créer un groupe de sécurité nommé
+        Utilisez le CLI <code>openstack</code> pour créer un groupe de sécurité nommé
         <code>{student_id}-sg-web</code>.
       </p>
 
-      <pre><code class="language-python">sg = self.managers.get("security_group_manager")
+      <pre><code class="language-bash"># Créer un groupe de sécurité
+openstack security group create \
+  --description "Groupe de sécurité pour le trafic web" \
+  {student_id}-sg-web
 
-group = sg.create(
-    name=f"{student_id}-sg-web",
-    description="Groupe de sécurité pour le trafic web",
-)
-print(f"Groupe de sécurité créé : {group}")</code></pre>
+# Vérifier que le groupe de sécurité a été créé
+openstack security group show {student_id}-sg-web</code></pre>
 
       <h2>2. Exercice 2 — Gérer les règles</h2>
       <p>
         Ajoutez des règles d'entrée pour autoriser le trafic HTTP (port 80) et HTTPS (port 443).
-        Les règles sont validées avant d'être envoyées à l'API.
       </p>
 
-      <pre><code class="language-python">from labs.core.validators import validate_sg_rule
+      <pre><code class="language-bash"># Ajouter une règle d'entrée HTTP (port 80)
+openstack security group rule create \
+  --protocol tcp \
+  --dst-port 80 \
+  --ingress \
+  {student_id}-sg-web
 
-valid, err = validate_sg_rule("tcp", 443, 443)
-if not valid:
-    print(f"Validation échouée : {err}")
+# Ajouter une règle d'entrée HTTPS (port 443)
+openstack security group rule create \
+  --protocol tcp \
+  --dst-port 443 \
+  --ingress \
+  {student_id}-sg-web
 
-sg.add_rule(
-    f"{student_id}-sg-web",
-    protocol="tcp",
-    port_min=443,
-    port_max=443,
-    direction="ingress",
-)
-print("Règle HTTPS ajoutée")</code></pre>
+# Lister les règles pour vérifier
+openstack security group rule list {student_id}-sg-web</code></pre>
 
       <h2>3. Exercice 3 — Appliquer à une instance</h2>
       <p>
@@ -76,18 +77,20 @@ print("Règle HTTPS ajoutée")</code></pre>
         Cela contrôle quel trafic réseau peut atteindre l'instance.
       </p>
 
-      <pre><code class="language-python">sg.apply_to_instance(
-    sg_name=f"{student_id}-sg-web",
-    instance_name=f"{student_id}-compute-instance",
-)
-print("Groupe de sécurité appliqué à l'instance")</code></pre>
+      <pre><code class="language-bash"># Ajouter le groupe de sécurité à une instance
+openstack server add security group \
+  {student_id}-compute-instance \
+  {student_id}-sg-web
+
+# Vérifier que le groupe de sécurité est attaché
+openstack server show {student_id}-compute-instance -f value -c security_groups</code></pre>
 
       <h2>Résumé</h2>
       <ul>
         <li>Les groupes de sécurité sont des <strong>pare-feu virtuels</strong> qui contrôlent l'accès réseau.</li>
         <li>Les règles spécifient le <strong>protocole, la plage de ports et la direction</strong> (entrée/sortie).</li>
-        <li>Les règles sont <strong>validées</strong> avant d'être envoyées à l'API.</li>
-        <li>Les groupes de sécurité sont <strong>appliqués aux instances</strong> pour appliquer les politiques réseau.</li>
+        <li>Utilisez <code>openstack security group rule create</code> pour ajouter des règles.</li>
+        <li>Les groupes de sécurité sont <strong>appliqués aux instances</strong> avec <code>openstack server add security group</code>.</li>
       </ul>
 
       <button class="mark-complete-btn" type="button" aria-label="Marquer cette leçon comme terminée">

@@ -60,17 +60,15 @@ export OS_REGION_NAME="GRA7"</code></pre>
 
       <h2>3. Exercise 1 — Authenticate with Application Credentials</h2>
       <p>
-        Use <code>auth_manager</code> to authenticate against Keystone using your
+        Use the <code>openstack</code> CLI to authenticate against Keystone using your
         application credential and obtain a token.
       </p>
 
-      <pre><code class="language-python">auth = self.managers.get("auth_manager")
+      <pre><code class="language-bash"># Request a token using application credentials
+openstack token issue
 
-token = auth.authenticate(
-    application_credential_id="your-credential-id",
-    application_credential_secret="your-credential-secret",
-)
-print(f"Token obtained: {token}")</code></pre>
+# The command outputs a token ID and expiration date
+# The CLI uses the OS_* environment variables automatically</code></pre>
 
       <h2>4. Exercise 2 — Token Management</h2>
       <p>
@@ -78,38 +76,34 @@ print(f"Token obtained: {token}")</code></pre>
         for understanding token lifecycle in long-running automation.
       </p>
 
-      <pre><code class="language-python">auth = self.managers.get("auth_manager")
-
-# Validate a token
-is_valid = auth.validate_token(token)
-print(f"Token valid: {is_valid}")
+      <pre><code class="language-bash"># Issue a token and capture its ID
+TOKEN=$(openstack token issue -f value -c id)
+echo "Token obtained: $TOKEN"
 
 # Revoke a token you no longer need
-auth.revoke_token(token)
-print("Token revoked successfully")</code></pre>
+openstack token revoke "$TOKEN"
+echo "Token revoked successfully"</code></pre>
 
       <h2>5. Error Handling</h2>
       <p>
-        Authentication failures are caught by the exercise framework and reported
-        with clear error messages. Always handle exceptions gracefully.
+        Authentication failures are reported with clear error messages by the CLI.
+        If your credentials are wrong, the CLI will return an error.
       </p>
 
-      <pre><code class="language-python">try:
-    token = auth.authenticate(
-        application_credential_id="wrong-id",
-        application_credential_secret="wrong-secret",
-    )
-except Exception as exc:
-    print(f"Authentication failed: {exc}")
-    # Handle gracefully — log, alert, or retry</code></pre>
+      <pre><code class="language-bash"># Example: attempting authentication with wrong credentials
+# will produce an error like:
+#   The request you have made requires authentication. (HTTP 401)
+
+# Always verify your environment variables are set correctly
+env | grep OS_</code></pre>
 
       <h2>Summary</h2>
       <ul>
         <li>Use <strong>application credentials</strong> instead of user credentials for safer automation.</li>
         <li>Set <code>OS_AUTH_TYPE=v3applicationcredential</code> along with your credential ID and secret.</li>
-        <li>Keystone issues <strong>tokens</strong> that authorize API calls.</li>
-        <li>Tokens can be <strong>validated and revoked</strong> programmatically.</li>
-        <li>Always handle authentication errors gracefully.</li>
+        <li>Use <code>openstack token issue</code> to obtain a token and <code>openstack token revoke</code> to revoke it.</li>
+        <li>The CLI reads <code>OS_*</code> environment variables automatically for authentication.</li>
+        <li>Authentication errors are reported clearly by the CLI.</li>
       </ul>
 
       <button class="mark-complete-btn" type="button" aria-label="Mark this lesson as complete">

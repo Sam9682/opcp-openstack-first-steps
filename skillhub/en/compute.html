@@ -37,18 +37,20 @@
 
       <h2>1. Exercise 1 — Launch an Instance</h2>
       <p>
-        Use <code>compute_manager</code> to launch an instance with a specified
+        Use the <code>openstack</code> CLI to launch an instance with a specified
         flavor and image. Name it <code>{student_id}-compute-instance</code>.
       </p>
 
-      <pre><code class="language-python">compute = self.managers.get("compute_manager")
+      <pre><code class="language-bash"># Launch a compute instance
+openstack server create \
+  --flavor s1-2 \
+  --image "Ubuntu 24.04" \
+  --network Ext-Net \
+  --wait \
+  {student_id}-compute-instance
 
-instance = compute.create(
-    name=f"{student_id}-compute-instance",
-    flavor="s1-2",
-    image="Ubuntu 24.04",
-)
-print(f"Instance launched: {instance}")</code></pre>
+# Verify the instance is active
+openstack server show {student_id}-compute-instance -f value -c status</code></pre>
 
       <h2>2. Exercise 2 — Resize an Instance</h2>
       <p>
@@ -56,11 +58,14 @@ print(f"Instance launched: {instance}")</code></pre>
         your workload needs more (or fewer) resources.
       </p>
 
-      <pre><code class="language-python">result = compute.resize(
-    name=f"{student_id}-compute-instance",
-    flavor="s1-4",  # target flavor
-)
-print(f"Instance resized: {result}")</code></pre>
+      <pre><code class="language-bash"># Resize the instance to a larger flavor
+openstack server resize --flavor s1-4 {student_id}-compute-instance
+
+# Wait for the resize to complete, then confirm it
+openstack server resize confirm {student_id}-compute-instance
+
+# Verify the new flavor
+openstack server show {student_id}-compute-instance -f value -c flavor</code></pre>
 
       <h2>3. Exercise 3 — Manage Snapshots</h2>
       <p>
@@ -68,18 +73,20 @@ print(f"Instance resized: {result}")</code></pre>
         and can be used to restore or clone instances later.
       </p>
 
-      <pre><code class="language-python">snapshot = compute.create_snapshot(
-    instance_name=f"{student_id}-compute-instance",
-    snapshot_name=f"{student_id}-compute-snapshot",
-)
-print(f"Snapshot created: {snapshot}")</code></pre>
+      <pre><code class="language-bash"># Create a snapshot of the instance
+openstack server image create \
+  --name {student_id}-compute-snapshot \
+  {student_id}-compute-instance
+
+# Verify the snapshot was created
+openstack image show {student_id}-compute-snapshot -f value -c status</code></pre>
 
       <h2>Summary</h2>
       <ul>
-        <li>Use <strong>compute_manager</strong> to launch, resize, and snapshot instances.</li>
+        <li>Use <code>openstack server</code> commands to launch, resize, and snapshot instances.</li>
         <li>Flavors define the <strong>CPU, RAM, and disk</strong> allocated to an instance.</li>
         <li>Snapshots capture the <strong>current state</strong> for backup and recovery.</li>
-        <li>Missing flavor or image errors are caught with <strong>clear messages</strong>.</li>
+        <li>Missing flavor or image errors are reported with <strong>clear messages</strong> by the CLI.</li>
       </ul>
 
       <button class="mark-complete-btn" type="button" aria-label="Mark this lesson as complete">

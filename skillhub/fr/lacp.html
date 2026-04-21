@@ -51,49 +51,45 @@
 
       <h2>1. Exercice 1 — Créer un port bond LACP</h2>
       <p>
-        Utilisez <code>network_manager</code> pour créer deux ports Neutron sur le
+        Utilisez le CLI <code>openstack</code> pour créer deux ports Neutron sur le
         même réseau, puis créez un port trunk qui les agrège en utilisant le mode
         LACP (<code>802.3ad</code>).
       </p>
 
-      <pre><code class="language-python">net = self.managers.get("network_manager")
+      <pre><code class="language-bash"># Créer le réseau de base
+openstack network create {student_id}-lacp-network
 
-# Créer le réseau de base
-network = net.create(name=f"{student_id}-lacp-network")
+# Créer deux ports membres sur le réseau
+openstack port create \
+  --network {student_id}-lacp-network \
+  {student_id}-lacp-port-1
 
-# Créer deux ports membres
-port1 = net.create_port(
-    network_name=f"{student_id}-lacp-network",
-    name=f"{student_id}-lacp-port-1",
-)
-port2 = net.create_port(
-    network_name=f"{student_id}-lacp-network",
-    name=f"{student_id}-lacp-port-2",
-)
+openstack port create \
+  --network {student_id}-lacp-network \
+  {student_id}-lacp-port-2
 
-# Créer le bond LACP
-bond = net.create_bond(
-    name=f"{student_id}-lacp-bond",
-    port_names=[f"{student_id}-lacp-port-1", f"{student_id}-lacp-port-2"],
-    bond_mode="802.3ad",
-)
-print(f"Bond LACP créé : {bond}")</code></pre>
+# Créer un trunk port en utilisant le premier port comme parent
+openstack network trunk create \
+  --parent-port {student_id}-lacp-port-1 \
+  --subport port={student_id}-lacp-port-2,segmentation-type=vlan,segmentation-id=100 \
+  {student_id}-lacp-bond
+
+# Vérifier que le trunk a été créé
+openstack network trunk show {student_id}-lacp-bond</code></pre>
 
       <h2>2. Exercice 2 — Configurer les paramètres LACP</h2>
       <p>
-        Ajustez le bond LACP en définissant le débit LACP, la politique de hachage
-        de transmission et le mode d'activité LACP. Ces paramètres contrôlent la
-        négociation et la distribution du trafic.
+        Ajustez le bond LACP en mettant à jour la configuration du trunk port.
+        Ces paramètres contrôlent la négociation et la distribution du trafic.
       </p>
 
-      <pre><code class="language-python"># Mettre à jour les paramètres LACP du bond
-net.update_bond(
-    bond_name=f"{student_id}-lacp-bond",
-    lacp_rate="fast",              # fast = 1s, slow = 30s
-    transmit_hash_policy="layer3+4",  # hachage sur IP + port
-    lacp_activity="active",        # négociation LACPDU active
-)
-print("Paramètres LACP configurés")</code></pre>
+      <pre><code class="language-bash"># Ajouter un autre subport au trunk
+openstack network trunk set \
+  --subport port={student_id}-lacp-port-2,segmentation-type=vlan,segmentation-id=200 \
+  {student_id}-lacp-bond
+
+# Vérifier la configuration du trunk
+openstack network trunk show {student_id}-lacp-bond</code></pre>
 
       <h2>3. Exercice 3 — Attacher le bond LACP à une instance</h2>
       <p>
@@ -101,28 +97,24 @@ print("Paramètres LACP configurés")</code></pre>
         de la bande passante agrégée et de la redondance de lien.
       </p>
 
-      <pre><code class="language-python">compute = self.managers.get("compute_manager")
+      <pre><code class="language-bash"># Lancer une instance en utilisant le port parent du trunk
+openstack server create \
+  --flavor s1-4 \
+  --image "ubuntu-22.04" \
+  --port {student_id}-lacp-port-1 \
+  --wait \
+  {student_id}-lacp-instance
 
-# Lancer une instance
-instance = compute.create(
-    name=f"{student_id}-lacp-instance",
-    image="ubuntu-22.04",
-    flavor="s1-4",
-)
-
-# Attacher le bond à l'instance
-net.attach_bond_to_instance(
-    bond_name=f"{student_id}-lacp-bond",
-    instance_name=f"{student_id}-lacp-instance",
-)
-print(f"Bond attaché à l'instance : {instance}")</code></pre>
+# Vérifier que l'instance est active et connectée
+openstack server show {student_id}-lacp-instance -f value -c status
+openstack port show {student_id}-lacp-port-1 -f value -c status</code></pre>
 
       <h2>Résumé</h2>
       <ul>
         <li>Le LACP (<strong>802.3ad</strong>) agrège plusieurs ports en un seul lien logique.</li>
-        <li>Utilisez <strong>network_manager</strong> pour créer des ports, des bonds et configurer les paramètres LACP.</li>
-        <li>Paramètres clés : <strong>lacp_rate</strong> (fast/slow), <strong>transmit_hash_policy</strong> et <strong>lacp_activity</strong> (active/passive).</li>
-        <li>Les bonds peuvent être <strong>attachés aux instances</strong> pour une bande passante accrue et du basculement automatique.</li>
+        <li>Utilisez les commandes <code>openstack network trunk</code> pour créer et gérer les trunk ports.</li>
+        <li>Les subports sont ajoutés avec <code>--subport</code> en spécifiant le type et l'ID de segmentation.</li>
+        <li>Les instances se connectent aux trunks via le <strong>port parent</strong> avec <code>--port</code>.</li>
       </ul>
 
       <button class="mark-complete-btn" type="button" aria-label="Marquer cette leçon comme terminée">

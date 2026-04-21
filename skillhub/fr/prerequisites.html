@@ -65,9 +65,22 @@ pip3 --version
       <p>Si pip est absent, installez-le avec :</p>
       <pre><code class="language-bash">python3 -m ensurepip --upgrade</code></pre>
 
-      <h2>3. OpenStack SDK et dépendances Python</h2>
+      <h2>3. Client CLI OpenStack</h2>
       <p>
-        Les labs s'appuient sur les paquets Python suivants (définis dans
+        Tous les exercices utilisent le client en ligne de commande <code>openstack</code>.
+        Installez-le via pip :
+      </p>
+      <pre><code class="language-bash"># Installer le client CLI OpenStack
+pip3 install python-openstackclient
+
+# Vérifier l'installation
+openstack --version
+# Sortie attendue : openstack 7.x.x (ou supérieur)</code></pre>
+
+      <h2>4. OpenStack SDK et dépendances Python (optionnel)</h2>
+      <p>
+        Si vous souhaitez aussi utiliser le moteur d'évaluation automatisé,
+        installez les paquets Python suivants (définis dans
         <code>labs/base/requirements.txt</code>) :
       </p>
       <ul>
@@ -193,36 +206,18 @@ domain_name: Default</code></pre>
       </p>
 
       <h2>Script de validation rapide</h2>
-      <p>Exécutez ce script pour vérifier que tout est en place :</p>
-      <pre><code class="language-python">"""Validation des prérequis des labs."""
-import shutil
-import sys
+      <p>Exécutez ces commandes pour vérifier que tout est en place :</p>
+      <pre><code class="language-bash"># Vérifier la version de Python
+python3 --version
 
-checks = {
-    "Python 3.9+": sys.version_info >= (3, 9),
-    "pip disponible": shutil.which("pip3") is not None or shutil.which("pip") is not None,
-}
+# Vérifier que pip est disponible
+pip3 --version
 
-try:
-    import openstack  # noqa: F401
-    checks["openstacksdk installé"] = True
-except ImportError:
-    checks["openstacksdk installé"] = False
+# Vérifier que le CLI OpenStack est installé
+openstack --version
 
-try:
-    import yaml  # noqa: F401
-    checks["PyYAML installé"] = True
-except ImportError:
-    checks["PyYAML installé"] = False
-
-all_ok = True
-for name, ok in checks.items():
-    status = "OK" if ok else "MANQUANT"
-    print(f"  [{status}] {name}")
-    if not ok:
-        all_ok = False
-
-sys.exit(0 if all_ok else 1)</code></pre>
+# Tester l'authentification
+openstack token issue</code></pre>
 
       <button class="mark-complete-btn" type="button" aria-label="Marquer cette leçon comme terminée">
         ✓ Marquer comme terminé

@@ -95,30 +95,46 @@ python -m labs.scripts.cleanup_lab --student-id votre-student-id</code></pre>
         les ressources restantes.
       </p>
 
-      <h2>4. Nettoyage manuel avec Python</h2>
+      <h2>4. Nettoyage manuel avec le CLI</h2>
       <p>
-        Vous pouvez aussi nettoyer les ressources de manière programmatique.
-        Le code suivant liste toutes les ressources correspondant à votre préfixe
-        et les supprime dans le bon ordre :
+        Vous pouvez aussi nettoyer les ressources manuellement avec le CLI
+        <code>openstack</code>. Suivez l'ordre de suppression ci-dessus :
       </p>
 
-      <pre><code class="language-python">from labs.scripts.cleanup_lab import LabCleanup
+      <pre><code class="language-bash"># 1. Détacher les volumes des instances
+openstack server remove volume {student_id}-compute-instance {student_id}-storage-volume
 
-# managers est fourni par le framework de lab
-cleanup = LabCleanup(managers, student_id="votre-student-id")
+# 2. Supprimer les snapshots (instance et volume)
+openstack image delete {student_id}-compute-snapshot
+openstack volume snapshot delete {student_id}-storage-snapshot
 
-# Supprimer toutes les ressources de tous les modules
-failures = cleanup.cleanup_all()
+# 3. Supprimer les instances
+openstack server delete {student_id}-first-instance
+openstack server delete {student_id}-compute-instance
+openstack server delete {student_id}-lacp-instance
 
-if failures:
-    print("Certaines ressources n'ont pas pu être supprimées :")
-    for f in failures:
-        print(f"  - {f}")
-else:
-    print("Toutes les ressources ont été nettoyées avec succès !")
+# 4. Supprimer les trunks et ports
+openstack network trunk delete {student_id}-lacp-bond
+openstack port delete {student_id}-lacp-port-1
+openstack port delete {student_id}-lacp-port-2
 
-# Révoquer les tokens de session
-cleanup.revoke_session_tokens()</code></pre>
+# 5. Supprimer les volumes
+openstack volume delete {student_id}-first-volume
+openstack volume delete {student_id}-storage-volume
+
+# 6. Supprimer les groupes de sécurité
+openstack security group delete {student_id}-sg-web
+openstack security group delete {student_id}-default-sg
+
+# 7. Supprimer les routeurs (retirer les interfaces d'abord) et les réseaux
+openstack router remove subnet {student_id}-net-router {student_id}-net-subnet
+openstack router delete {student_id}-net-router
+openstack network delete {student_id}-first-network
+openstack network delete {student_id}-net-network
+openstack network delete {student_id}-lacp-network
+openstack network delete {student_id}-compute-network
+openstack network delete {student_id}-storage-network
+openstack network delete {student_id}-sg-network</code></pre>
 
       <h2>5. Vérifier le nettoyage</h2>
       <p>

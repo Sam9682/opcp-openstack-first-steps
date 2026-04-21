@@ -37,34 +37,30 @@
 
       <h2>1. Exercise 1 — Create a Network</h2>
       <p>
-        Use <code>network_manager</code> to create a virtual network named
+        Use the <code>openstack</code> CLI to create a virtual network named
         <code>{student_id}-net-network</code>.
       </p>
 
-      <pre><code class="language-python">net = self.managers.get("network_manager")
+      <pre><code class="language-bash"># Create a virtual network
+openstack network create {student_id}-net-network
 
-network = net.create(name=f"{student_id}-net-network")
-print(f"Network created: {network}")</code></pre>
+# Verify the network was created
+openstack network show {student_id}-net-network -f value -c status</code></pre>
 
       <h2>2. Exercise 2 — Create a Subnet</h2>
       <p>
-        Create a subnet within your network. The CIDR is validated before the API
-        call is made. Use <code>10.0.0.0/24</code> as the address range.
+        Create a subnet within your network. Use <code>10.0.0.0/24</code> as the
+        address range.
       </p>
 
-      <pre><code class="language-python">from labs.core.validators import validate_cidr
+      <pre><code class="language-bash"># Create a subnet with CIDR 10.0.0.0/24
+openstack subnet create \
+  --network {student_id}-net-network \
+  --subnet-range 10.0.0.0/24 \
+  {student_id}-net-subnet
 
-cidr = "10.0.0.0/24"
-valid, err = validate_cidr(cidr)
-if not valid:
-    print(f"Invalid CIDR: {err}")
-
-subnet = net.create_subnet(
-    network_name=f"{student_id}-net-network",
-    name=f"{student_id}-net-subnet",
-    cidr=cidr,
-)
-print(f"Subnet created: {subnet}")</code></pre>
+# Verify the subnet was created
+openstack subnet show {student_id}-net-subnet</code></pre>
 
       <h2>3. Exercise 3 — Configure a Router</h2>
       <p>
@@ -72,18 +68,21 @@ print(f"Subnet created: {subnet}")</code></pre>
         between subnets and external networks.
       </p>
 
-      <pre><code class="language-python">router = net.create_router(name=f"{student_id}-net-router")
+      <pre><code class="language-bash"># Create a router
+openstack router create {student_id}-net-router
 
-net.add_router_interface(
-    router_name=f"{student_id}-net-router",
-    subnet_name=f"{student_id}-net-subnet",
-)
-print(f"Router created and attached: {router}")</code></pre>
+# Attach the router to your subnet
+openstack router add subnet \
+  {student_id}-net-router \
+  {student_id}-net-subnet
+
+# Verify the router
+openstack router show {student_id}-net-router</code></pre>
 
       <h2>Summary</h2>
       <ul>
-        <li>Use <strong>network_manager</strong> to create networks, subnets, and routers.</li>
-        <li>CIDR notation is <strong>validated</strong> before any API call.</li>
+        <li>Use <code>openstack network</code>, <code>openstack subnet</code>, and <code>openstack router</code> commands.</li>
+        <li>Subnets require a valid <strong>CIDR range</strong> (e.g. <code>10.0.0.0/24</code>).</li>
         <li>Routers connect subnets and enable <strong>external connectivity</strong>.</li>
       </ul>
 

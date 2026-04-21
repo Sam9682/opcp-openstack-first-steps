@@ -37,17 +37,17 @@
 
       <h2>1. Exercice 1 — Créer un volume</h2>
       <p>
-        Utilisez <code>volume_manager</code> pour créer un volume de stockage bloc de 1 Go
+        Utilisez le CLI <code>openstack</code> pour créer un volume de stockage bloc de 1 Go
         nommé <code>{student_id}-storage-volume</code>.
       </p>
 
-      <pre><code class="language-python">vol = self.managers.get("volume_manager")
+      <pre><code class="language-bash"># Créer un volume de stockage bloc de 1 Go
+openstack volume create \
+  --size 1 \
+  {student_id}-storage-volume
 
-volume = vol.create(
-    name=f"{student_id}-storage-volume",
-    size=1,
-)
-print(f"Volume créé : {volume}")</code></pre>
+# Vérifier que le volume est disponible
+openstack volume show {student_id}-storage-volume -f value -c status</code></pre>
 
       <h2>2. Exercice 2 — Attacher un volume</h2>
       <p>
@@ -55,11 +55,13 @@ print(f"Volume créé : {volume}")</code></pre>
         passera de <code>available</code> à <code>in-use</code>.
       </p>
 
-      <pre><code class="language-python">result = vol.attach(
-    volume_name=f"{student_id}-storage-volume",
-    instance_name=f"{student_id}-compute-instance",
-)
-print(f"Volume attaché : {result}")</code></pre>
+      <pre><code class="language-bash"># Attacher le volume à une instance en cours d'exécution
+openstack server add volume \
+  {student_id}-compute-instance \
+  {student_id}-storage-volume
+
+# Vérifier que le statut du volume est passé à in-use
+openstack volume show {student_id}-storage-volume -f value -c status</code></pre>
 
       <h2>3. Exercice 3 — Gérer les snapshots</h2>
       <p>
@@ -67,15 +69,17 @@ print(f"Volume attaché : {result}")</code></pre>
         à un instant donné qui peuvent servir à créer de nouveaux volumes ou restaurer des données.
       </p>
 
-      <pre><code class="language-python">snapshot = vol.create_snapshot(
-    volume_name=f"{student_id}-storage-volume",
-    snapshot_name=f"{student_id}-storage-snapshot",
-)
-print(f"Snapshot créé : {snapshot}")</code></pre>
+      <pre><code class="language-bash"># Créer un snapshot du volume
+openstack volume snapshot create \
+  --volume {student_id}-storage-volume \
+  {student_id}-storage-snapshot
+
+# Vérifier que le snapshot a été créé
+openstack volume snapshot show {student_id}-storage-snapshot -f value -c status</code></pre>
 
       <h2>Résumé</h2>
       <ul>
-        <li>Utilisez <strong>volume_manager</strong> pour créer, attacher et snapshotter des volumes.</li>
+        <li>Utilisez les commandes <code>openstack volume</code> pour créer, attacher et snapshotter des volumes.</li>
         <li>Les volumes sont du <strong>stockage bloc persistant</strong> qui survit à la suppression d'instance.</li>
         <li>Attacher un volume change son statut de <code>available</code> à <code>in-use</code>.</li>
         <li>Les snapshots fournissent des <strong>sauvegardes à un instant donné</strong> des données du volume.</li>

@@ -61,52 +61,51 @@
 
       <h2>2. Exercice 1 — Créer une instance</h2>
       <p>
-        Utilisez <code>compute_manager</code> pour lancer votre première instance via l'API Nova.
+        Utilisez le CLI <code>openstack</code> pour lancer votre première instance via l'API Nova.
         Nommez-la <code>{student_id}-first-instance</code>.
       </p>
 
-      <pre><code class="language-python">from labs.templates.exercise_template import Exercise
+      <pre><code class="language-bash"># Créer une instance avec le CLI openstack
+openstack server create \
+  --flavor s1-2 \
+  --image "Ubuntu 24.04" \
+  --network Ext-Net \
+  --wait \
+  {student_id}-first-instance
 
-compute = self.managers.get("compute_manager")
-
-instance = compute.create(
-    name=f"{student_id}-first-instance",
-    flavor="s1-2",
-    image="Ubuntu 24.04",
-)
-print(f"Instance créée : {instance}")</code></pre>
+# Vérifier que l'instance est active
+openstack server show {student_id}-first-instance -f value -c status</code></pre>
 
       <h2>3. Exercice 2 — Créer un réseau</h2>
       <p>
-        Utilisez <code>network_manager</code> pour créer un réseau virtuel via l'API Neutron.
+        Utilisez le CLI <code>openstack</code> pour créer un réseau virtuel via l'API Neutron.
         Nommez-le <code>{student_id}-first-network</code>.
       </p>
 
-      <pre><code class="language-python">network_mgr = self.managers.get("network_manager")
+      <pre><code class="language-bash"># Créer un réseau virtuel
+openstack network create {student_id}-first-network
 
-network = network_mgr.create(
-    name=f"{student_id}-first-network",
-)
-print(f"Réseau créé : {network}")</code></pre>
+# Vérifier que le réseau a été créé
+openstack network show {student_id}-first-network -f value -c status</code></pre>
 
       <h2>4. Exercice 3 — Créer un volume</h2>
       <p>
-        Utilisez <code>volume_manager</code> pour créer un volume de stockage bloc de 1 Go via l'API Cinder.
+        Utilisez le CLI <code>openstack</code> pour créer un volume de stockage bloc de 1 Go via l'API Cinder.
         Nommez-le <code>{student_id}-first-volume</code>.
       </p>
 
-      <pre><code class="language-python">volume_mgr = self.managers.get("volume_manager")
+      <pre><code class="language-bash"># Créer un volume de stockage bloc de 1 Go
+openstack volume create \
+  --size 1 \
+  {student_id}-first-volume
 
-volume = volume_mgr.create(
-    name=f"{student_id}-first-volume",
-    size=1,
-)
-print(f"Volume créé : {volume}")</code></pre>
+# Vérifier que le volume est disponible
+openstack volume show {student_id}-first-volume -f value -c status</code></pre>
 
       <h2>Résumé</h2>
       <ul>
         <li>OpenStack est composé de services indépendants (Nova, Neutron, Cinder, Keystone, Glance).</li>
-        <li>Chaque exercice utilise un <strong>manager</strong> fourni par le framework de lab.</li>
+        <li>Chaque exercice utilise le CLI <code>openstack</code> pour interagir directement avec les API.</li>
         <li>Les ressources sont nommées avec votre préfixe <code>student_id</code> pour l'isolation.</li>
       </ul>
 

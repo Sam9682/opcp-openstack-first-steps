@@ -65,9 +65,22 @@ pip3 --version
       <p>If pip is missing, install it with:</p>
       <pre><code class="language-bash">python3 -m ensurepip --upgrade</code></pre>
 
-      <h2>3. OpenStack SDK &amp; Python dependencies</h2>
+      <h2>3. OpenStack CLI client</h2>
       <p>
-        The labs rely on the following Python packages (defined in
+        All exercises use the <code>openstack</code> command-line client.
+        Install it via pip:
+      </p>
+      <pre><code class="language-bash"># Install the OpenStack CLI client
+pip3 install python-openstackclient
+
+# Verify the installation
+openstack --version
+# Expected output: openstack 7.x.x (or later)</code></pre>
+
+      <h2>4. OpenStack SDK &amp; Python dependencies (optional)</h2>
+      <p>
+        If you also want to run the automated assessment engine, install the
+        following Python packages (defined in
         <code>labs/base/requirements.txt</code>):
       </p>
       <ul>
@@ -191,36 +204,18 @@ domain_name: Default</code></pre>
       </p>
 
       <h2>Quick validation script</h2>
-      <p>Run this script to verify everything is in place:</p>
-      <pre><code class="language-python">"""Validate lab prerequisites."""
-import shutil
-import sys
+      <p>Run these commands to verify everything is in place:</p>
+      <pre><code class="language-bash"># Check Python version
+python3 --version
 
-checks = {
-    "Python 3.9+": sys.version_info >= (3, 9),
-    "pip available": shutil.which("pip3") is not None or shutil.which("pip") is not None,
-}
+# Check pip is available
+pip3 --version
 
-try:
-    import openstack  # noqa: F401
-    checks["openstacksdk installed"] = True
-except ImportError:
-    checks["openstacksdk installed"] = False
+# Check the OpenStack CLI is installed
+openstack --version
 
-try:
-    import yaml  # noqa: F401
-    checks["PyYAML installed"] = True
-except ImportError:
-    checks["PyYAML installed"] = False
-
-all_ok = True
-for name, ok in checks.items():
-    status = "OK" if ok else "MISSING"
-    print(f"  [{status}] {name}")
-    if not ok:
-        all_ok = False
-
-sys.exit(0 if all_ok else 1)</code></pre>
+# Test authentication
+openstack token issue</code></pre>
 
       <button class="mark-complete-btn" type="button" aria-label="Mark this lesson as complete">
         ✓ Mark as Complete
