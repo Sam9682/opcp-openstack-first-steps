@@ -31,8 +31,8 @@
 
       <p>
         Before diving into individual services, let's review the foundational
-        concepts of OpenStack and run through three introductory exercises:
-        creating an instance, a network, and a volume.
+        concepts of OpenStack and discover the different ways to interact with
+        the platform to create networks, instances, volumes, and more.
       </p>
 
       <h2>1. Core Concepts</h2>
@@ -59,54 +59,190 @@
         Clients discover service URLs by querying the catalog after authentication.
       </p>
 
-      <h2>2. Exercise 1 — Create an Instance</h2>
+      <h2>2. Accessing the OpenStack Environment</h2>
       <p>
-        Use the <code>openstack</code> CLI to launch your first compute instance via the Nova API.
-        Name it <code>{student_id}-first-instance</code>.
+        OpenStack provides several ways to manage your infrastructure. Depending
+        on your use case — quick manual operations, scripting, or full
+        infrastructure-as-code — you can choose the approach that fits best.
       </p>
 
-      <pre><code class="language-bash"># Create a compute instance with the openstack CLI
-openstack server create \
-  --flavor s1-2 \
-  --image "Ubuntu 24.04" \
-  --network Ext-Net \
-  --wait \
-  {student_id}-first-instance
-
-# Verify the instance is active
-openstack server show {student_id}-first-instance -f value -c status</code></pre>
-
-      <h2>3. Exercise 2 — Create a Network</h2>
+      <h3>Option A — REST API (cURL / HTTP)</h3>
       <p>
-        Use the <code>openstack</code> CLI to create a virtual network via the Neutron API.
-        Name it <code>{student_id}-first-network</code>.
+        Every OpenStack service exposes a standard REST API. You can interact
+        with it directly using <code>curl</code> or any HTTP client. This is the
+        lowest-level approach and gives you full control over every request.
       </p>
+      <pre><code class="language-bash"># 1. Authenticate and obtain a token
+TOKEN=$(curl -si -X POST "$OS_AUTH_URL/auth/tokens" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "auth": {
+      "identity": {
+        "methods": ["application_credential"],
+        "application_credential": {
+          "id": "'"$OS_APPLICATION_CREDENTIAL_ID"'",
+          "secret": "'"$OS_APPLICATION_CREDENTIAL_SECRET"'"
+        }
+      }
+    }
+  }' | grep -i "X-Subject-Token" | awk '{print $2}' | tr -d '\r')
 
-      <pre><code class="language-bash"># Create a virtual network
-openstack network create {student_id}-first-network
+# 2. List servers using the Compute API
+curl -s -H "X-Auth-Token: $TOKEN" \
+  "$NOVA_ENDPOINT/servers" | python3 -m json.tool</code></pre>
 
-# Verify the network was created
-openstack network show {student_id}-first-network -f value -c status</code></pre>
-
-      <h2>4. Exercise 3 — Create a Volume</h2>
+      <h3>Option B — OpenStack CLI</h3>
       <p>
-        Use the <code>openstack</code> CLI to create a 1 GB block storage volume via the Cinder API.
-        Name it <code>{student_id}-first-volume</code>.
+        The <code>openstack</code> command-line client wraps the REST APIs into
+        simple, human-friendly commands. It is the recommended approach for
+        day-to-day operations and is used throughout this training.
       </p>
+      <pre><code class="language-bash"># Install the CLI
+pip3 install python-openstackclient
 
-      <pre><code class="language-bash"># Create a 1 GB block storage volume
-openstack volume create \
-  --size 1 \
-  {student_id}-first-volume
+# Examples
+openstack server list
+openstack network create my-network
+openstack volume create --size 10 my-volume</code></pre>
 
-# Verify the volume is available
-openstack volume show {student_id}-first-volume -f value -c status</code></pre>
+      <h3>Option C — OpenStack SDK (Python)</h3>
+      <p>
+        The <a href="https://docs.openstack.org/openstacksdk/" target="_blank" rel="noopener">openstacksdk</a>
+        Python library provides a high-level, Pythonic interface to all OpenStack
+        services. It is ideal for writing custom scripts and automation.
+      </p>
+      <pre><code class="language-bash"># Install the SDK
+pip3 install openstacksdk</code></pre>
+      <pre><code class="language-python">import openstack
+
+# Connect using environment variables (OS_*)
+conn = openstack.connect()
+
+# Create a network
+network = conn.network.create_network(name="my-network")
+print(f"Network created: {network.id}")
+
+# Create a server
+server = conn.compute.create_server(
+    name="my-instance",
+    flavor_id="s1-2",
+    image_id="...",
+    networks=[{"uuid": network.id}],
+)
+conn.compute.wait_for_server(server)
+print(f"Server active: {server.name}")</code></pre>
+
+      <h3>Option D — Terraform</h3>
+      <p>
+        <a href="https://registry.terraform.io/providers/terraform-provider-openstack/openstack/latest/docs" target="_blank" rel="noopener">Terraform</a>
+        lets you describe your entire infrastructure as code in declarative
+        <code>.tf</code> files. It handles dependency ordering, state tracking,
+        and plan/apply workflows.
+      </p>
+      <pre><code class="language-bash"># Initialize and apply a Terraform configuration
+terraform init
+terraform plan
+terraform apply</code></pre>
+      <p>Example <code>main.tf</code>:</p>
+      <pre><code class="language-json"># Configure the OpenStack provider
+terraform {
+  required_providers {
+    openstack = {
+      source = "terraform-provider-openstack/openstack"
+    }
+  }
+}
+
+resource "openstack_networking_network_v2" "my_network" {
+  name           = "my-network"
+  admin_state_up = true
+}
+
+resource "openstack_compute_instance_v2" "my_instance" {
+  name        = "my-instance"
+  flavor_name = "s1-2"
+  image_name  = "Ubuntu 24.04"
+
+  network {
+    uuid = openstack_networking_network_v2.my_network.id
+  }
+}</code></pre>
+
+      <h3>Option E — Ansible</h3>
+      <p>
+        <a href="https://docs.ansible.com/ansible/latest/collections/openstack/cloud/index.html" target="_blank" rel="noopener">Ansible</a>
+        uses YAML playbooks to automate OpenStack operations. It is well suited
+        for configuration management and orchestrating multi-step deployments.
+      </p>
+      <pre><code class="language-bash"># Install the Ansible OpenStack collection
+ansible-galaxy collection install openstack.cloud</code></pre>
+      <p>Example playbook:</p>
+      <pre><code class="language-yaml">- name: Provision OpenStack resources
+  hosts: localhost
+  tasks:
+    - name: Create a network
+      openstack.cloud.network:
+        name: my-network
+        state: present
+
+    - name: Create an instance
+      openstack.cloud.server:
+        name: my-instance
+        flavor: s1-2
+        image: "Ubuntu 24.04"
+        network: my-network
+        state: present
+        wait: true</code></pre>
+
+      <h2>3. Which Approach to Choose?</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Approach</th>
+            <th>Best for</th>
+            <th>Learning curve</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>REST API (cURL)</td>
+            <td>Debugging, understanding the protocol</td>
+            <td>High</td>
+          </tr>
+          <tr>
+            <td>OpenStack CLI</td>
+            <td>Day-to-day operations, quick tasks</td>
+            <td>Low</td>
+          </tr>
+          <tr>
+            <td>OpenStack SDK</td>
+            <td>Custom Python scripts, automation</td>
+            <td>Medium</td>
+          </tr>
+          <tr>
+            <td>Terraform</td>
+            <td>Infrastructure as Code, reproducible environments</td>
+            <td>Medium</td>
+          </tr>
+          <tr>
+            <td>Ansible</td>
+            <td>Configuration management, orchestration</td>
+            <td>Medium</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        In this training we primarily use the <strong>OpenStack CLI</strong> for
+        its simplicity, but feel free to reproduce the exercises with any of the
+        approaches above.
+      </p>
 
       <h2>Summary</h2>
       <ul>
         <li>OpenStack is composed of independent services (Nova, Neutron, Cinder, Keystone, Glance).</li>
-        <li>Each exercise uses the <code>openstack</code> CLI to interact directly with the APIs.</li>
-        <li>Resources are named with your <code>student_id</code> prefix for isolation.</li>
+        <li>You can access the infrastructure via the <strong>REST API</strong>, the <strong>OpenStack CLI</strong>, the <strong>Python SDK</strong>, <strong>Terraform</strong>, or <strong>Ansible</strong>.</li>
+        <li>The CLI is the simplest starting point; Terraform and Ansible are better suited for infrastructure as code.</li>
+        <li>All approaches authenticate using the same <code>OS_*</code> environment variables or application credentials.</li>
       </ul>
 
       <button class="mark-complete-btn" type="button" aria-label="Mark this lesson as complete">

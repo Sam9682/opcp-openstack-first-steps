@@ -153,6 +153,20 @@ curl -fsSL https://raw.githubusercontent.com/ovh/shai/main/install.sh | sh</code
       <pre><code class="language-bash"># Add to your PATH if needed
 export PATH="$HOME/.local/bin:$PATH"</code></pre>
 
+      <h3>Installing VS Code on Windows</h3>
+      <p>
+        If you don't have VS Code installed yet, follow these steps:
+      </p>
+      <ol>
+        <li>Download the installer from <a href="https://code.visualstudio.com/download" target="_blank" rel="noopener">code.visualstudio.com</a>.</li>
+        <li>Run the <code>.exe</code> installer and follow the wizard.</li>
+        <li>Make sure to check <strong>"Add to PATH"</strong> during installation so you can use the <code>code</code> command from a terminal.</li>
+      </ol>
+      <p>You can also install it via <code>winget</code> from a PowerShell terminal:</p>
+      <pre><code class="language-bash">winget install -e --id Microsoft.VisualStudioCode</code></pre>
+      <p>Verify the installation:</p>
+      <pre><code class="language-bash">code --version</code></pre>
+
       <h3>shai-dev — VS Code Extension (alternative)</h3>
       <p>
         If you prefer using shai directly inside VS Code rather than in the
