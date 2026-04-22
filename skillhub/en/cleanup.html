@@ -32,7 +32,7 @@
       <p>
         Now that you have completed all the labs, it is time to clean up every
         OpenStack resource created during the exercises. All lab resources follow
-        the naming convention <code>{student_id}-*</code>, which makes them easy
+        the naming convention <code>${STUDENT_ID}-*</code>, which makes them easy
         to identify and delete.
       </p>
 
@@ -47,20 +47,20 @@
           <tr><th>Module</th><th>Resource type</th><th>Name pattern</th></tr>
         </thead>
         <tbody>
-          <tr><td>First Steps</td><td>Instance</td><td><code>{student_id}-first-instance</code></td></tr>
-          <tr><td>First Steps</td><td>Network</td><td><code>{student_id}-first-network</code></td></tr>
-          <tr><td>First Steps</td><td>Volume</td><td><code>{student_id}-first-volume</code></td></tr>
-          <tr><td>Compute</td><td>Instance</td><td><code>{student_id}-compute-instance</code></td></tr>
-          <tr><td>Compute</td><td>Snapshot</td><td><code>{student_id}-compute-snapshot</code></td></tr>
-          <tr><td>Storage</td><td>Volume</td><td><code>{student_id}-storage-volume</code></td></tr>
-          <tr><td>Storage</td><td>Snapshot</td><td><code>{student_id}-storage-snapshot</code></td></tr>
-          <tr><td>Security Groups</td><td>Security Group</td><td><code>{student_id}-sg-web</code></td></tr>
-          <tr><td>LACP</td><td>Network</td><td><code>{student_id}-lacp-network</code></td></tr>
-          <tr><td>LACP</td><td>Ports</td><td><code>{student_id}-lacp-port-1</code>, <code>{student_id}-lacp-port-2</code></td></tr>
-          <tr><td>LACP</td><td>Bond</td><td><code>{student_id}-lacp-bond</code></td></tr>
-          <tr><td>LACP</td><td>Instance</td><td><code>{student_id}-lacp-instance</code></td></tr>
-          <tr><td>Setup</td><td>Networks</td><td><code>{student_id}-compute-network</code>, <code>{student_id}-storage-network</code>, <code>{student_id}-sg-network</code></td></tr>
-          <tr><td>Setup</td><td>Security Group</td><td><code>{student_id}-default-sg</code></td></tr>
+          <tr><td>First Steps</td><td>Instance</td><td><code>${STUDENT_ID}-first-instance</code></td></tr>
+          <tr><td>First Steps</td><td>Network</td><td><code>${STUDENT_ID}-first-network</code></td></tr>
+          <tr><td>First Steps</td><td>Volume</td><td><code>${STUDENT_ID}-first-volume</code></td></tr>
+          <tr><td>Compute</td><td>Instance</td><td><code>${STUDENT_ID}-compute-instance</code></td></tr>
+          <tr><td>Compute</td><td>Snapshot</td><td><code>${STUDENT_ID}-compute-snapshot</code></td></tr>
+          <tr><td>Storage</td><td>Volume</td><td><code>${STUDENT_ID}-storage-volume</code></td></tr>
+          <tr><td>Storage</td><td>Snapshot</td><td><code>${STUDENT_ID}-storage-snapshot</code></td></tr>
+          <tr><td>Security Groups</td><td>Security Group</td><td><code>${STUDENT_ID}-sg-web</code></td></tr>
+          <tr><td>LACP</td><td>Network</td><td><code>${STUDENT_ID}-lacp-network</code></td></tr>
+          <tr><td>LACP</td><td>Ports</td><td><code>${STUDENT_ID}-lacp-port-1</code>, <code>${STUDENT_ID}-lacp-port-2</code></td></tr>
+          <tr><td>LACP</td><td>Bond</td><td><code>${STUDENT_ID}-lacp-bond</code></td></tr>
+          <tr><td>LACP</td><td>Instance</td><td><code>${STUDENT_ID}-lacp-instance</code></td></tr>
+          <tr><td>Setup</td><td>Networks</td><td><code>${STUDENT_ID}-compute-network</code>, <code>${STUDENT_ID}-storage-network</code>, <code>${STUDENT_ID}-sg-network</code></td></tr>
+          <tr><td>Setup</td><td>Security Group</td><td><code>${STUDENT_ID}-default-sg</code></td></tr>
         </tbody>
       </table>
 
@@ -82,7 +82,7 @@
       <h2>3. Automated Cleanup</h2>
       <p>
         The lab framework provides a cleanup script that deletes all resources
-        matching the <code>{student_id}-*</code> prefix in the correct dependency
+        matching the <code>${STUDENT_ID}-*</code> prefix in the correct dependency
         order:
       </p>
 
@@ -101,39 +101,39 @@ python -m labs.scripts.cleanup_lab --student-id your-student-id</code></pre>
       </p>
 
       <pre><code class="language-bash"># 1. Detach volumes from instances
-openstack server remove volume {student_id}-compute-instance {student_id}-storage-volume
+openstack server remove volume ${STUDENT_ID}-compute-instance ${STUDENT_ID}-storage-volume
 
 # 2. Delete snapshots (instance and volume)
-openstack image delete {student_id}-compute-snapshot
-openstack volume snapshot delete {student_id}-storage-snapshot
+openstack image delete ${STUDENT_ID}-compute-snapshot
+openstack volume snapshot delete ${STUDENT_ID}-storage-snapshot
 
 # 3. Delete instances
-openstack server delete {student_id}-first-instance
-openstack server delete {student_id}-compute-instance
-openstack server delete {student_id}-lacp-instance
+openstack server delete ${STUDENT_ID}-first-instance
+openstack server delete ${STUDENT_ID}-compute-instance
+openstack server delete ${STUDENT_ID}-lacp-instance
 
 # 4. Delete trunks and ports
-openstack network trunk delete {student_id}-lacp-bond
-openstack port delete {student_id}-lacp-port-1
-openstack port delete {student_id}-lacp-port-2
+openstack network trunk delete ${STUDENT_ID}-lacp-bond
+openstack port delete ${STUDENT_ID}-lacp-port-1
+openstack port delete ${STUDENT_ID}-lacp-port-2
 
 # 5. Delete volumes
-openstack volume delete {student_id}-first-volume
-openstack volume delete {student_id}-storage-volume
+openstack volume delete ${STUDENT_ID}-first-volume
+openstack volume delete ${STUDENT_ID}-storage-volume
 
 # 6. Delete security groups
-openstack security group delete {student_id}-sg-web
-openstack security group delete {student_id}-default-sg
+openstack security group delete ${STUDENT_ID}-sg-web
+openstack security group delete ${STUDENT_ID}-default-sg
 
 # 7. Delete routers (remove interfaces first) and networks
-openstack router remove subnet {student_id}-net-router {student_id}-net-subnet
-openstack router delete {student_id}-net-router
-openstack network delete {student_id}-first-network
-openstack network delete {student_id}-net-network
-openstack network delete {student_id}-lacp-network
-openstack network delete {student_id}-compute-network
-openstack network delete {student_id}-storage-network
-openstack network delete {student_id}-sg-network</code></pre>
+openstack router remove subnet ${STUDENT_ID}-net-router ${STUDENT_ID}-net-subnet
+openstack router delete ${STUDENT_ID}-net-router
+openstack network delete ${STUDENT_ID}-first-network
+openstack network delete ${STUDENT_ID}-net-network
+openstack network delete ${STUDENT_ID}-lacp-network
+openstack network delete ${STUDENT_ID}-compute-network
+openstack network delete ${STUDENT_ID}-storage-network
+openstack network delete ${STUDENT_ID}-sg-network</code></pre>
 
       <h2>5. Verify Cleanup</h2>
       <p>

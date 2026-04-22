@@ -5,7 +5,7 @@ from __future__ import annotations
 
 def solve(managers: dict, student_id: str, config: dict) -> dict:
     compute = managers["compute_manager"]
-    name = f"{student_id}-compute-instance"
+    name = f"${STUDENT_ID}-compute-instance"
     instance = compute.create(
         name=name,
         flavor=config.get("default_flavor", "m1.small"),

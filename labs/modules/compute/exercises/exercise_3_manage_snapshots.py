@@ -15,20 +15,20 @@ class ManageSnapshotsExercise(Exercise):
     @property
     def instructions(self) -> list[str]:
         return [
-            "Use compute_manager to create a snapshot of '{student_id}-compute-instance'.",
-            "Name the snapshot '{student_id}-compute-snapshot'.",
+            "Use compute_manager to create a snapshot of '${STUDENT_ID}-compute-instance'.",
+            "Name the snapshot '${STUDENT_ID}-compute-snapshot'.",
         ]
 
     @property
     def expected_outcomes(self) -> list[dict]:
         return [
-            {"type": "instance", "name": "{student_id}-compute-snapshot", "status": "ACTIVE"}
+            {"type": "instance", "name": "${STUDENT_ID}-compute-snapshot", "status": "ACTIVE"}
         ]
 
     def run(self, **kwargs) -> dict:
         student_id = kwargs.get("student_id", "")
-        instance_name = f"{student_id}-compute-instance"
-        snapshot_name = f"{student_id}-compute-snapshot"
+        instance_name = f"${STUDENT_ID}-compute-instance"
+        snapshot_name = f"${STUDENT_ID}-compute-snapshot"
         compute = self.managers.get("compute_manager")
         if compute is None:
             return {"error": self._handle_openstack_error(

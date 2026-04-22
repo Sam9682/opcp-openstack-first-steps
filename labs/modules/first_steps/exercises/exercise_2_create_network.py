@@ -16,7 +16,7 @@ class CreateNetworkExercise(Exercise):
     def instructions(self) -> list[str]:
         return [
             "Use network_manager to create a network.",
-            "Name it '{student_id}-first-network'.",
+            "Name it '${STUDENT_ID}-first-network'.",
         ]
 
     @property
@@ -24,14 +24,14 @@ class CreateNetworkExercise(Exercise):
         return [
             {
                 "type": "network",
-                "name": "{student_id}-first-network",
+                "name": "${STUDENT_ID}-first-network",
                 "status": "ACTIVE",
             }
         ]
 
     def run(self, **kwargs) -> dict:
         student_id = kwargs.get("student_id", "")
-        name = f"{student_id}-first-network"
+        name = f"${STUDENT_ID}-first-network"
         network_mgr = self.managers.get("network_manager")
         if network_mgr is None:
             return {"error": self._handle_openstack_error(

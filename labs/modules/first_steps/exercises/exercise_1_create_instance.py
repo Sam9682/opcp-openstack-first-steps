@@ -16,7 +16,7 @@ class CreateInstanceExercise(Exercise):
     def instructions(self) -> list[str]:
         return [
             "Use compute_manager to create an instance.",
-            "Name it '{student_id}-first-instance'.",
+            "Name it '${STUDENT_ID}-first-instance'.",
             "Use the default flavor and image from config.",
         ]
 
@@ -25,14 +25,14 @@ class CreateInstanceExercise(Exercise):
         return [
             {
                 "type": "instance",
-                "name": "{student_id}-first-instance",
+                "name": "${STUDENT_ID}-first-instance",
                 "status": "ACTIVE",
             }
         ]
 
     def run(self, **kwargs) -> dict:
         student_id = kwargs.get("student_id", "")
-        name = f"{student_id}-first-instance"
+        name = f"${STUDENT_ID}-first-instance"
         compute = self.managers.get("compute_manager")
         if compute is None:
             return {"error": self._handle_openstack_error(

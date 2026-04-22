@@ -15,18 +15,18 @@ class CreateBondExercise(Exercise):
     @property
     def instructions(self) -> list[str]:
         return [
-            "Use network_manager to create a network named '{student_id}-lacp-network'.",
-            "Create two ports: '{student_id}-lacp-port-1' and '{student_id}-lacp-port-2'.",
-            "Create a bond named '{student_id}-lacp-bond' with bond_mode '802.3ad'.",
+            "Use network_manager to create a network named '${STUDENT_ID}-lacp-network'.",
+            "Create two ports: '${STUDENT_ID}-lacp-port-1' and '${STUDENT_ID}-lacp-port-2'.",
+            "Create a bond named '${STUDENT_ID}-lacp-bond' with bond_mode '802.3ad'.",
         ]
 
     @property
     def expected_outcomes(self) -> list[dict]:
         return [
-            {"type": "network", "name": "{student_id}-lacp-network", "status": "ACTIVE"},
-            {"type": "port", "name": "{student_id}-lacp-port-1", "status": "ACTIVE"},
-            {"type": "port", "name": "{student_id}-lacp-port-2", "status": "ACTIVE"},
-            {"type": "bond", "name": "{student_id}-lacp-bond", "bond_mode": "802.3ad"},
+            {"type": "network", "name": "${STUDENT_ID}-lacp-network", "status": "ACTIVE"},
+            {"type": "port", "name": "${STUDENT_ID}-lacp-port-1", "status": "ACTIVE"},
+            {"type": "port", "name": "${STUDENT_ID}-lacp-port-2", "status": "ACTIVE"},
+            {"type": "bond", "name": "${STUDENT_ID}-lacp-bond", "bond_mode": "802.3ad"},
         ]
 
     def run(self, **kwargs) -> dict:
@@ -37,15 +37,15 @@ class CreateBondExercise(Exercise):
                 "create bond", "network_manager not available"
             )}
         try:
-            network_name = f"{student_id}-lacp-network"
+            network_name = f"${STUDENT_ID}-lacp-network"
             network = net.create(name=network_name)
 
-            port1_name = f"{student_id}-lacp-port-1"
-            port2_name = f"{student_id}-lacp-port-2"
+            port1_name = f"${STUDENT_ID}-lacp-port-1"
+            port2_name = f"${STUDENT_ID}-lacp-port-2"
             port1 = net.create_port(network_name=network_name, name=port1_name)
             port2 = net.create_port(network_name=network_name, name=port2_name)
 
-            bond_name = f"{student_id}-lacp-bond"
+            bond_name = f"${STUDENT_ID}-lacp-bond"
             bond = net.create_bond(
                 name=bond_name,
                 port_names=[port1_name, port2_name],

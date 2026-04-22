@@ -15,7 +15,7 @@ class ConfigureLacpExercise(Exercise):
     @property
     def instructions(self) -> list[str]:
         return [
-            "Use network_manager to update the bond '{student_id}-lacp-bond'.",
+            "Use network_manager to update the bond '${STUDENT_ID}-lacp-bond'.",
             "Set lacp_rate to 'fast' (1-second interval).",
             "Set transmit_hash_policy to 'layer3+4' (IP + port hashing).",
             "Set lacp_activity to 'active' (send LACPDU frames).",
@@ -26,7 +26,7 @@ class ConfigureLacpExercise(Exercise):
         return [
             {
                 "type": "bond",
-                "name": "{student_id}-lacp-bond",
+                "name": "${STUDENT_ID}-lacp-bond",
                 "lacp_rate": "fast",
                 "transmit_hash_policy": "layer3+4",
                 "lacp_activity": "active",
@@ -41,7 +41,7 @@ class ConfigureLacpExercise(Exercise):
                 "configure lacp", "network_manager not available"
             )}
         try:
-            bond_name = f"{student_id}-lacp-bond"
+            bond_name = f"${STUDENT_ID}-lacp-bond"
             result = net.update_bond(
                 bond_name=bond_name,
                 lacp_rate="fast",

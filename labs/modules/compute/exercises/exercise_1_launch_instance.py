@@ -16,19 +16,19 @@ class LaunchInstanceExercise(Exercise):
     def instructions(self) -> list[str]:
         return [
             "Use compute_manager to launch an instance.",
-            "Name it '{student_id}-compute-instance'.",
+            "Name it '${STUDENT_ID}-compute-instance'.",
             "Specify the flavor and image from the config.",
         ]
 
     @property
     def expected_outcomes(self) -> list[dict]:
         return [
-            {"type": "instance", "name": "{student_id}-compute-instance", "status": "ACTIVE"}
+            {"type": "instance", "name": "${STUDENT_ID}-compute-instance", "status": "ACTIVE"}
         ]
 
     def run(self, **kwargs) -> dict:
         student_id = kwargs.get("student_id", "")
-        name = f"{student_id}-compute-instance"
+        name = f"${STUDENT_ID}-compute-instance"
         compute = self.managers.get("compute_manager")
         if compute is None:
             return {"error": self._handle_openstack_error(

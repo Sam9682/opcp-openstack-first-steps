@@ -15,20 +15,20 @@ class ManageVolumeSnapshotsExercise(Exercise):
     @property
     def instructions(self) -> list[str]:
         return [
-            "Use volume_manager to create a snapshot of '{student_id}-storage-volume'.",
-            "Name the snapshot '{student_id}-storage-snapshot'.",
+            "Use volume_manager to create a snapshot of '${STUDENT_ID}-storage-volume'.",
+            "Name the snapshot '${STUDENT_ID}-storage-snapshot'.",
         ]
 
     @property
     def expected_outcomes(self) -> list[dict]:
         return [
-            {"type": "volume", "name": "{student_id}-storage-snapshot", "status": "available"}
+            {"type": "volume", "name": "${STUDENT_ID}-storage-snapshot", "status": "available"}
         ]
 
     def run(self, **kwargs) -> dict:
         student_id = kwargs.get("student_id", "")
-        volume_name = f"{student_id}-storage-volume"
-        snapshot_name = f"{student_id}-storage-snapshot"
+        volume_name = f"${STUDENT_ID}-storage-volume"
+        snapshot_name = f"${STUDENT_ID}-storage-snapshot"
         vol = self.managers.get("volume_manager")
         if vol is None:
             return {"error": self._handle_openstack_error(

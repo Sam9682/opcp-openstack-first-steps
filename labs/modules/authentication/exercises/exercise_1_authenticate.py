@@ -22,7 +22,7 @@ class AuthenticateExercise(Exercise):
     @property
     def expected_outcomes(self) -> list[dict]:
         return [
-            {"type": "token", "name": "{student_id}-auth-token", "valid": True}
+            {"type": "token", "name": "${STUDENT_ID}-auth-token", "valid": True}
         ]
 
     def run(self, **kwargs) -> dict:

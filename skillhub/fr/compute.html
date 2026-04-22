@@ -37,7 +37,7 @@
       <h2>1. Exercice 1 — Lancer une instance</h2>
       <p>
         Utilisez le CLI <code>openstack</code> pour lancer une instance avec un flavor
-        et une image spécifiés. Nommez-la <code>{student_id}-compute-instance</code>.
+        et une image spécifiés. Nommez-la <code>${STUDENT_ID}-compute-instance</code>.
       </p>
 
       <pre><code class="language-bash"># Lancer une instance de calcul
@@ -46,10 +46,10 @@ openstack server create \
   --image "Ubuntu 24.04 BMPOD" \
   --network Ext-Net \
   --wait \
-  {student_id}-compute-instance
+  ${STUDENT_ID}-compute-instance
 
 # Vérifier que l'instance est active
-openstack server show {student_id}-compute-instance -f value -c status</code></pre>
+openstack server show ${STUDENT_ID}-compute-instance -f value -c status</code></pre>
 
       <h2>2. Exercice 2 — Redimensionner une instance</h2>
       <p>
@@ -58,13 +58,13 @@ openstack server show {student_id}-compute-instance -f value -c status</code></p
       </p>
 
       <pre><code class="language-bash"># Redimensionner l'instance vers un flavor plus grand
-openstack server resize --flavor s1-4 {student_id}-compute-instance
+openstack server resize --flavor s1-4 ${STUDENT_ID}-compute-instance
 
 # Attendre la fin du redimensionnement, puis confirmer
-openstack server resize confirm {student_id}-compute-instance
+openstack server resize confirm ${STUDENT_ID}-compute-instance
 
 # Vérifier le nouveau flavor
-openstack server show {student_id}-compute-instance -f value -c flavor</code></pre>
+openstack server show ${STUDENT_ID}-compute-instance -f value -c flavor</code></pre>
 
       <h2>3. Exercice 3 — Gérer les snapshots</h2>
       <p>
@@ -74,11 +74,11 @@ openstack server show {student_id}-compute-instance -f value -c flavor</code></p
 
       <pre><code class="language-bash"># Créer un snapshot de l'instance
 openstack server image create \
-  --name {student_id}-compute-snapshot \
-  {student_id}-compute-instance
+  --name ${STUDENT_ID}-compute-snapshot \
+  ${STUDENT_ID}-compute-instance
 
 # Vérifier que le snapshot a été créé
-openstack image show {student_id}-compute-snapshot -f value -c status</code></pre>
+openstack image show ${STUDENT_ID}-compute-snapshot -f value -c status</code></pre>
 
       <h2>Résumé</h2>
       <ul>

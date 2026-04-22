@@ -5,8 +5,8 @@ from __future__ import annotations
 
 def solve(managers: dict, student_id: str) -> dict:
     compute = managers["compute_manager"]
-    instance_name = f"{student_id}-compute-instance"
-    snapshot_name = f"{student_id}-compute-snapshot"
+    instance_name = f"${STUDENT_ID}-compute-instance"
+    snapshot_name = f"${STUDENT_ID}-compute-snapshot"
     snapshot = compute.create_snapshot(
         instance_name=instance_name, snapshot_name=snapshot_name
     )

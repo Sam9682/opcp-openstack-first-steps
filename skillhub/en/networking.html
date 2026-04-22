@@ -38,14 +38,14 @@
       <h2>1. Exercise 1 — Create a Network</h2>
       <p>
         Use the <code>openstack</code> CLI to create a virtual network named
-        <code>{student_id}-net-network</code>.
+        <code>${STUDENT_ID}-net-network</code>.
       </p>
 
       <pre><code class="language-bash"># Create a virtual network
-openstack network create {student_id}-net-network
+openstack network create ${STUDENT_ID}-net-network
 
 # Verify the network was created
-openstack network show {student_id}-net-network -f value -c status</code></pre>
+openstack network show ${STUDENT_ID}-net-network -f value -c status</code></pre>
 
       <h2>2. Exercise 2 — Create a Subnet</h2>
       <p>
@@ -55,12 +55,12 @@ openstack network show {student_id}-net-network -f value -c status</code></pre>
 
       <pre><code class="language-bash"># Create a subnet with CIDR 10.0.0.0/24
 openstack subnet create \
-  --network {student_id}-net-network \
+  --network ${STUDENT_ID}-net-network \
   --subnet-range 10.0.0.0/24 \
-  {student_id}-net-subnet
+  ${STUDENT_ID}-net-subnet
 
 # Verify the subnet was created
-openstack subnet show {student_id}-net-subnet</code></pre>
+openstack subnet show ${STUDENT_ID}-net-subnet</code></pre>
 
       <h2>3. VLAN-backed Networks and Ports</h2>
       <p>
@@ -75,22 +75,22 @@ openstack network create \
   --provider-network-type vlan \
   --provider-physical-network physnet1 \
   --provider-segment 100 \
-  {student_id}-vlan100-network
+  ${STUDENT_ID}-vlan100-network
 
 # Create a subnet on the VLAN network
 openstack subnet create \
-  --network {student_id}-vlan100-network \
+  --network ${STUDENT_ID}-vlan100-network \
   --subnet-range 10.100.0.0/24 \
-  {student_id}-vlan100-subnet</code></pre>
+  ${STUDENT_ID}-vlan100-subnet</code></pre>
 
       <h3>Create a port on a specific VLAN network</h3>
       <pre><code class="language-bash"># Create a port bound to the VLAN network
 openstack port create \
-  --network {student_id}-vlan100-network \
-  {student_id}-vlan100-port
+  --network ${STUDENT_ID}-vlan100-network \
+  ${STUDENT_ID}-vlan100-port
 
 # Verify the port details (VLAN binding)
-openstack port show {student_id}-vlan100-port</code></pre>
+openstack port show ${STUDENT_ID}-vlan100-port</code></pre>
 
       <h2>4. Baremetal VLAN Assignment</h2>
       <p>
@@ -104,27 +104,27 @@ openstack network create \
   --provider-network-type vlan \
   --provider-physical-network physnet1 \
   --provider-segment 200 \
-  {student_id}-bm-vlan200
+  ${STUDENT_ID}-bm-vlan200
 
 # Create a subnet
 openstack subnet create \
-  --network {student_id}-bm-vlan200 \
+  --network ${STUDENT_ID}-bm-vlan200 \
   --subnet-range 10.200.0.0/24 \
-  {student_id}-bm-vlan200-subnet
+  ${STUDENT_ID}-bm-vlan200-subnet
 
 # Create a port for the baremetal node
 openstack port create \
-  --network {student_id}-bm-vlan200 \
+  --network ${STUDENT_ID}-bm-vlan200 \
   --vnic-type baremetal \
-  {student_id}-bm-port
+  ${STUDENT_ID}-bm-port
 
 # Deploy a baremetal instance using this port
 openstack server create \
   --flavor baremetal \
   --image "Ubuntu 22.04" \
-  --port {student_id}-bm-port \
+  --port ${STUDENT_ID}-bm-port \
   --wait \
-  {student_id}-bm-instance</code></pre>
+  ${STUDENT_ID}-bm-instance</code></pre>
 
       <h2>5. Trunk Ports</h2>
       <p>
@@ -135,31 +135,31 @@ openstack server create \
 
       <pre><code class="language-bash"># Create the parent port
 openstack port create \
-  --network {student_id}-net-network \
-  {student_id}-trunk-parent
+  --network ${STUDENT_ID}-net-network \
+  ${STUDENT_ID}-trunk-parent
 
 # Create a subport on a different VLAN network
 openstack port create \
-  --network {student_id}-vlan100-network \
-  {student_id}-trunk-sub1
+  --network ${STUDENT_ID}-vlan100-network \
+  ${STUDENT_ID}-trunk-sub1
 
 # Create the trunk with the parent port and attach the subport
 openstack network trunk create \
-  --parent-port {student_id}-trunk-parent \
-  --subport port={student_id}-trunk-sub1,segmentation-type=vlan,segmentation-id=100 \
-  {student_id}-trunk
+  --parent-port ${STUDENT_ID}-trunk-parent \
+  --subport port=${STUDENT_ID}-trunk-sub1,segmentation-type=vlan,segmentation-id=100 \
+  ${STUDENT_ID}-trunk
 
 # Add another subport later
 openstack port create \
-  --network {student_id}-bm-vlan200 \
-  {student_id}-trunk-sub2
+  --network ${STUDENT_ID}-bm-vlan200 \
+  ${STUDENT_ID}-trunk-sub2
 
 openstack network trunk set \
-  --subport port={student_id}-trunk-sub2,segmentation-type=vlan,segmentation-id=200 \
-  {student_id}-trunk
+  --subport port=${STUDENT_ID}-trunk-sub2,segmentation-type=vlan,segmentation-id=200 \
+  ${STUDENT_ID}-trunk
 
 # Verify the trunk configuration
-openstack network trunk show {student_id}-trunk</code></pre>
+openstack network trunk show ${STUDENT_ID}-trunk</code></pre>
 
       <h2>6. QinQ (802.1ad) — Double VLAN Tagging</h2>
       <p>
@@ -185,28 +185,28 @@ openstack network create \
   --provider-network-type vlan \
   --provider-physical-network physnet1 \
   --provider-segment 500 \
-  {student_id}-qinq-provider
+  ${STUDENT_ID}-qinq-provider
 
 # Create a subnet on the provider network
 openstack subnet create \
-  --network {student_id}-qinq-provider \
+  --network ${STUDENT_ID}-qinq-provider \
   --subnet-range 10.50.0.0/24 \
-  {student_id}-qinq-provider-subnet
+  ${STUDENT_ID}-qinq-provider-subnet
 
 # Create the parent port on the provider network
 openstack port create \
-  --network {student_id}-qinq-provider \
-  {student_id}-qinq-parent
+  --network ${STUDENT_ID}-qinq-provider \
+  ${STUDENT_ID}-qinq-parent
 
 # Create a trunk and attach a subport with the inner (C-VLAN) tag
 openstack network trunk create \
-  --parent-port {student_id}-qinq-parent \
-  --subport port={student_id}-trunk-sub1,segmentation-type=vlan,segmentation-id=10 \
-  {student_id}-qinq-trunk
+  --parent-port ${STUDENT_ID}-qinq-parent \
+  --subport port=${STUDENT_ID}-trunk-sub1,segmentation-type=vlan,segmentation-id=10 \
+  ${STUDENT_ID}-qinq-trunk
 
 # The instance sees the inner VLAN 10 traffic,
 # while the physical network carries it inside outer VLAN 500
-openstack network trunk show {student_id}-qinq-trunk</code></pre>
+openstack network trunk show ${STUDENT_ID}-qinq-trunk</code></pre>
 
       <h2>Summary</h2>
       <ul>

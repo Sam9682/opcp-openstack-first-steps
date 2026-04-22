@@ -11,7 +11,7 @@ from __future__ import annotations
 def solve(managers: dict, student_id: str, config: dict) -> dict:
     """Create a compute instance with the default flavor and image."""
     compute = managers["compute_manager"]
-    name = f"{student_id}-first-instance"
+    name = f"${STUDENT_ID}-first-instance"
     instance = compute.create(
         name=name,
         flavor=config.get("default_flavor", "m1.small"),

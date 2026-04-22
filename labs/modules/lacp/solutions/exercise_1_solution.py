@@ -6,15 +6,15 @@ from __future__ import annotations
 def solve(managers: dict, student_id: str) -> dict:
     net = managers["network_manager"]
 
-    network_name = f"{student_id}-lacp-network"
+    network_name = f"${STUDENT_ID}-lacp-network"
     network = net.create(name=network_name)
 
-    port1_name = f"{student_id}-lacp-port-1"
-    port2_name = f"{student_id}-lacp-port-2"
+    port1_name = f"${STUDENT_ID}-lacp-port-1"
+    port2_name = f"${STUDENT_ID}-lacp-port-2"
     port1 = net.create_port(network_name=network_name, name=port1_name)
     port2 = net.create_port(network_name=network_name, name=port2_name)
 
-    bond_name = f"{student_id}-lacp-bond"
+    bond_name = f"${STUDENT_ID}-lacp-bond"
     bond = net.create_bond(
         name=bond_name,
         port_names=[port1_name, port2_name],

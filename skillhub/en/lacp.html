@@ -57,25 +57,25 @@
       </p>
 
       <pre><code class="language-bash"># Create the base network
-openstack network create {student_id}-lacp-network
+openstack network create ${STUDENT_ID}-lacp-network
 
 # Create two member ports on the network
 openstack port create \
-  --network {student_id}-lacp-network \
-  {student_id}-lacp-port-1
+  --network ${STUDENT_ID}-lacp-network \
+  ${STUDENT_ID}-lacp-port-1
 
 openstack port create \
-  --network {student_id}-lacp-network \
-  {student_id}-lacp-port-2
+  --network ${STUDENT_ID}-lacp-network \
+  ${STUDENT_ID}-lacp-port-2
 
 # Create a trunk port using the first port as parent
 openstack network trunk create \
-  --parent-port {student_id}-lacp-port-1 \
-  --subport port={student_id}-lacp-port-2,segmentation-type=vlan,segmentation-id=100 \
-  {student_id}-lacp-bond
+  --parent-port ${STUDENT_ID}-lacp-port-1 \
+  --subport port=${STUDENT_ID}-lacp-port-2,segmentation-type=vlan,segmentation-id=100 \
+  ${STUDENT_ID}-lacp-bond
 
 # Verify the trunk was created
-openstack network trunk show {student_id}-lacp-bond</code></pre>
+openstack network trunk show ${STUDENT_ID}-lacp-bond</code></pre>
 
       <h2>2. Exercise 2 — Configure LACP Parameters</h2>
       <p>
@@ -85,11 +85,11 @@ openstack network trunk show {student_id}-lacp-bond</code></pre>
 
       <pre><code class="language-bash"># Add another subport to the trunk
 openstack network trunk set \
-  --subport port={student_id}-lacp-port-2,segmentation-type=vlan,segmentation-id=200 \
-  {student_id}-lacp-bond
+  --subport port=${STUDENT_ID}-lacp-port-2,segmentation-type=vlan,segmentation-id=200 \
+  ${STUDENT_ID}-lacp-bond
 
 # Verify the trunk configuration
-openstack network trunk show {student_id}-lacp-bond</code></pre>
+openstack network trunk show ${STUDENT_ID}-lacp-bond</code></pre>
 
       <h2>3. Exercise 3 — Attach LACP Bond to an Instance</h2>
       <p>
@@ -101,13 +101,13 @@ openstack network trunk show {student_id}-lacp-bond</code></pre>
 openstack server create \
   --flavor s1-4 \
   --image "ubuntu-22.04" \
-  --port {student_id}-lacp-port-1 \
+  --port ${STUDENT_ID}-lacp-port-1 \
   --wait \
-  {student_id}-lacp-instance
+  ${STUDENT_ID}-lacp-instance
 
 # Verify the instance is active and connected
-openstack server show {student_id}-lacp-instance -f value -c status
-openstack port show {student_id}-lacp-port-1 -f value -c status</code></pre>
+openstack server show ${STUDENT_ID}-lacp-instance -f value -c status
+openstack port show ${STUDENT_ID}-lacp-port-1 -f value -c status</code></pre>
 
       <h2>Summary</h2>
       <ul>

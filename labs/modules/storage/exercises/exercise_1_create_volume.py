@@ -16,19 +16,19 @@ class CreateVolumeExercise(Exercise):
     def instructions(self) -> list[str]:
         return [
             "Use volume_manager to create a volume.",
-            "Name it '{student_id}-storage-volume'.",
+            "Name it '${STUDENT_ID}-storage-volume'.",
             "Set the size to 1 GB.",
         ]
 
     @property
     def expected_outcomes(self) -> list[dict]:
         return [
-            {"type": "volume", "name": "{student_id}-storage-volume", "status": "available"}
+            {"type": "volume", "name": "${STUDENT_ID}-storage-volume", "status": "available"}
         ]
 
     def run(self, **kwargs) -> dict:
         student_id = kwargs.get("student_id", "")
-        name = f"{student_id}-storage-volume"
+        name = f"${STUDENT_ID}-storage-volume"
         vol = self.managers.get("volume_manager")
         if vol is None:
             return {"error": self._handle_openstack_error(

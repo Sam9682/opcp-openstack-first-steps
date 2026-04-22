@@ -15,20 +15,20 @@ class AttachVolumeExercise(Exercise):
     @property
     def instructions(self) -> list[str]:
         return [
-            "Use volume_manager to attach '{student_id}-storage-volume' "
-            "to '{student_id}-compute-instance'.",
+            "Use volume_manager to attach '${STUDENT_ID}-storage-volume' "
+            "to '${STUDENT_ID}-compute-instance'.",
         ]
 
     @property
     def expected_outcomes(self) -> list[dict]:
         return [
-            {"type": "volume", "name": "{student_id}-storage-volume", "status": "in-use"}
+            {"type": "volume", "name": "${STUDENT_ID}-storage-volume", "status": "in-use"}
         ]
 
     def run(self, **kwargs) -> dict:
         student_id = kwargs.get("student_id", "")
-        volume_name = f"{student_id}-storage-volume"
-        instance_name = f"{student_id}-compute-instance"
+        volume_name = f"${STUDENT_ID}-storage-volume"
+        instance_name = f"${STUDENT_ID}-compute-instance"
         vol = self.managers.get("volume_manager")
         if vol is None:
             return {"error": self._handle_openstack_error(

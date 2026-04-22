@@ -38,16 +38,16 @@
       <h2>1. Exercice 1 — Créer un volume</h2>
       <p>
         Utilisez le CLI <code>openstack</code> pour créer un volume de stockage bloc de 1 Go
-        nommé <code>{student_id}-storage-volume</code>.
+        nommé <code>${STUDENT_ID}-storage-volume</code>.
       </p>
 
       <pre><code class="language-bash"># Créer un volume de stockage bloc de 1 Go
 openstack volume create \
   --size 1 \
-  {student_id}-storage-volume
+  ${STUDENT_ID}-storage-volume
 
 # Vérifier que le volume est disponible
-openstack volume show {student_id}-storage-volume -f value -c status</code></pre>
+openstack volume show ${STUDENT_ID}-storage-volume -f value -c status</code></pre>
 
       <h2>2. Exercice 2 — Attacher un volume</h2>
       <p>
@@ -57,11 +57,11 @@ openstack volume show {student_id}-storage-volume -f value -c status</code></pre
 
       <pre><code class="language-bash"># Attacher le volume à une instance en cours d'exécution
 openstack server add volume \
-  {student_id}-compute-instance \
-  {student_id}-storage-volume
+  ${STUDENT_ID}-compute-instance \
+  ${STUDENT_ID}-storage-volume
 
 # Vérifier que le statut du volume est passé à in-use
-openstack volume show {student_id}-storage-volume -f value -c status</code></pre>
+openstack volume show ${STUDENT_ID}-storage-volume -f value -c status</code></pre>
 
       <h2>3. Exercice 3 — Gérer les snapshots</h2>
       <p>
@@ -71,11 +71,11 @@ openstack volume show {student_id}-storage-volume -f value -c status</code></pre
 
       <pre><code class="language-bash"># Créer un snapshot du volume
 openstack volume snapshot create \
-  --volume {student_id}-storage-volume \
-  {student_id}-storage-snapshot
+  --volume ${STUDENT_ID}-storage-volume \
+  ${STUDENT_ID}-storage-snapshot
 
 # Vérifier que le snapshot a été créé
-openstack volume snapshot show {student_id}-storage-snapshot -f value -c status</code></pre>
+openstack volume snapshot show ${STUDENT_ID}-storage-snapshot -f value -c status</code></pre>
 
       <h2>Résumé</h2>
       <ul>

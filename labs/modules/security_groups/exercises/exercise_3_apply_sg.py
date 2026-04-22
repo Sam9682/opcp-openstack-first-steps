@@ -15,20 +15,20 @@ class ApplySecurityGroupExercise(Exercise):
     @property
     def instructions(self) -> list[str]:
         return [
-            "Use security_group_manager to apply '{student_id}-sg-web' "
-            "to '{student_id}-compute-instance'.",
+            "Use security_group_manager to apply '${STUDENT_ID}-sg-web' "
+            "to '${STUDENT_ID}-compute-instance'.",
         ]
 
     @property
     def expected_outcomes(self) -> list[dict]:
         return [
-            {"type": "instance", "name": "{student_id}-compute-instance"}
+            {"type": "instance", "name": "${STUDENT_ID}-compute-instance"}
         ]
 
     def run(self, **kwargs) -> dict:
         student_id = kwargs.get("student_id", "")
-        sg_name = f"{student_id}-sg-web"
-        instance_name = f"{student_id}-compute-instance"
+        sg_name = f"${STUDENT_ID}-sg-web"
+        instance_name = f"${STUDENT_ID}-compute-instance"
         sg = self.managers.get("security_group_manager")
         if sg is None:
             return {"error": self._handle_openstack_error(

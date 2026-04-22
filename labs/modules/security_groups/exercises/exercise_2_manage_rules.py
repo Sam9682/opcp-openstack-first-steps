@@ -26,13 +26,13 @@ class ManageRulesExercise(Exercise):
         return [
             {
                 "type": "security_group",
-                "name": "{student_id}-sg-web",
+                "name": "${STUDENT_ID}-sg-web",
             }
         ]
 
     def run(self, **kwargs) -> dict:
         student_id = kwargs.get("student_id", "")
-        sg_name = f"{student_id}-sg-web"
+        sg_name = f"${STUDENT_ID}-sg-web"
         protocol = kwargs.get("protocol", "tcp")
         port_min = kwargs.get("port_range_min", 443)
         port_max = kwargs.get("port_range_max", 443)

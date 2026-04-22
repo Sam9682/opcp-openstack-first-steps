@@ -16,15 +16,15 @@ class CreateSubnetExercise(Exercise):
     @property
     def instructions(self) -> list[str]:
         return [
-            "Use network_manager to create a subnet in '{student_id}-net-network'.",
-            "Name it '{student_id}-net-subnet'.",
+            "Use network_manager to create a subnet in '${STUDENT_ID}-net-network'.",
+            "Name it '${STUDENT_ID}-net-subnet'.",
             "Use CIDR 10.0.0.0/24.",
         ]
 
     @property
     def expected_outcomes(self) -> list[dict]:
         return [
-            {"type": "subnet", "name": "{student_id}-net-subnet", "cidr": "10.0.0.0/24"}
+            {"type": "subnet", "name": "${STUDENT_ID}-net-subnet", "cidr": "10.0.0.0/24"}
         ]
 
     def run(self, **kwargs) -> dict:
@@ -34,8 +34,8 @@ class CreateSubnetExercise(Exercise):
         if not valid:
             return {"error": f"Validation failed: CIDR — {err}"}
 
-        name = f"{student_id}-net-subnet"
-        network_name = f"{student_id}-net-network"
+        name = f"${STUDENT_ID}-net-subnet"
+        network_name = f"${STUDENT_ID}-net-network"
         net = self.managers.get("network_manager")
         if net is None:
             return {"error": self._handle_openstack_error(

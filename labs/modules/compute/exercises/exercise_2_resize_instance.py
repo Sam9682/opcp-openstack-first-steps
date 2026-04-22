@@ -15,19 +15,19 @@ class ResizeInstanceExercise(Exercise):
     @property
     def instructions(self) -> list[str]:
         return [
-            "Use compute_manager to resize '{student_id}-compute-instance'.",
+            "Use compute_manager to resize '${STUDENT_ID}-compute-instance'.",
             "Change the flavor to the target flavor provided.",
         ]
 
     @property
     def expected_outcomes(self) -> list[dict]:
         return [
-            {"type": "instance", "name": "{student_id}-compute-instance", "status": "ACTIVE"}
+            {"type": "instance", "name": "${STUDENT_ID}-compute-instance", "status": "ACTIVE"}
         ]
 
     def run(self, **kwargs) -> dict:
         student_id = kwargs.get("student_id", "")
-        name = f"{student_id}-compute-instance"
+        name = f"${STUDENT_ID}-compute-instance"
         compute = self.managers.get("compute_manager")
         if compute is None:
             return {"error": self._handle_openstack_error(

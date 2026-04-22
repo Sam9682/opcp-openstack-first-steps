@@ -15,20 +15,20 @@ class ConfigureRouterExercise(Exercise):
     @property
     def instructions(self) -> list[str]:
         return [
-            "Use network_manager to create a router named '{student_id}-net-router'.",
-            "Attach the router to '{student_id}-net-subnet'.",
+            "Use network_manager to create a router named '${STUDENT_ID}-net-router'.",
+            "Attach the router to '${STUDENT_ID}-net-subnet'.",
         ]
 
     @property
     def expected_outcomes(self) -> list[dict]:
         return [
-            {"type": "router", "name": "{student_id}-net-router", "status": "ACTIVE"}
+            {"type": "router", "name": "${STUDENT_ID}-net-router", "status": "ACTIVE"}
         ]
 
     def run(self, **kwargs) -> dict:
         student_id = kwargs.get("student_id", "")
-        router_name = f"{student_id}-net-router"
-        subnet_name = f"{student_id}-net-subnet"
+        router_name = f"${STUDENT_ID}-net-router"
+        subnet_name = f"${STUDENT_ID}-net-subnet"
         net = self.managers.get("network_manager")
         if net is None:
             return {"error": self._handle_openstack_error(

@@ -15,15 +15,15 @@ class AttachBondExercise(Exercise):
     @property
     def instructions(self) -> list[str]:
         return [
-            "Use compute_manager to create an instance named '{student_id}-lacp-instance'.",
-            "Use network_manager to attach '{student_id}-lacp-bond' to the instance.",
+            "Use compute_manager to create an instance named '${STUDENT_ID}-lacp-instance'.",
+            "Use network_manager to attach '${STUDENT_ID}-lacp-bond' to the instance.",
         ]
 
     @property
     def expected_outcomes(self) -> list[dict]:
         return [
-            {"type": "instance", "name": "{student_id}-lacp-instance", "status": "ACTIVE"},
-            {"type": "bond_attachment", "bond": "{student_id}-lacp-bond", "instance": "{student_id}-lacp-instance"},
+            {"type": "instance", "name": "${STUDENT_ID}-lacp-instance", "status": "ACTIVE"},
+            {"type": "bond_attachment", "bond": "${STUDENT_ID}-lacp-bond", "instance": "${STUDENT_ID}-lacp-instance"},
         ]
 
     def run(self, **kwargs) -> dict:
@@ -35,14 +35,14 @@ class AttachBondExercise(Exercise):
                 "attach bond", "network_manager or compute_manager not available"
             )}
         try:
-            instance_name = f"{student_id}-lacp-instance"
+            instance_name = f"${STUDENT_ID}-lacp-instance"
             instance = compute.create(
                 name=instance_name,
                 image="ubuntu-22.04",
                 flavor="s1-4",
             )
 
-            bond_name = f"{student_id}-lacp-bond"
+            bond_name = f"${STUDENT_ID}-lacp-bond"
             net.attach_bond_to_instance(
                 bond_name=bond_name,
                 instance_name=instance_name,

@@ -78,39 +78,39 @@ class LabSetup:
         """Return the list of resources required for a module.
 
         Each entry is a dict with ``type``, ``name`` (may contain
-        ``{student_id}`` placeholder), and optional ``params``.
+        ``${STUDENT_ID}`` placeholder), and optional ``params``.
         """
         # Module-specific resource definitions.
         registry: dict[str, list[dict]] = {
             "first_steps": [
-                {"type": "instance", "name": "{student_id}-first-instance"},
-                {"type": "network", "name": "{student_id}-first-network"},
-                {"type": "volume", "name": "{student_id}-first-volume"},
+                {"type": "instance", "name": "${STUDENT_ID}-first-instance"},
+                {"type": "network", "name": "${STUDENT_ID}-first-network"},
+                {"type": "volume", "name": "${STUDENT_ID}-first-volume"},
             ],
             "authentication": [],
             "compute": [
-                {"type": "snapshot", "name": "{student_id}-compute-snapshot"},
-                {"type": "instance", "name": "{student_id}-compute-instance"},
-                {"type": "network", "name": "{student_id}-compute-network"},
+                {"type": "snapshot", "name": "${STUDENT_ID}-compute-snapshot"},
+                {"type": "instance", "name": "${STUDENT_ID}-compute-instance"},
+                {"type": "network", "name": "${STUDENT_ID}-compute-network"},
             ],
             "networking": [],
             "storage": [
-                {"type": "volume_snapshot", "name": "{student_id}-storage-snapshot"},
-                {"type": "volume", "name": "{student_id}-storage-volume"},
-                {"type": "network", "name": "{student_id}-storage-network"},
+                {"type": "volume_snapshot", "name": "${STUDENT_ID}-storage-snapshot"},
+                {"type": "volume", "name": "${STUDENT_ID}-storage-volume"},
+                {"type": "network", "name": "${STUDENT_ID}-storage-network"},
             ],
             "security_groups": [
-                {"type": "security_group", "name": "{student_id}-sg-web"},
-                {"type": "network", "name": "{student_id}-sg-network"},
-                {"type": "security_group", "name": "{student_id}-default-sg"},
+                {"type": "security_group", "name": "${STUDENT_ID}-sg-web"},
+                {"type": "network", "name": "${STUDENT_ID}-sg-network"},
+                {"type": "security_group", "name": "${STUDENT_ID}-default-sg"},
             ],
             "lacp": [
-                {"type": "bond_attachment", "name": "{student_id}-lacp-bond"},
-                {"type": "instance", "name": "{student_id}-lacp-instance"},
-                {"type": "bond", "name": "{student_id}-lacp-bond"},
-                {"type": "port", "name": "{student_id}-lacp-port-1"},
-                {"type": "port", "name": "{student_id}-lacp-port-2"},
-                {"type": "network", "name": "{student_id}-lacp-network"},
+                {"type": "bond_attachment", "name": "${STUDENT_ID}-lacp-bond"},
+                {"type": "instance", "name": "${STUDENT_ID}-lacp-instance"},
+                {"type": "bond", "name": "${STUDENT_ID}-lacp-bond"},
+                {"type": "port", "name": "${STUDENT_ID}-lacp-port-1"},
+                {"type": "port", "name": "${STUDENT_ID}-lacp-port-2"},
+                {"type": "network", "name": "${STUDENT_ID}-lacp-network"},
             ],
         }
         return registry.get(module_name, [])
