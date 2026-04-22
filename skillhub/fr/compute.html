@@ -34,24 +34,61 @@
         leçon, vous allez lancer des instances, les redimensionner et créer des snapshots.
       </p>
 
-      <h2>1. Exercice 1 — Lancer une instance</h2>
+      <h2>1. Paire de clés SSH — Générer et enregistrer</h2>
       <p>
-        Utilisez le CLI <code>openstack</code> pour lancer une instance avec un flavor
-        et une image spécifiés. Nommez-la <code>${STUDENT_ID}-compute-instance</code>.
+        Pour vous connecter à votre instance via SSH, vous avez besoin d'une
+        paire de clés. La clé publique est injectée dans l'instance au
+        démarrage, et vous utilisez la clé privée correspondante pour vous
+        authentifier.
       </p>
 
-      <pre><code class="language-bash"># Lancer une instance de calcul
+      <h3>Générer une paire de clés localement</h3>
+      <pre><code class="language-bash"># Générer une paire de clés SSH Ed25519 (recommandé)
+ssh-keygen -t ed25519 -C "${STUDENT_ID}@lab" -f ~/.ssh/${STUDENT_ID}-key -N ""
+
+# Cela crée deux fichiers :
+#   ~/.ssh/${STUDENT_ID}-key       (clé privée — à garder secrète)
+#   ~/.ssh/${STUDENT_ID}-key.pub   (clé publique — envoyée à OpenStack)</code></pre>
+      <p>
+        Vous pouvez aussi utiliser RSA si Ed25519 n'est pas supporté :
+      </p>
+      <pre><code class="language-bash">ssh-keygen -t rsa -b 4096 -C "${STUDENT_ID}@lab" -f ~/.ssh/${STUDENT_ID}-key -N ""</code></pre>
+
+      <h3>Enregistrer la clé publique dans OpenStack</h3>
+      <pre><code class="language-bash"># Importer votre clé publique dans OpenStack
+openstack keypair create \
+  --public-key ~/.ssh/${STUDENT_ID}-key.pub \
+  ${STUDENT_ID}-keypair
+
+# Vérifier que la keypair est enregistrée
+openstack keypair show ${STUDENT_ID}-keypair</code></pre>
+
+      <h2>2. Exercice 1 — Lancer une instance avec clé SSH</h2>
+      <p>
+        Utilisez le CLI <code>openstack</code> pour lancer une instance avec un flavor,
+        une image et votre paire de clés SSH. Nommez-la <code>${STUDENT_ID}-compute-instance</code>.
+      </p>
+
+      <pre><code class="language-bash"># Lancer une instance de calcul avec votre clé SSH
 openstack server create \
   --flavor scale-1 \
   --image "Ubuntu 24.04 BMPOD" \
   --network Ext-Net \
+  --key-name ${STUDENT_ID}-keypair \
   --wait \
   ${STUDENT_ID}-compute-instance
 
 # Vérifier que l'instance est active
 openstack server show ${STUDENT_ID}-compute-instance -f value -c status</code></pre>
 
-      <h2>2. Exercice 2 — Redimensionner une instance</h2>
+      <h3>Se connecter à l'instance via SSH</h3>
+      <pre><code class="language-bash"># Récupérer l'adresse IP de l'instance
+IP=$(openstack server show ${STUDENT_ID}-compute-instance -f value -c addresses | grep -oP '[\d.]+')
+
+# Se connecter avec votre clé privée
+ssh -i ~/.ssh/${STUDENT_ID}-key ubuntu@$IP</code></pre>
+
+      <h2>3. Exercice 2 — Redimensionner une instance</h2>
       <p>
         Redimensionnez votre instance en cours d'exécution vers un flavor différent.
         Utile quand votre charge de travail nécessite plus (ou moins) de ressources.
@@ -66,7 +103,7 @@ openstack server resize confirm ${STUDENT_ID}-compute-instance
 # Vérifier le nouveau flavor
 openstack server show ${STUDENT_ID}-compute-instance -f value -c flavor</code></pre>
 
-      <h2>3. Exercice 3 — Gérer les snapshots</h2>
+      <h2>4. Exercice 3 — Gérer les snapshots</h2>
       <p>
         Créez un snapshot de votre instance. Les snapshots capturent l'état actuel
         et peuvent être utilisés pour restaurer ou cloner des instances.
@@ -82,6 +119,8 @@ openstack image show ${STUDENT_ID}-compute-snapshot -f value -c status</code></p
 
       <h2>Résumé</h2>
       <ul>
+        <li>Générez une paire de clés SSH avec <code>ssh-keygen</code> et enregistrez-la avec <code>openstack keypair create</code>.</li>
+        <li>Utilisez <code>--key-name</code> lors de la création d'une instance pour injecter la clé publique.</li>
         <li>Utilisez les commandes <code>openstack server</code> pour lancer, redimensionner et snapshotter des instances.</li>
         <li>Les flavors définissent le <strong>CPU, la RAM et le disque</strong> alloués à une instance.</li>
         <li>Les snapshots capturent l'<strong>état actuel</strong> pour la sauvegarde et la récupération.</li>

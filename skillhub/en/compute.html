@@ -35,24 +35,60 @@
         snapshots for backup and recovery.
       </p>
 
-      <h2>1. Exercise 1 — Launch an Instance</h2>
+      <h2>1. SSH Key Pair — Generate and Register</h2>
       <p>
-        Use the <code>openstack</code> CLI to launch an instance with a specified
-        flavor and image. Name it <code>${STUDENT_ID}-compute-instance</code>.
+        To connect to your instance via SSH, you need a key pair. The public
+        key is injected into the instance at boot time, and you use the
+        corresponding private key to authenticate.
       </p>
 
-      <pre><code class="language-bash"># Launch a compute instance
+      <h3>Generate a key pair locally</h3>
+      <pre><code class="language-bash"># Generate an Ed25519 SSH key pair (recommended)
+ssh-keygen -t ed25519 -C "${STUDENT_ID}@lab" -f ~/.ssh/${STUDENT_ID}-key -N ""
+
+# This creates two files:
+#   ~/.ssh/${STUDENT_ID}-key       (private key — keep it secret)
+#   ~/.ssh/${STUDENT_ID}-key.pub   (public key — uploaded to OpenStack)</code></pre>
+      <p>
+        You can also use RSA if Ed25519 is not supported:
+      </p>
+      <pre><code class="language-bash">ssh-keygen -t rsa -b 4096 -C "${STUDENT_ID}@lab" -f ~/.ssh/${STUDENT_ID}-key -N ""</code></pre>
+
+      <h3>Register the public key in OpenStack</h3>
+      <pre><code class="language-bash"># Import your public key into OpenStack
+openstack keypair create \
+  --public-key ~/.ssh/${STUDENT_ID}-key.pub \
+  ${STUDENT_ID}-keypair
+
+# Verify the keypair was registered
+openstack keypair show ${STUDENT_ID}-keypair</code></pre>
+
+      <h2>2. Exercise 1 — Launch an Instance with SSH Key</h2>
+      <p>
+        Use the <code>openstack</code> CLI to launch an instance with a specified
+        flavor, image, and your SSH key pair. Name it <code>${STUDENT_ID}-compute-instance</code>.
+      </p>
+
+      <pre><code class="language-bash"># Launch a compute instance with your SSH key
 openstack server create \
   --flavor scale-1 \
   --image "Ubuntu 24.04 BMPOD" \
   --network Ext-Net \
+  --key-name ${STUDENT_ID}-keypair \
   --wait \
   ${STUDENT_ID}-compute-instance
 
 # Verify the instance is active
 openstack server show ${STUDENT_ID}-compute-instance -f value -c status</code></pre>
 
-      <h2>2. Exercise 2 — Resize an Instance</h2>
+      <h3>Connect to the instance via SSH</h3>
+      <pre><code class="language-bash"># Get the instance IP address
+IP=$(openstack server show ${STUDENT_ID}-compute-instance -f value -c addresses | grep -oP '[\d.]+')
+
+# Connect using your private key
+ssh -i ~/.ssh/${STUDENT_ID}-key ubuntu@$IP</code></pre>
+
+      <h2>3. Exercise 2 — Resize an Instance</h2>
       <p>
         Resize your running instance to a different flavor. This is useful when
         your workload needs more (or fewer) resources.
@@ -67,7 +103,7 @@ openstack server resize confirm ${STUDENT_ID}-compute-instance
 # Verify the new flavor
 openstack server show ${STUDENT_ID}-compute-instance -f value -c flavor</code></pre>
 
-      <h2>3. Exercise 3 — Manage Snapshots</h2>
+      <h2>4. Exercise 3 — Manage Snapshots</h2>
       <p>
         Create a snapshot of your instance. Snapshots capture the current state
         and can be used to restore or clone instances later.
@@ -83,6 +119,8 @@ openstack image show ${STUDENT_ID}-compute-snapshot -f value -c status</code></p
 
       <h2>Summary</h2>
       <ul>
+        <li>Generate an SSH key pair with <code>ssh-keygen</code> and register it with <code>openstack keypair create</code>.</li>
+        <li>Use <code>--key-name</code> when creating an instance to inject the public key.</li>
         <li>Use <code>openstack server</code> commands to launch, resize, and snapshot instances.</li>
         <li>Flavors define the <strong>CPU, RAM, and disk</strong> allocated to an instance.</li>
         <li>Snapshots capture the <strong>current state</strong> for backup and recovery.</li>
