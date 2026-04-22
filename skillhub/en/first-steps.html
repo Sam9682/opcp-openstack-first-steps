@@ -103,7 +103,8 @@ pip3 install python-openstackclient
 # Examples
 openstack server list
 openstack network create my-network
-openstack volume create --size 10 my-volume</code></pre>
+openstack volume create --size 10 my-volume
+openstack endpoint list</code></pre>
 
       <h3>Option C — OpenStack SDK (Python)</h3>
       <p>
@@ -118,19 +119,15 @@ pip3 install openstacksdk</code></pre>
 # Connect using environment variables (OS_*)
 conn = openstack.connect()
 
-# Create a network
-network = conn.network.create_network(name="my-network")
-print(f"Network created: {network.id}")
+# List baremetal servers
+for server in conn.baremetal.nodes():
+    print(f"Node: {server.name} — State: {server.provision_state}")
 
-# Create a server
-server = conn.compute.create_server(
-    name="my-instance",
-    flavor_id="s1-2",
-    image_id="...",
-    networks=[{"uuid": network.id}],
-)
-conn.compute.wait_for_server(server)
-print(f"Server active: {server.name}")</code></pre>
+# List API endpoints from the service catalog
+for service in conn.identity.services():
+    endpoints = conn.identity.endpoints(service_id=service.id)
+    for ep in endpoints:
+        print(f"{service.type} [{ep.interface}]: {ep.url}")</code></pre>
 
       <h3>Option D — Terraform</h3>
       <p>
