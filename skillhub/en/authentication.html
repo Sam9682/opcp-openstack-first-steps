@@ -49,7 +49,98 @@
         <li>Ideal for CI/CD pipelines, lab environments, and automation</li>
       </ul>
 
-      <h2>2. Environment Variables</h2>
+      <h2>2. Creating a Keycloak Client for API Access</h2>
+      <p>
+        In Keycloak, <strong>Clients</strong> represent applications and services
+        that can request authentication of a user. To allow an external
+        application (script, CI/CD pipeline, microservice) to authenticate
+        against OpenStack through Keycloak, you need to register it as a client.
+      </p>
+
+      <h3>Step 1 — Open the Clients section</h3>
+      <p>
+        Log in to the Keycloak administration console, select your realm, then
+        navigate to <strong>Clients</strong> in the left menu and click
+        <strong>Create client</strong>.
+      </p>
+      <figure>
+        <img src="../assets/images/keycloak-users-clients.png"
+             alt="Keycloak administration console — Clients management screen"
+             loading="lazy">
+        <figcaption>Keycloak administration console — Clients management screen</figcaption>
+      </figure>
+
+      <h3>Step 2 — Configure the client</h3>
+      <p>Fill in the following fields:</p>
+      <ul>
+        <li><strong>Client ID</strong> — a unique identifier for your application (e.g. <code>openstack-lab-client</code>).</li>
+        <li><strong>Client Protocol</strong> — select <code>openid-connect</code>.</li>
+        <li><strong>Root URL</strong> — the base URL of your application (optional for CLI-based clients).</li>
+      </ul>
+
+      <h3>Step 3 — Set the access type</h3>
+      <p>
+        On the <strong>Settings</strong> tab, configure the access type depending
+        on your use case:
+      </p>
+      <ul>
+        <li><strong>Confidential</strong> — for server-side applications that can securely store a secret. A <em>Client Secret</em> is generated in the <strong>Credentials</strong> tab.</li>
+        <li><strong>Public</strong> — for browser-based or mobile applications that cannot keep a secret.</li>
+      </ul>
+
+      <h3>Step 4 — Retrieve the client credentials</h3>
+      <p>
+        For confidential clients, go to the <strong>Credentials</strong> tab to
+        copy the <strong>Client Secret</strong>. Use the Client ID and Secret to
+        request tokens from Keycloak's token endpoint:
+      </p>
+      <pre><code class="language-bash"># Request a token using client credentials
+curl -s -X POST "https://keycloak.example.com/realms/your-realm/protocol/openid-connect/token" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "grant_type=client_credentials" \
+  -d "client_id=openstack-lab-client" \
+  -d "client_secret=YOUR_CLIENT_SECRET" | python3 -m json.tool</code></pre>
+
+      <h2>3. Creating Keystone Application Credentials (optional)</h2>
+      <p>
+        This step is <strong>optional</strong>. Keystone application credentials
+        are project-scoped secrets managed directly by the OpenStack Keystone
+        identity service. They provide an alternative authentication method
+        that does not go through Keycloak.
+      </p>
+      <p>
+        To create Keystone application credentials, authenticate to the
+        OpenStack Horizon dashboard (or use the CLI) with your user account.
+        Then navigate to
+        <strong>Identity → Application Credentials</strong> and click
+        <strong>Create Application Credential</strong>.
+      </p>
+      <p>Fill in the following fields:</p>
+      <ul>
+        <li><strong>Name</strong> — a descriptive name for this credential (e.g. <code>lab-credential</code>).</li>
+        <li><strong>Description</strong> — optional, helps identify the purpose.</li>
+        <li><strong>Expiration Date</strong> — optional, set an expiry for extra security.</li>
+        <li><strong>Roles</strong> — leave empty to inherit all roles from the user, or select specific roles.</li>
+      </ul>
+      <p>
+        After creation, the <strong>ID</strong> and <strong>Secret</strong> are
+        displayed once. Copy them immediately — the secret cannot be retrieved
+        later.
+      </p>
+      <p>You can also create Keystone application credentials via the CLI:</p>
+      <pre><code class="language-bash"># Create a Keystone application credential
+openstack application credential create my-lab-credential
+
+# The output contains the ID and Secret — save them securely</code></pre>
+
+      <figure>
+        <img src="../assets/images/keycloak-users-app-credentials.png"
+             alt="Keycloak / Horizon — Application Credentials creation screen"
+             loading="lazy">
+        <figcaption>Keystone Application Credentials creation screen</figcaption>
+      </figure>
+
+      <h2>4. Environment Variables</h2>
       <p>Export your application credential values so the lab framework can authenticate automatically.</p>
 
       <pre><code class="language-bash">export OS_AUTH_URL="https://auth.cloud.ovh.net/v3"
@@ -58,7 +149,7 @@ export OS_APPLICATION_CREDENTIAL_ID="${OS_APPLICATION_CREDENTIAL_ID}"
 export OS_APPLICATION_CREDENTIAL_SECRET="${OS_APPLICATION_CREDENTIAL_SECRET}"
 export OS_REGION_NAME="GRA7"</code></pre>
 
-      <h2>3. Exercise 1 — Authenticate with Application Credentials</h2>
+      <h2>5. Exercise 1 — Authenticate with Application Credentials</h2>
       <p>
         Use the <code>openstack</code> CLI to authenticate against Keystone using your
         application credential and obtain a token.
@@ -70,7 +161,7 @@ openstack token issue
 # The command outputs a token ID and expiration date
 # The CLI uses the OS_* environment variables automatically</code></pre>
 
-      <h2>4. Exercise 2 — Token Management</h2>
+      <h2>6. Exercise 2 — Token Management</h2>
       <p>
         Learn to validate and revoke authentication tokens. This is essential
         for understanding token lifecycle in long-running automation.
@@ -84,7 +175,7 @@ echo "Token obtained: $TOKEN"
 openstack token revoke "$TOKEN"
 echo "Token revoked successfully"</code></pre>
 
-      <h2>5. Error Handling</h2>
+      <h2>7. Error Handling</h2>
       <p>
         Authentication failures are reported with clear error messages by the CLI.
         If your credentials are wrong, the CLI will return an error.

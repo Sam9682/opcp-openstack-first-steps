@@ -157,8 +157,8 @@ resource "openstack_networking_network_v2" "my_network" {
 
 resource "openstack_compute_instance_v2" "my_instance" {
   name        = "my-instance"
-  flavor_name = "s1-2"
-  image_name  = "Ubuntu 24.04"
+  flavor_name = "scale-1"
+  image_name  = "Ubuntu 24.04 BMPOD"
 
   network {
     uuid = openstack_networking_network_v2.my_network.id
@@ -185,8 +185,8 @@ ansible-galaxy collection install openstack.cloud</code></pre>
     - name: Create an instance
       openstack.cloud.server:
         name: my-instance
-        flavor: s1-2
-        image: "Ubuntu 24.04"
+        flavor: scale-1
+        image: "Ubuntu 24.04 BMPOD"
         network: my-network
         state: present
         wait: true</code></pre>

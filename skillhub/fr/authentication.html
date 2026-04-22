@@ -51,7 +51,100 @@
         <li>Idéaux pour les pipelines CI/CD, les environnements de lab et l'automatisation</li>
       </ul>
 
-      <h2>2. Variables d'environnement</h2>
+      <h2>2. Créer un Client Keycloak pour l'accès API</h2>
+      <p>
+        Dans Keycloak, les <strong>Clients</strong> représentent les applications
+        et services qui peuvent demander l'authentification d'un utilisateur.
+        Pour permettre à une application externe (script, pipeline CI/CD,
+        microservice) de s'authentifier auprès d'OpenStack via Keycloak, vous
+        devez l'enregistrer en tant que client.
+      </p>
+
+      <h3>Étape 1 — Ouvrir la section Clients</h3>
+      <p>
+        Connectez-vous à la console d'administration Keycloak, sélectionnez
+        votre realm, puis naviguez vers <strong>Clients</strong> dans le menu
+        de gauche et cliquez sur <strong>Create client</strong>.
+      </p>
+      <figure>
+        <img src="../assets/images/keycloak-users-clients.png"
+             alt="Console d'administration Keycloak — Écran de gestion des Clients"
+             loading="lazy">
+        <figcaption>Console d'administration Keycloak — Écran de gestion des Clients</figcaption>
+      </figure>
+
+      <h3>Étape 2 — Configurer le client</h3>
+      <p>Remplissez les champs suivants :</p>
+      <ul>
+        <li><strong>Client ID</strong> — un identifiant unique pour votre application (ex. <code>openstack-lab-client</code>).</li>
+        <li><strong>Client Protocol</strong> — sélectionnez <code>openid-connect</code>.</li>
+        <li><strong>Root URL</strong> — l'URL de base de votre application (optionnel pour les clients en ligne de commande).</li>
+      </ul>
+
+      <h3>Étape 3 — Définir le type d'accès</h3>
+      <p>
+        Dans l'onglet <strong>Settings</strong>, configurez le type d'accès
+        selon votre cas d'usage :
+      </p>
+      <ul>
+        <li><strong>Confidential</strong> — pour les applications côté serveur capables de stocker un secret de manière sécurisée. Un <em>Client Secret</em> est généré dans l'onglet <strong>Credentials</strong>.</li>
+        <li><strong>Public</strong> — pour les applications navigateur ou mobiles qui ne peuvent pas conserver un secret.</li>
+      </ul>
+
+      <h3>Étape 4 — Récupérer les identifiants du client</h3>
+      <p>
+        Pour les clients confidentiels, allez dans l'onglet
+        <strong>Credentials</strong> pour copier le <strong>Client Secret</strong>.
+        Utilisez le Client ID et le Secret pour demander des tokens au endpoint
+        de Keycloak :
+      </p>
+      <pre><code class="language-bash"># Demander un token avec les identifiants client
+curl -s -X POST "https://keycloak.example.com/realms/your-realm/protocol/openid-connect/token" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "grant_type=client_credentials" \
+  -d "client_id=openstack-lab-client" \
+  -d "client_secret=YOUR_CLIENT_SECRET" | python3 -m json.tool</code></pre>
+
+      <h2>3. Créer des Keystone Application Credentials (optionnel)</h2>
+      <p>
+        Cette étape est <strong>optionnelle</strong>. Les Keystone application
+        credentials sont des secrets liés à un projet, gérés directement par le
+        service d'identité OpenStack Keystone. Ils fournissent une méthode
+        d'authentification alternative qui ne passe pas par Keycloak.
+      </p>
+      <p>
+        Pour créer des Keystone application credentials, authentifiez-vous sur
+        le tableau de bord OpenStack Horizon (ou via le CLI) avec votre compte
+        utilisateur. Puis naviguez vers
+        <strong>Identity → Application Credentials</strong> et cliquez sur
+        <strong>Create Application Credential</strong>.
+      </p>
+      <p>Remplissez les champs suivants :</p>
+      <ul>
+        <li><strong>Name</strong> — un nom descriptif pour ce credential (ex. <code>lab-credential</code>).</li>
+        <li><strong>Description</strong> — optionnel, aide à identifier l'usage.</li>
+        <li><strong>Expiration Date</strong> — optionnel, définissez une date d'expiration pour plus de sécurité.</li>
+        <li><strong>Roles</strong> — laissez vide pour hériter de tous les rôles de l'utilisateur, ou sélectionnez des rôles spécifiques.</li>
+      </ul>
+      <p>
+        Après la création, l'<strong>ID</strong> et le <strong>Secret</strong>
+        sont affichés une seule fois. Copiez-les immédiatement — le secret ne
+        pourra pas être récupéré ultérieurement.
+      </p>
+      <p>Vous pouvez aussi créer des Keystone application credentials via le CLI :</p>
+      <pre><code class="language-bash"># Créer un Keystone application credential
+openstack application credential create my-lab-credential
+
+# La sortie contient l'ID et le Secret — conservez-les en lieu sûr</code></pre>
+
+      <figure>
+        <img src="../assets/images/keycloak-users-app-credentials.png"
+             alt="Keystone — Écran de création des Application Credentials"
+             loading="lazy">
+        <figcaption>Écran de création des Keystone Application Credentials</figcaption>
+      </figure>
+
+      <h2>4. Variables d'environnement</h2>
       <p>Exportez vos valeurs d'application credential pour que le framework de lab puisse s'authentifier automatiquement.</p>
 
       <pre><code class="language-bash">export OS_AUTH_URL="https://auth.cloud.ovh.net/v3"
@@ -60,7 +153,7 @@ export OS_APPLICATION_CREDENTIAL_ID="${OS_APPLICATION_CREDENTIAL_ID}"
 export OS_APPLICATION_CREDENTIAL_SECRET="${OS_APPLICATION_CREDENTIAL_SECRET}"
 export OS_REGION_NAME="GRA7"</code></pre>
 
-      <h2>3. Exercice 1 — S'authentifier avec un Application Credential</h2>
+      <h2>5. Exercice 1 — S'authentifier avec un Application Credential</h2>
       <p>
         Utilisez le CLI <code>openstack</code> pour vous authentifier auprès de Keystone
         avec votre application credential et obtenir un token.
@@ -72,7 +165,7 @@ openstack token issue
 # La commande affiche un ID de token et une date d'expiration
 # Le CLI utilise automatiquement les variables d'environnement OS_*</code></pre>
 
-      <h2>4. Exercice 2 — Gestion des tokens</h2>
+      <h2>6. Exercice 2 — Gestion des tokens</h2>
       <p>
         Apprenez à valider et révoquer les tokens d'authentification.
         C'est essentiel pour comprendre le cycle de vie des tokens dans l'automatisation.
@@ -86,7 +179,7 @@ echo "Token obtenu : $TOKEN"
 openstack token revoke "$TOKEN"
 echo "Token révoqué avec succès"</code></pre>
 
-      <h2>5. Gestion des erreurs</h2>
+      <h2>7. Gestion des erreurs</h2>
       <p>
         Les échecs d'authentification sont signalés avec des messages d'erreur
         clairs par le CLI. Si vos identifiants sont incorrects, le CLI retournera

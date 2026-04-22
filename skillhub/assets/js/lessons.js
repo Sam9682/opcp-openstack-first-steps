@@ -65,22 +65,13 @@
       prerequisites: ['auth']
     },
     {
-      id: 'secgroup',
-      slug: 'security-groups',
-      titleEN: 'Security Groups',
-      titleFR: 'Groupes de sécurité',
-      difficulty: 'intermediate',
-      estimatedMinutes: 20,
-      prerequisites: ['network']
-    },
-    {
       id: 'storage',
       slug: 'storage',
       titleEN: 'Storage',
       titleFR: 'Stockage',
       difficulty: 'intermediate',
       estimatedMinutes: 20,
-      prerequisites: ['secgroup']
+      prerequisites: ['network']
     },
     {
       id: 'compute',

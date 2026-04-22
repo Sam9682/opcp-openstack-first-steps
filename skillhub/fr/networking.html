@@ -62,28 +62,162 @@ openstack subnet create \
 # Vérifier que le sous-réseau a été créé
 openstack subnet show {student_id}-net-subnet</code></pre>
 
-      <h2>3. Exercice 3 — Configurer un routeur</h2>
+      <h2>3. Réseaux VLAN et ports</h2>
       <p>
-        Créez un routeur et attachez-le à votre sous-réseau. Cela permet le routage
-        du trafic entre les sous-réseaux et les réseaux externes.
+        En environnement de production, les réseaux sont souvent adossés à des
+        VLANs spécifiques. Vous pouvez créer un réseau VLAN et y assigner un
+        port afin que le trafic soit tagué avec le bon VLAN ID sur le switch
+        physique.
       </p>
 
-      <pre><code class="language-bash"># Créer un routeur
-openstack router create {student_id}-net-router
+      <h3>Créer un réseau VLAN</h3>
+      <pre><code class="language-bash"># Créer un réseau avec un VLAN ID spécifique
+openstack network create \
+  --provider-network-type vlan \
+  --provider-physical-network physnet1 \
+  --provider-segment 100 \
+  {student_id}-vlan100-network
 
-# Attacher le routeur à votre sous-réseau
-openstack router add subnet \
-  {student_id}-net-router \
-  {student_id}-net-subnet
+# Créer un sous-réseau sur le réseau VLAN
+openstack subnet create \
+  --network {student_id}-vlan100-network \
+  --subnet-range 10.100.0.0/24 \
+  {student_id}-vlan100-subnet</code></pre>
 
-# Vérifier le routeur
-openstack router show {student_id}-net-router</code></pre>
+      <h3>Créer un port sur un réseau VLAN spécifique</h3>
+      <pre><code class="language-bash"># Créer un port lié au réseau VLAN
+openstack port create \
+  --network {student_id}-vlan100-network \
+  {student_id}-vlan100-port
+
+# Vérifier les détails du port (binding VLAN)
+openstack port show {student_id}-vlan100-port</code></pre>
+
+      <h2>4. Assignation VLAN pour le baremetal</h2>
+      <p>
+        Lorsque vous travaillez avec des instances baremetal (Ironic), vous
+        pouvez assigner des réseaux VLAN directement aux interfaces physiques.
+        Cela permet d'isoler le trafic sur du matériel dédié.
+      </p>
+
+      <pre><code class="language-bash"># Créer un réseau VLAN pour le baremetal
+openstack network create \
+  --provider-network-type vlan \
+  --provider-physical-network physnet1 \
+  --provider-segment 200 \
+  {student_id}-bm-vlan200
+
+# Créer un sous-réseau
+openstack subnet create \
+  --network {student_id}-bm-vlan200 \
+  --subnet-range 10.200.0.0/24 \
+  {student_id}-bm-vlan200-subnet
+
+# Créer un port pour le nœud baremetal
+openstack port create \
+  --network {student_id}-bm-vlan200 \
+  --vnic-type baremetal \
+  {student_id}-bm-port
+
+# Déployer une instance baremetal avec ce port
+openstack server create \
+  --flavor baremetal \
+  --image "Ubuntu 22.04" \
+  --port {student_id}-bm-port \
+  --wait \
+  {student_id}-bm-instance</code></pre>
+
+      <h2>5. Ports trunk</h2>
+      <p>
+        Les ports trunk permettent à un seul port parent de transporter le
+        trafic de plusieurs réseaux VLAN via des subports. C'est couramment
+        utilisé lorsqu'une instance a besoin d'accéder à plusieurs VLANs
+        simultanément.
+      </p>
+
+      <pre><code class="language-bash"># Créer le port parent
+openstack port create \
+  --network {student_id}-net-network \
+  {student_id}-trunk-parent
+
+# Créer un subport sur un autre réseau VLAN
+openstack port create \
+  --network {student_id}-vlan100-network \
+  {student_id}-trunk-sub1
+
+# Créer le trunk avec le port parent et attacher le subport
+openstack network trunk create \
+  --parent-port {student_id}-trunk-parent \
+  --subport port={student_id}-trunk-sub1,segmentation-type=vlan,segmentation-id=100 \
+  {student_id}-trunk
+
+# Ajouter un autre subport ultérieurement
+openstack port create \
+  --network {student_id}-bm-vlan200 \
+  {student_id}-trunk-sub2
+
+openstack network trunk set \
+  --subport port={student_id}-trunk-sub2,segmentation-type=vlan,segmentation-id=200 \
+  {student_id}-trunk
+
+# Vérifier la configuration du trunk
+openstack network trunk show {student_id}-trunk</code></pre>
+
+      <h2>6. QinQ (802.1ad) — Double encapsulation VLAN</h2>
+      <p>
+        Le QinQ (aussi appelé VLAN stacking ou 802.1ad) encapsule un tag VLAN
+        à l'intérieur d'un autre. C'est utile lorsqu'un fournisseur de services
+        doit transporter le trafic VLAN de ses clients à travers sa propre
+        infrastructure VLAN sans conflit. Le tag externe (S-VLAN) identifie le
+        segment du fournisseur, tandis que le tag interne (C-VLAN) préserve le
+        VLAN original du client.
+      </p>
+
+      <h3>Cas d'usage</h3>
+      <p>
+        Un hébergeur exploite plusieurs locataires sur la même infrastructure
+        physique. Chaque locataire utilise ses propres VLANs en interne (ex.
+        VLAN 10, 20, 30). Avec le QinQ, le fournisseur encapsule le trafic de
+        chaque locataire dans un VLAN externe unique, permettant aux VLAN IDs
+        des locataires de se chevaucher sans interférence.
+      </p>
+
+      <pre><code class="language-bash"># Créer un réseau fournisseur avec le type VLAN pour le tag externe (S-VLAN)
+openstack network create \
+  --provider-network-type vlan \
+  --provider-physical-network physnet1 \
+  --provider-segment 500 \
+  {student_id}-qinq-provider
+
+# Créer un sous-réseau sur le réseau fournisseur
+openstack subnet create \
+  --network {student_id}-qinq-provider \
+  --subnet-range 10.50.0.0/24 \
+  {student_id}-qinq-provider-subnet
+
+# Créer le port parent sur le réseau fournisseur
+openstack port create \
+  --network {student_id}-qinq-provider \
+  {student_id}-qinq-parent
+
+# Créer un trunk et attacher un subport avec le tag interne (C-VLAN)
+openstack network trunk create \
+  --parent-port {student_id}-qinq-parent \
+  --subport port={student_id}-trunk-sub1,segmentation-type=vlan,segmentation-id=10 \
+  {student_id}-qinq-trunk
+
+# L'instance voit le trafic du VLAN interne 10,
+# tandis que le réseau physique le transporte dans le VLAN externe 500
+openstack network trunk show {student_id}-qinq-trunk</code></pre>
 
       <h2>Résumé</h2>
       <ul>
-        <li>Utilisez les commandes <code>openstack network</code>, <code>openstack subnet</code> et <code>openstack router</code>.</li>
+        <li>Utilisez les commandes <code>openstack network</code> et <code>openstack subnet</code>.</li>
         <li>Les sous-réseaux nécessitent une <strong>plage CIDR</strong> valide (ex. <code>10.0.0.0/24</code>).</li>
-        <li>Les routeurs connectent les sous-réseaux et permettent la <strong>connectivité externe</strong>.</li>
+        <li>Les réseaux VLAN utilisent <code>--provider-network-type vlan</code> avec un <code>--provider-segment</code> ID.</li>
+        <li>Les ports baremetal utilisent <code>--vnic-type baremetal</code> pour se lier aux interfaces physiques.</li>
+        <li>Les ports trunk transportent plusieurs VLANs via les commandes <code>openstack network trunk</code>.</li>
+        <li>Le QinQ (802.1ad) empile un C-VLAN interne dans un S-VLAN externe pour l'isolation multi-locataire.</li>
       </ul>
 
       <button class="mark-complete-btn" type="button" aria-label="Marquer cette leçon comme terminée">
