@@ -189,7 +189,13 @@ export PATH="$HOME/.local/bin:$PATH"</code></pre>
         un <strong>fichier d'identifiants</strong>.
       </p>
 
-      <h3>Option A — Variables d'environnement</h3>
+      <h3>Option A — Variables d'environnement (Application Credentials)</h3>
+      <pre><code class="language-bash">export OS_AUTH_URL="https://auth.cloud.ovh.net/v3"
+export OS_AUTH_TYPE="v3applicationcredential"
+export OS_APPLICATION_CREDENTIAL_ID="votre-credential-id"
+export OS_APPLICATION_CREDENTIAL_SECRET="votre-credential-secret"</code></pre>
+
+      <h3>Option A — Variables d'environnement (Utilisateur / Mot de passe)</h3>
       <pre><code class="language-bash">export OS_AUTH_URL="https://auth.cloud.ovh.net/v3"
 export OS_USERNAME="votre-utilisateur"
 export OS_PASSWORD="votre-mot-de-passe"
