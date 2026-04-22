@@ -63,7 +63,7 @@ brew install python@3.11</code></pre>
 pip3 --version
 # Expected output: pip 2x.x from … (python 3.x)</code></pre>
       <p>If pip is missing, install it with:</p>
-      <pre><code class="language-bash">python3 -m ensurepip --upgrade</code></pre>
+      <pre><code class="language-bash">sudo apt install -y python3-pip</code></pre>
 
       <h2>3. OpenStack CLI client</h2>
       <p>
@@ -84,7 +84,7 @@ openstack --version
         <code>labs/base/requirements.txt</code>):
       </p>
       <ul>
-        <li><strong>openstacksdk 3.3.0</strong> — official Python SDK for OpenStack APIs</li>
+        <li><strong>openstacksdk 4.6.0</strong> — official Python SDK for OpenStack APIs</li>
         <li><strong>PyYAML 6.0.2</strong> — YAML configuration parsing</li>
         <li><strong>pytest 8.3.4</strong> — test runner used by the assessment engine</li>
         <li><strong>hypothesis 6.112.5</strong> — property-based testing library</li>
@@ -204,14 +204,7 @@ password: your-password
 project_name: your-project
 domain_name: Default</code></pre>
 
-      <h2>7. OVHcloud Public Cloud project</h2>
-      <p>
-        You need an active OVHcloud Public Cloud project with API access enabled.
-        Make sure your user has the appropriate roles to create instances,
-        networks, volumes, and security groups.
-      </p>
-
-      <h2>8. Basic terminal knowledge</h2>
+      <h2>7. Basic terminal knowledge</h2>
       <p>
         You should be comfortable running commands in a terminal (bash, zsh, or
         PowerShell). All exercises are launched from the command line.

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkillHub — CLI &amp; API Cheat Sheet</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <header class="site-header" role="banner">
+    <div class="logo"><a href="index.html" aria-label="SkillHub home">SkillHub</a></div>
+    <div class="header-right">
+      <div class="lang-toggle" aria-label="Language selector"></div>
+      <div class="progress-bar-container" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Learning progress">
+        <div class="progress-bar-fill"></div>
+      </div>
+      <span class="progress-text">0% complete</span>
+      <button class="hamburger-btn" aria-label="Toggle navigation menu" aria-expanded="false">☰</button>
+    </div>
+  </header>
+  <div class="sidebar-overlay" aria-hidden="true"></div>
+  <div class="site-wrapper">
+    <aside class="sidebar" role="navigation" aria-label="Lesson navigation">
+      <nav id="sidebar-nav"></nav>
+    </aside>
+    <main class="main-content" role="main">
+      <div class="breadcrumbs" aria-label="Breadcrumb navigation"></div>
+
+      <h1>CLI &amp; API Cheat Sheet</h1>
+      <p class="lesson-meta">Difficulty: <strong>Beginner</strong> · Estimated time: <strong>10 min</strong></p>
+
+      <p>
+        This page lists common OpenStack operations using both the
+        <code>openstack</code> CLI and the equivalent <code>curl</code> calls
+        against the REST API. Replace the placeholder values
+        (<code>$OS_AUTH_URL</code>, <code>$TOKEN</code>, etc.) with your own
+        environment variables.
+      </p>
+
+      <h2>Authentication — Get a Token</h2>
+
+      <h3>CLI</h3>
+      <pre><code class="language-bash">openstack token issue</code></pre>
+
+      <h3>curl — Application Credentials</h3>
+      <pre><code class="language-bash">curl -s -X POST "$OS_AUTH_URL/auth/tokens" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "auth": {
+      "identity": {
+        "methods": ["application_credential"],
+        "application_credential": {
+          "id": "'"$OS_APPLICATION_CREDENTIAL_ID"'",
+          "secret": "'"$OS_APPLICATION_CREDENTIAL_SECRET"'"
+        }
+      }
+    }
+  }' -i | grep "X-Subject-Token"</code></pre>
+
+      <h3>curl — User / Password</h3>
+      <pre><code class="language-bash">curl -s -X POST "$OS_AUTH_URL/auth/tokens" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "auth": {
+      "identity": {
+        "methods": ["password"],
+        "password": {
+          "user": {
+            "name": "'"$OS_USERNAME"'",
+            "domain": {"name": "'"$OS_DOMAIN_NAME"'"},
+            "password": "'"$OS_PASSWORD"'"
+          }
+        }
+      },
+      "scope": {
+        "project": {
+          "name": "'"$OS_PROJECT_NAME"'",
+          "domain": {"name": "'"$OS_DOMAIN_NAME"'"}
+        }
+      }
+    }
+  }' -i | grep "X-Subject-Token"</code></pre>
+
+      <h2>Compute (Nova)</h2>
+
+      <h3>List servers — CLI</h3>
+      <pre><code class="language-bash">openstack server list</code></pre>
+
+      <h3>List servers — curl</h3>
+      <pre><code class="language-bash">curl -s -X GET "$NOVA_ENDPOINT/servers" \
+  -H "X-Auth-Token: $TOKEN" | python3 -m json.tool</code></pre>
+
+      <h3>Create a server — CLI</h3>
+      <pre><code class="language-bash">openstack server create \
+  --flavor s1-4 \
+  --image "Ubuntu 22.04" \
+  --network my-network \
+  --wait \
+  my-instance</code></pre>
+
+      <h3>Create a server — curl</h3>
+      <pre><code class="language-bash">curl -s -X POST "$NOVA_ENDPOINT/servers" \
+  -H "X-Auth-Token: $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "server": {
+      "name": "my-instance",
+      "flavorRef": "'"$FLAVOR_ID"'",
+      "imageRef": "'"$IMAGE_ID"'",
+      "networks": [{"uuid": "'"$NETWORK_ID"'"}]
+    }
+  }' | python3 -m json.tool</code></pre>
+
+      <h3>Delete a server — CLI</h3>
+      <pre><code class="language-bash">openstack server delete my-instance</code></pre>
+
+      <h3>Delete a server — curl</h3>
+      <pre><code class="language-bash">curl -s -X DELETE "$NOVA_ENDPOINT/servers/$SERVER_ID" \
+  -H "X-Auth-Token: $TOKEN"</code></pre>
+
+      <h2>Networking (Neutron)</h2>
+
+      <h3>List networks — CLI</h3>
+      <pre><code class="language-bash">openstack network list</code></pre>
+
+      <h3>List networks — curl</h3>
+      <pre><code class="language-bash">curl -s -X GET "$NEUTRON_ENDPOINT/v2.0/networks" \
+  -H "X-Auth-Token: $TOKEN" | python3 -m json.tool</code></pre>
+
+      <h3>Create a network — CLI</h3>
+      <pre><code class="language-bash">openstack network create my-network</code></pre>
+
+      <h3>Create a network — curl</h3>
+      <pre><code class="language-bash">curl -s -X POST "$NEUTRON_ENDPOINT/v2.0/networks" \
+  -H "X-Auth-Token: $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "network": {
+      "name": "my-network",
+      "admin_state_up": true
+    }
+  }' | python3 -m json.tool</code></pre>
+
+      <h3>Create a subnet — CLI</h3>
+      <pre><code class="language-bash">openstack subnet create \
+  --network my-network \
+  --subnet-range 192.168.1.0/24 \
+  my-subnet</code></pre>
+
+      <h3>Create a subnet — curl</h3>
+      <pre><code class="language-bash">curl -s -X POST "$NEUTRON_ENDPOINT/v2.0/subnets" \
+  -H "X-Auth-Token: $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "subnet": {
+      "network_id": "'"$NETWORK_ID"'",
+      "ip_version": 4,
+      "cidr": "192.168.1.0/24",
+      "name": "my-subnet"
+    }
+  }' | python3 -m json.tool</code></pre>
+
+      <h2>Storage (Cinder)</h2>
+
+      <h3>List volumes — CLI</h3>
+      <pre><code class="language-bash">openstack volume list</code></pre>
+
+      <h3>List volumes — curl</h3>
+      <pre><code class="language-bash">curl -s -X GET "$CINDER_ENDPOINT/volumes" \
+  -H "X-Auth-Token: $TOKEN" | python3 -m json.tool</code></pre>
+
+      <h3>Create a volume — CLI</h3>
+      <pre><code class="language-bash">openstack volume create --size 10 my-volume</code></pre>
+
+      <h3>Create a volume — curl</h3>
+      <pre><code class="language-bash">curl -s -X POST "$CINDER_ENDPOINT/volumes" \
+  -H "X-Auth-Token: $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "volume": {
+      "size": 10,
+      "name": "my-volume"
+    }
+  }' | python3 -m json.tool</code></pre>
+
+      <h3>Attach a volume to a server — CLI</h3>
+      <pre><code class="language-bash">openstack server add volume my-instance my-volume</code></pre>
+
+      <h3>Attach a volume to a server — curl</h3>
+      <pre><code class="language-bash">curl -s -X POST "$NOVA_ENDPOINT/servers/$SERVER_ID/os-volume_attachments" \
+  -H "X-Auth-Token: $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "volumeAttachment": {
+      "volumeId": "'"$VOLUME_ID"'"
+    }
+  }' | python3 -m json.tool</code></pre>
+
+      <h2>Images (Glance)</h2>
+
+      <h3>List images — CLI</h3>
+      <pre><code class="language-bash">openstack image list</code></pre>
+
+      <h3>List images — curl</h3>
+      <pre><code class="language-bash">curl -s -X GET "$GLANCE_ENDPOINT/v2/images" \
+  -H "X-Auth-Token: $TOKEN" | python3 -m json.tool</code></pre>
+
+      <h2>Useful Tips</h2>
+      <ul>
+        <li>Store your token in a variable for reuse:
+          <pre><code class="language-bash">export TOKEN=$(openstack token issue -f value -c id)</code></pre>
+        </li>
+        <li>Find service endpoints:
+          <pre><code class="language-bash">openstack catalog list</code></pre>
+        </li>
+        <li>Use <code>-f json</code> with the CLI to get JSON output, handy for scripting:
+          <pre><code class="language-bash">openstack server list -f json</code></pre>
+        </li>
+      </ul>
+
+      <button class="mark-complete-btn" type="button" aria-label="Mark this lesson as complete">
+        ✓ Mark as Complete
+      </button>
+      <div class="prev-next-nav" aria-label="Lesson navigation"></div>
+    </main>
+  </div>
+  <footer class="site-footer" role="contentinfo">
+    <a href="https://github.com/opcp-openstack-first-steps" aria-label="Project on GitHub">GitHub</a> ·
+    <a href="../../LICENSE" aria-label="Project license">License</a> ·
+    SkillHub Training — OVHcloud
+  </footer>
+  <script src="../assets/js/lessons.js"></script>
+  <script src="../assets/js/i18n.js"></script>
+  <script src="../assets/js/navigation.js"></script>
+  <script src="../assets/js/code-highlight.js"></script>
+  <script src="../assets/js/main.js"></script>
+</body>
+</html>

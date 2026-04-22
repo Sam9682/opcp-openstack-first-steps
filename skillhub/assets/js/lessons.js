@@ -117,6 +117,15 @@
       difficulty: 'beginner',
       estimatedMinutes: 10,
       prerequisites: ['summary']
+    },
+    {
+      id: 'cheat-sheet',
+      slug: 'cheat-sheet',
+      titleEN: 'CLI & API Cheat Sheet',
+      titleFR: 'Aide-mémoire CLI & API',
+      difficulty: 'beginner',
+      estimatedMinutes: 10,
+      prerequisites: ['cleanup']
     }
   ];
 
