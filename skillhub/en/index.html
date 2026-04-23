@@ -74,6 +74,28 @@ env | grep OS_
 # Test authentication by issuing a token
 openstack token issue</code></pre>
 
+      <h2>Set Your Student ID</h2>
+      <p>
+        Throughout the labs, every resource you create (instances, networks,
+        volumes, etc.) is prefixed with a <code>STUDENT_ID</code>. This makes
+        it easy to identify your resources and clean them up after the training.
+      </p>
+      <p>
+        Define this variable in your terminal before starting any exercise:
+      </p>
+      <pre><code class="language-bash"># Set your student ID (replace with your own identifier)
+export STUDENT_ID=slepetre
+
+# Verify it is set
+echo $STUDENT_ID</code></pre>
+      <p>
+        All lab commands use <code>${STUDENT_ID}</code> as a naming prefix.
+        For example, an instance will be named
+        <code>${STUDENT_ID}-compute-instance</code>. At the end of the
+        training, the cleanup script uses this prefix to delete all your
+        resources in one go.
+      </p>
+
       <button class="mark-complete-btn" type="button" aria-label="Mark this lesson as complete">
         ✓ Mark as Complete
       </button>

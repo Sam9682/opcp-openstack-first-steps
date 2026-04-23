@@ -77,7 +77,7 @@
       id: 'compute',
       slug: 'compute',
       titleEN: 'Compute',
-      titleFR: 'Calcul',
+      titleFR: 'Compute',
       difficulty: 'intermediate',
       estimatedMinutes: 25,
       prerequisites: ['storage']

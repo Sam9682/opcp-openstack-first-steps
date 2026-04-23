@@ -31,4 +31,4 @@ echo "OpenStack endpoint reachable (HTTP ${HTTP_CODE})."
 # ------------------------------------------------------------------
 # Launch the lab runner.
 # ------------------------------------------------------------------
-exec python -m labs.core.runner "$@"
+exec python3 -m labs.core.runner "$@"

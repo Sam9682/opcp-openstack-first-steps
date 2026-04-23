@@ -97,7 +97,7 @@ Each exercise provides a problem statement, step-by-step instructions, automated
 ### Cleanup
 
 ```bash
-python -m labs.scripts.cleanup_lab --student-id <your-id>
+python3 -m labs.scripts.cleanup_lab --student-id <your-id>
 ```
 
 ## License

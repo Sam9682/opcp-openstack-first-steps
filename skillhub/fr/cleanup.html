@@ -50,8 +50,8 @@
           <tr><td>Premiers pas</td><td>Instance</td><td><code>${STUDENT_ID}-first-instance</code></td></tr>
           <tr><td>Premiers pas</td><td>Réseau</td><td><code>${STUDENT_ID}-first-network</code></td></tr>
           <tr><td>Premiers pas</td><td>Volume</td><td><code>${STUDENT_ID}-first-volume</code></td></tr>
-          <tr><td>Calcul</td><td>Instance</td><td><code>${STUDENT_ID}-compute-instance</code></td></tr>
-          <tr><td>Calcul</td><td>Snapshot</td><td><code>${STUDENT_ID}-compute-snapshot</code></td></tr>
+          <tr><td>Compute</td><td>Instance</td><td><code>${STUDENT_ID}-compute-instance</code></td></tr>
+          <tr><td>Compute</td><td>Snapshot</td><td><code>${STUDENT_ID}-compute-snapshot</code></td></tr>
           <tr><td>Stockage</td><td>Volume</td><td><code>${STUDENT_ID}-storage-volume</code></td></tr>
           <tr><td>Stockage</td><td>Snapshot</td><td><code>${STUDENT_ID}-storage-snapshot</code></td></tr>
           <tr><td>Groupes de sécurité</td><td>Groupe de sécurité</td><td><code>${STUDENT_ID}-sg-web</code></td></tr>
@@ -87,7 +87,7 @@
       </p>
 
       <pre><code class="language-bash"># Nettoyer toutes les ressources de votre session
-python -m labs.scripts.cleanup_lab --student-id votre-student-id</code></pre>
+python3 -m labs.scripts.cleanup_lab --student-id votre-student-id</code></pre>
 
       <p>
         Le script utilise une approche best-effort : si une ressource ne peut

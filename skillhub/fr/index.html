@@ -50,7 +50,7 @@
         <li><strong>L'authentification</strong> — s'authentifier via Keystone avec des application credentials</li>
         <li><strong>Le réseau</strong> — créer des réseaux, sous-réseaux et routeurs avec Neutron</li>
         <li><strong>Le stockage</strong> — créer et attacher des volumes avec Cinder</li>
-        <li><strong>Le calcul</strong> — lancer et gérer des instances avec Nova</li>
+        <li><strong>Le Compute</strong> — lancer et gérer des instances avec Nova</li>
         <li><strong>La configuration LACP</strong> — agréger plusieurs interfaces réseau pour la bande passante et la redondance</li>
       </ul>
 
@@ -73,6 +73,30 @@ env | grep OS_
 
 # Tester l'authentification en émettant un token
 openstack token issue</code></pre>
+
+      <h2>Définir votre identifiant étudiant</h2>
+      <p>
+        Tout au long des labs, chaque ressource que vous créez (instances,
+        réseaux, volumes, etc.) est préfixée par un <code>STUDENT_ID</code>.
+        Cela permet d'identifier facilement vos ressources et de les nettoyer
+        après la formation.
+      </p>
+      <p>
+        Définissez cette variable dans votre terminal avant de commencer un
+        exercice :
+      </p>
+      <pre><code class="language-bash"># Définir votre identifiant étudiant (remplacez par le vôtre)
+export STUDENT_ID=slepetre
+
+# Vérifier qu'il est défini
+echo $STUDENT_ID</code></pre>
+      <p>
+        Toutes les commandes des labs utilisent <code>${STUDENT_ID}</code>
+        comme préfixe de nommage. Par exemple, une instance sera nommée
+        <code>${STUDENT_ID}-compute-instance</code>. À la fin de la
+        formation, le script de nettoyage utilise ce préfixe pour supprimer
+        toutes vos ressources en une seule fois.
+      </p>
 
       <button class="mark-complete-btn" type="button" aria-label="Marquer cette leçon comme terminée">
         ✓ Marquer comme terminé

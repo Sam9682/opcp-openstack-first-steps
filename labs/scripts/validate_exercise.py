@@ -6,7 +6,7 @@ assessment engine for a given module/exercise.
 
 Usage::
 
-    python -m labs.scripts.validate_exercise <module_name> <exercise_id> <student_id>
+    python3 -m labs.scripts.validate_exercise <module_name> <exercise_id> <student_id>
 """
 
 from __future__ import annotations
@@ -17,7 +17,7 @@ import sys
 def main() -> None:
     if len(sys.argv) != 4:
         print(
-            "Usage: python -m labs.scripts.validate_exercise "
+            "Usage: python3 -m labs.scripts.validate_exercise "
             "<module_name> <exercise_id> <student_id>",
             file=sys.stderr,
         )

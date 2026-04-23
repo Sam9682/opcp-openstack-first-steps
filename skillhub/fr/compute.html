@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SkillHub — Calcul</title>
+  <title>SkillHub — Compute</title>
   <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body>
@@ -26,11 +26,11 @@
     <main class="main-content" role="main">
       <div class="breadcrumbs" aria-label="Fil d'Ariane"></div>
 
-      <h1>Calcul</h1>
+      <h1>Compute</h1>
       <p class="lesson-meta">Difficulté : <strong>Intermédiaire</strong> · Durée estimée : <strong>25 min</strong></p>
 
       <p>
-        Le service de calcul Nova gère les instances de machines virtuelles. Dans cette
+        Le service de Compute Nova gère les instances de machines virtuelles. Dans cette
         leçon, vous allez lancer des instances, les redimensionner et créer des snapshots.
       </p>
 
@@ -69,7 +69,7 @@ openstack keypair show ${STUDENT_ID}-keypair</code></pre>
         une image et votre paire de clés SSH. Nommez-la <code>${STUDENT_ID}-compute-instance</code>.
       </p>
 
-      <pre><code class="language-bash"># Lancer une instance de calcul avec votre clé SSH
+      <pre><code class="language-bash"># Lancer une instance de Compute avec votre clé SSH
 openstack server create \
   --flavor scale-1 \
   --image "Ubuntu 24.04 BMPOD" \
