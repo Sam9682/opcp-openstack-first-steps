@@ -26,63 +26,199 @@
     <main class="main-content" role="main">
       <div class="breadcrumbs" aria-label="Breadcrumb navigation"></div>
 
-      <h1>Storage</h1>
-      <p class="lesson-meta">Difficulty: <strong>Intermediate</strong> · Estimated time: <strong>20 min</strong></p>
+      <h1>Storage — Software RAID Configuration</h1>
+      <p class="lesson-meta">Difficulty: <strong>Advanced</strong> · Estimated time: <strong>25 min</strong></p>
 
       <p>
-        The Cinder block storage service manages persistent volumes. In this lesson
-        you will create volumes, attach them to running instances, and manage
-        volume snapshots.
+        In production environments, relying on a single disk is risky. Software
+        RAID (Redundant Array of Independent Disks) combines multiple block
+        storage volumes into a single logical device to improve performance,
+        redundancy, or both. In this lesson you will provision multiple Cinder
+        volumes, attach them to a baremetal instance, and configure a software
+        RAID array using <code>mdadm</code>.
       </p>
 
-      <h2>1. Exercise 1 — Create a Volume</h2>
+      <h2>1. Background — RAID Levels</h2>
       <p>
-        Use the <code>openstack</code> CLI to create a 1 GB block storage volume named
-        <code>${STUDENT_ID}-storage-volume</code>.
+        The most common software RAID levels used on cloud instances are:
       </p>
+      <table style="border-collapse: collapse; width: 100%;" border="1" cellpadding="8">
+        <thead>
+          <tr><th>Level</th><th>Min. disks</th><th>Description</th><th>Use case</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="text-align: center"><strong>RAID 0</strong></td><td style="text-align: center">2</td>
+            <td>Striping — data is split across disks. No redundancy.</td>
+            <td>Maximum throughput (scratch space, temp data).</td>
+          </tr>
+          <tr>
+            <td style="text-align: center"><strong>RAID 1</strong></td><td style="text-align: center">2</td>
+            <td>Mirroring — identical copy on each disk.</td>
+            <td>High availability for OS or critical data.</td>
+          </tr>
+          <tr>
+            <td style="text-align: center"><strong>RAID 5</strong></td><td style="text-align: center">3</td>
+            <td>Striping with distributed parity. Tolerates 1 disk failure.</td>
+            <td>Balanced performance and redundancy.</td>
+          </tr>
+          <tr>
+            <td style="text-align: center"><strong>RAID 10</strong></td><td style="text-align: center">4</td>
+            <td>Mirrored stripes (RAID 1 + 0).</td>
+            <td>High performance with redundancy (databases).</td>
+          </tr>
+        </tbody>
+      </table>
 
-      <pre><code class="language-bash"># Create a 1 GB block storage volume
-openstack volume create \
-  --size 1 \
-  ${STUDENT_ID}-storage-volume
-
-# Verify the volume is available
-openstack volume show ${STUDENT_ID}-storage-volume -f value -c status</code></pre>
-
-      <h2>2. Exercise 2 — Attach a Volume</h2>
+      <h2>2. Exercise 1 — Provision Multiple Volumes</h2>
       <p>
-        Attach your volume to a running compute instance. The volume status will
-        change from <code>available</code> to <code>in-use</code>.
+        Create the block storage volumes that will form the RAID array. We will
+        create 3 volumes of 10 GB each for a RAID 5 configuration.
       </p>
 
-      <pre><code class="language-bash"># Attach the volume to a running instance
-openstack server add volume \
-  ${STUDENT_ID}-compute-instance \
-  ${STUDENT_ID}-storage-volume
+      <pre><code class="language-bash"># Create 3 volumes for the RAID array
+for i in 1 2 3; do
+  openstack volume create \
+    --size 10 \
+    ${STUDENT_ID}-raid-disk-${i}
+done
 
-# Verify the volume status changed to in-use
-openstack volume show ${STUDENT_ID}-storage-volume -f value -c status</code></pre>
+# Verify all volumes are available
+openstack volume list --format json | jq '.[] | select(.Name | startswith("'$STUDENT_ID'-raid-disk-"))'</code></pre>
 
-      <h2>3. Exercise 3 — Manage Snapshots</h2>
+      <h2>3. Exercise 2 — Attach Volumes to an Instance</h2>
       <p>
-        Create a snapshot of your volume. Volume snapshots are point-in-time copies
-        that can be used to create new volumes or restore data.
+        Attach all three volumes to your running instance. Each volume will
+        appear as a new block device inside the instance.
       </p>
 
-      <pre><code class="language-bash"># Create a snapshot of the volume
-openstack volume snapshot create \
-  --volume ${STUDENT_ID}-storage-volume \
-  ${STUDENT_ID}-storage-snapshot
+      <pre><code class="language-bash"># Attach each volume to the instance
+for i in 1 2 3; do
+  openstack server add volume \
+    ${STUDENT_ID}-compute-instance \
+    ${STUDENT_ID}-raid-disk-${i}
+done
 
-# Verify the snapshot was created
-openstack volume snapshot show ${STUDENT_ID}-storage-snapshot -f value -c status</code></pre>
+# Verify volumes are in-use
+openstack volume list --name ${STUDENT_ID}-raid-disk-1 -f value -c Status</code></pre>
+
+      <h2>4. Exercise 3 — Configure Software RAID 5</h2>
+      <p>
+        SSH into your instance and use <code>mdadm</code> to assemble the
+        three disks into a RAID 5 array.
+      </p>
+
+      <h3>Step 1 — Identify the attached disks</h3>
+      <pre><code class="language-bash"># List block devices — the new volumes typically appear as /dev/vdb, /dev/vdc, /dev/vdd
+lsblk
+
+# Expected output (names may vary):
+# vdb    10G  disk
+# vdc    10G  disk
+# vdd    10G  disk</code></pre>
+
+      <h3>Step 2 — Install mdadm</h3>
+      <pre><code class="language-bash"># Install the RAID management tool
+sudo apt update &amp;&amp; sudo apt install -y mdadm</code></pre>
+
+      <h3>Step 3 — Create the RAID 5 array</h3>
+      <pre><code class="language-bash"># Create a RAID 5 array named /dev/md0 with 3 devices
+sudo mdadm --create /dev/md0 \
+  --level=5 \
+  --raid-devices=3 \
+  /dev/vdb /dev/vdc /dev/vdd
+
+# Monitor the array build progress
+cat /proc/mdstat</code></pre>
+
+      <h3>Step 4 — Format and mount the array</h3>
+      <pre><code class="language-bash"># Create an ext4 filesystem on the RAID array
+sudo mkfs.ext4 /dev/md0
+
+# Create a mount point and mount the array
+sudo mkdir -p /mnt/raid5
+sudo mount /dev/md0 /mnt/raid5
+
+# Verify the mount
+df -h /mnt/raid5</code></pre>
+
+      <h3>Step 5 — Persist the configuration</h3>
+      <pre><code class="language-bash"># Save the RAID configuration
+sudo mdadm --detail --scan | sudo tee -a /etc/mdadm/mdadm.conf
+
+# Add to fstab for automatic mount on reboot
+echo '/dev/md0 /mnt/raid5 ext4 defaults,nofail 0 2' | sudo tee -a /etc/fstab
+
+# Update initramfs so the array is detected at boot
+sudo update-initramfs -u</code></pre>
+
+      <h2>5. Monitoring and Recovery</h2>
+      <p>
+        Once the array is running, you can monitor its health and simulate a
+        disk failure to test recovery.
+      </p>
+
+      <h3>Check array status</h3>
+      <pre><code class="language-bash"># Detailed status of the RAID array
+sudo mdadm --detail /dev/md0
+
+# Quick status from /proc
+cat /proc/mdstat</code></pre>
+
+      <h3>Simulate a disk failure</h3>
+      <pre><code class="language-bash"># Mark a disk as faulty
+sudo mdadm --manage /dev/md0 --fail /dev/vdd
+
+# Remove the faulty disk
+sudo mdadm --manage /dev/md0 --remove /dev/vdd
+
+# Check the degraded array status
+sudo mdadm --detail /dev/md0</code></pre>
+
+      <h3>Replace and rebuild</h3>
+      <pre><code class="language-bash"># Create a replacement volume in OpenStack
+openstack volume create --size 10 ${STUDENT_ID}-raid-disk-4
+openstack server add volume ${STUDENT_ID}-compute-instance ${STUDENT_ID}-raid-disk-4
+
+# Add the new disk to the array (appears as /dev/vde)
+sudo mdadm --manage /dev/md0 --add /dev/vde
+
+# Monitor the rebuild
+watch cat /proc/mdstat</code></pre>
+
+      <h2>6. Alternative — RAID 1 (Mirroring)</h2>
+      <p>
+        For simpler setups requiring only mirroring, you can create a RAID 1
+        array with two volumes:
+      </p>
+
+      <pre><code class="language-bash"># Create 2 volumes
+openstack volume create --size 10 ${STUDENT_ID}-mirror-disk-1
+openstack volume create --size 10 ${STUDENT_ID}-mirror-disk-2
+
+# Attach both to the instance
+openstack server add volume ${STUDENT_ID}-compute-instance ${STUDENT_ID}-mirror-disk-1
+openstack server add volume ${STUDENT_ID}-compute-instance ${STUDENT_ID}-mirror-disk-2
+
+# Create a RAID 1 array inside the instance
+sudo mdadm --create /dev/md1 \
+  --level=1 \
+  --raid-devices=2 \
+  /dev/vdf /dev/vdg
+
+# Format and mount
+sudo mkfs.ext4 /dev/md1
+sudo mkdir -p /mnt/mirror
+sudo mount /dev/md1 /mnt/mirror</code></pre>
 
       <h2>Summary</h2>
       <ul>
-        <li>Use <code>openstack volume</code> commands to create, attach, and snapshot volumes.</li>
-        <li>Volumes are <strong>persistent block storage</strong> that survive instance deletion.</li>
-        <li>Attaching a volume changes its status from <code>available</code> to <code>in-use</code>.</li>
-        <li>Snapshots provide <strong>point-in-time backups</strong> of volume data.</li>
+        <li>Software RAID uses <code>mdadm</code> to combine multiple Cinder volumes into a single logical device.</li>
+        <li><strong>RAID 5</strong> provides a good balance of performance and redundancy with distributed parity.</li>
+        <li><strong>RAID 1</strong> mirrors data across two disks for simple high availability.</li>
+        <li>Use <code>openstack volume create</code> and <code>openstack server add volume</code> to provision and attach disks.</li>
+        <li>Always persist the RAID configuration in <code>/etc/mdadm/mdadm.conf</code> and <code>/etc/fstab</code>.</li>
+        <li>Failed disks can be replaced and rebuilt without downtime on RAID 1 and RAID 5 arrays.</li>
       </ul>
 
       <button class="mark-complete-btn" type="button" aria-label="Mark this lesson as complete">

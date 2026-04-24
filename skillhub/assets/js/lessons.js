@@ -69,8 +69,8 @@
       slug: 'storage',
       titleEN: 'Storage',
       titleFR: 'Stockage',
-      difficulty: 'intermediate',
-      estimatedMinutes: 20,
+      difficulty: 'advanced',
+      estimatedMinutes: 25,
       prerequisites: ['network']
     },
     {
