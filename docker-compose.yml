@@ -1,7 +1,7 @@
 services:
   skillhub_d:
     image: nginx:alpine
-    container_name: skillhub
+    container_name: skillhub-opcp-first-steps
     ports:
       - "8080:80"
     volumes:
