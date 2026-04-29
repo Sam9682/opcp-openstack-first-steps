@@ -1,6 +1,6 @@
 # Prerequisites
 
-Before running the labs, make sure your environment meets the following requirements. This guide walks you through each dependency and how to verify it is correctly installed.
+Before running the labs, make sure your environment meets the following requirements. This guide walks you through each dependency and how to verify it is correctly installed. Tested under Ubuntu-24.04 (WSL). 
 
 ## 1. Python 3.9+
 
@@ -50,28 +50,9 @@ openstack --version
 # Expected output: openstack 7.x.x (or later)
 ```
 
-## 4. OpenStack SDK & Python dependencies (optional)
-
-If you also want to run the automated assessment engine, install the following Python packages (defined in `labs/base/requirements.txt`):
-
-- **openstacksdk 4.6.0** — official Python SDK for OpenStack APIs
-- **PyYAML 6.0.2** — YAML configuration parsing
-- **pytest 8.3.4** — test runner used by the assessment engine
-- **hypothesis 6.112.5** — property-based testing library
-
-Install them in a virtual environment:
-
-```bash
-# Create and activate a virtual environment
-python3 -m venv .venv
-source .venv/bin/activate   # Linux / macOS
-# .venv\Scripts\activate    # Windows
-
-# Install dependencies
-pip install -r labs/base/requirements.txt
 ```
 
-## 5. Docker (optional — for containerised labs)
+## 4. Docker (optional — for containerised labs)
 
 The labs can run inside a Docker container that bundles all dependencies. If you prefer this approach, install Docker:
 
@@ -107,7 +88,7 @@ sudo apt-get update
 sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 ```
 
-## 6. shai CLI (optional — AI terminal assistant)
+## 5. shai CLI (optional — AI terminal assistant)
 
 [shai](https://github.com/ovh/shai) is an interactive coding agent that lives in your terminal. It can help you write code, fix bugs, and answer questions while working through the labs.
 
@@ -163,45 +144,6 @@ To install it:
 code --install-extension shai-dev.shai-vscode
 ```
 
-## 7. OpenStack credentials
-
-The lab runner needs valid OpenStack credentials. You can provide them via **environment variables** or a **credentials file**.
-
-### Option A — Environment variables (Application Credentials)
-
-```bash
-export OS_AUTH_URL="https://auth.cloud.ovh.net/v3"
-export OS_AUTH_TYPE="v3applicationcredential"
-export OS_APPLICATION_CREDENTIAL_ID="your-credential-id"
-export OS_APPLICATION_CREDENTIAL_SECRET="your-credential-secret"
-```
-
-### Option A — Environment variables (User / Password)
-
-```bash
-export OS_AUTH_URL="https://auth.cloud.ovh.net/v3"
-export OS_USERNAME="your-username"
-export OS_PASSWORD="your-password"
-export OS_PROJECT_NAME="your-project"
-export OS_DOMAIN_NAME="Default"
-```
-
-### Option B — Credentials file
-
-Create `~/.openstack/credentials.yaml`:
-
-```yaml
-auth_url: https://auth.cloud.ovh.net/v3
-username: your-username
-password: your-password
-project_name: your-project
-domain_name: Default
-```
-
-## 8. Basic terminal knowledge
-
-You should be comfortable running commands in a terminal (bash, zsh, or PowerShell). All exercises are launched from the command line.
-
 ## Quick validation script
 
 Run these commands to verify everything is in place:
@@ -216,6 +158,4 @@ pip3 --version
 # Check the OpenStack CLI is installed
 openstack --version
 
-# Test authentication
-openstack token issue
 ```
