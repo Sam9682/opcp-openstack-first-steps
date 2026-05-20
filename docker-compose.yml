@@ -17,7 +17,6 @@ services:
       - DESCRIPTION=${DESCRIPTION:-Basic Information Display}
     volumes:
       - app_data:/app/data
-      - website_data:/var/www:rw
       - ./default_web_site_source:/app/default_web_site_source:ro
       - ./skillhub:/app/templates:rw
     restart: unless-stopped
@@ -37,7 +36,6 @@ services:
       - ./conf/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./ssl:/etc/nginx/ssl:ro
       - ./skillhub:/var/www/html:rw
-      - website_data:/var/www:rw
     depends_on:
       - app
     restart: unless-stopped
