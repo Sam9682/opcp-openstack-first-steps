@@ -50,44 +50,6 @@ openstack --version
 # Expected output: openstack 7.x.x (or later)
 ```
 
-```
-
-## 4. Docker (optional — for containerised labs)
-
-The labs can run inside a Docker container that bundles all dependencies. If you prefer this approach, install Docker:
-
-```bash
-# Check Docker is installed
-docker --version
-# Expected output: Docker version 2x.x.x
-```
-
-Install Docker from [docs.docker.com](https://docs.docker.com/get-docker/).
-
-### Installing Docker on Ubuntu (if not present)
-
-If Docker is not installed on your Ubuntu machine, follow the steps below to install it from the official Docker repository:
-
-```bash
-# Remove any existing broken configs
-sudo rm -f /etc/apt/sources.list.d/docker.list
-sudo rm -f /etc/apt/sources.list.d/docker.sources
-
-# Add the Docker repository with the noble codename
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-  noble stable" | \
-  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-
-# Make sure the GPG key exists
-sudo install -m 0755 -d /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-sudo chmod a+r /etc/apt/keyrings/docker.gpg
-
-# Update and install Docker
-sudo apt-get update
-sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-```
-
 ## 5. shai CLI (optional — AI terminal assistant)
 
 [shai](https://github.com/ovh/shai) is an interactive coding agent that lives in your terminal. It can help you write code, fix bugs, and answer questions while working through the labs.

@@ -11,31 +11,31 @@
 
   var LESSONS = [
     {
-      id: 'intro',
-      slug: 'index',
-      titleEN: 'Introduction',
-      titleFR: 'Introduction',
-      difficulty: 'beginner',
-      estimatedMinutes: 5,
-      prerequisites: []
-    },
-    {
       id: 'prerequisites',
       slug: 'prerequisites',
       titleEN: 'Prerequisites',
       titleFR: 'Prérequis',
       difficulty: 'beginner',
       estimatedMinutes: 15,
-      prerequisites: ['intro']
+      prerequisites: []
     },
     {
-      id: 'first-steps',
-      slug: 'first-steps',
-      titleEN: 'First Steps',
-      titleFR: 'Premiers pas',
+      id: 'intro',
+      slug: 'index',
+      titleEN: 'Introduction',
+      titleFR: 'Introduction',
       difficulty: 'beginner',
-      estimatedMinutes: 20,
+      estimatedMinutes: 5,
       prerequisites: ['prerequisites']
+    },
+    {
+      id: 'core-concepts',
+      slug: 'core-concepts',
+      titleEN: 'Core Concepts',
+      titleFR: 'Concepts Fondamentaux',
+      difficulty: 'beginner',
+      estimatedMinutes: 15,
+      prerequisites: ['intro']
     },
     {
       id: 'user-management',
@@ -44,13 +44,13 @@
       titleFR: 'Gestion des utilisateurs',
       difficulty: 'beginner',
       estimatedMinutes: 20,
-      prerequisites: ['first-steps']
+      prerequisites: ['core-concepts']
     },
     {
       id: 'auth',
-      slug: 'authentication',
-      titleEN: 'Authentication',
-      titleFR: 'Authentification',
+      slug: 'app-credentials',
+      titleEN: 'App Credentials',
+      titleFR: 'Identifiants d\'Application',
       difficulty: 'beginner',
       estimatedMinutes: 15,
       prerequisites: ['user-management']
@@ -117,6 +117,15 @@
       difficulty: 'beginner',
       estimatedMinutes: 10,
       prerequisites: ['cleanup']
+    },
+    {
+      id: 'first-steps',
+      slug: 'appendix-A',
+      titleEN: 'Appendix A - Accessing OpenStack',
+      titleFR: 'Annexe A - Accès à OpenStack',
+      difficulty: 'beginner',
+      estimatedMinutes: 20,
+      prerequisites: ['core-concepts']
     }
   ];
 

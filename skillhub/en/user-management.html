@@ -52,7 +52,51 @@
         <li><strong>DC Operator</strong> — operates the data-center infrastructure layer.</li>
       </ul>
 
-      <h2>2. Creating a User in Keycloak</h2>
+      <h2>2. Create a new project</h2>
+      <p>
+        Before creating users, you may need to create OpenStack projects (also known as tenants). Projects are organizational units in OpenStack where resources such as instances, networks, and volumes are grouped.
+      </p>
+      <p>
+        In OPCP, projects are typically created through the OpenStack Horizon dashboard or via the command line interface. Here's how to create a new project:
+      </p>
+      
+      <h3>Using the OpenStack CLI</h3>
+      <p>
+        To create a new project using the OpenStack CLI, you need to have administrative privileges. Run the following command:
+      </p>
+      <pre><code class="language-bash"># Create a new project
+openstack project create my-new-project</code></pre>
+      
+      <p>
+        You can also specify additional options when creating a project:
+      </p>
+      <pre><code class="language-bash"># Create a project with description and enabled status
+openstack project create --description "My new project for testing" --enable my-new-project</code></pre>
+      
+      <h3>Using the Horizon Dashboard</h3>
+      <p>
+        Alternatively, you can create projects through the OpenStack Horizon dashboard:
+      </p>
+      <ol>
+        <li>Log in to the Horizon dashboard with administrative credentials</li>
+        <li>Navigate to <strong>Identity → Projects</strong></li>
+        <li>Click the <strong>+ Create Project</strong> button</li>
+        <li>Fill in the project details:
+          <ul>
+            <li><strong>Name</strong>: Enter a unique name for the project</li>
+            <li><strong>Description</strong>: Provide a brief description</li>
+            <li><strong>Domain</strong>: Select the appropriate domain (usually Default)</li>
+            <li><strong>Enabled</strong>: Check to enable the project</li>
+          </ul>
+        </li>
+        <li>Click <strong>Create Project</strong> to finalize</li>
+      </ol>
+      
+      <p>
+        Once created, projects can be assigned to users with appropriate roles. This ensures proper resource isolation and access control within your OpenStack environment.
+      </p>
+
+      <h2>3. Creating a User in Keycloak</h2>
       <p>
         Log in to the Keycloak administration console with the super-admin
         credentials, then navigate to <strong>Users → Add user</strong>.
@@ -62,8 +106,8 @@
 
       <figure>
         <img src="../assets/images/keycloak-users-management.png"
-             alt="Keycloak administration console — Users management screen"
-             loading="lazy">
+              alt="Keycloak administration console — Users management screen"
+              loading="lazy">
         <figcaption>Keycloak administration console — Users management screen</figcaption>
       </figure>
 
@@ -77,8 +121,8 @@
 
       <figure>
         <img src="../assets/images/keycloak-users-credentials.png"
-             alt="Keycloak administration console — User credentials screen"
-             loading="lazy">
+              alt="Keycloak administration console — User credentials screen"
+              loading="lazy">
         <figcaption>Keycloak administration console — User credentials screen</figcaption>
       </figure>
 
@@ -95,8 +139,8 @@
 
       <figure>
         <img src="../assets/images/keycloak-users-attributes.png"
-             alt="Keycloak administration console — User attributes screen"
-             loading="lazy">
+              alt="Keycloak administration console — User attributes screen"
+              loading="lazy">
         <figcaption>Keycloak administration console — User attributes screen</figcaption>
       </figure>
       <ul>

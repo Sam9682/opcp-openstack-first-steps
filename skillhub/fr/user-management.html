@@ -54,7 +54,51 @@
         <li><strong>DC Operator</strong> — opère la couche d'infrastructure du data-center.</li>
       </ul>
 
-      <h2>2. Créer un utilisateur dans Keycloak</h2>
+      <h2>2. Créer un nouveau projet</h2>
+      <p>
+        Avant de créer des utilisateurs, vous devrez peut-être créer des projets OpenStack (également appelés tenants). Les projets sont des unités organisationnelles dans OpenStack où les ressources telles que les instances, réseaux et volumes sont regroupées.
+      </p>
+      <p>
+        Dans OPCP, les projets sont généralement créés via le tableau de bord OpenStack Horizon ou via l'interface en ligne de commande. Voici comment créer un nouveau projet :
+      </p>
+      
+      <h3>Utiliser l'interface en ligne de commande OpenStack</h3>
+      <p>
+        Pour créer un nouveau projet avec l'interface en ligne de commande OpenStack, vous devez disposer des privilèges administratifs. Exécutez la commande suivante :
+      </p>
+      <pre><code class="language-bash"># Créer un nouveau projet
+openstack project create mon-nouveau-projet</code></pre>
+      
+      <p>
+        Vous pouvez également spécifier des options supplémentaires lors de la création d'un projet :
+      </p>
+      <pre><code class="language-bash"># Créer un projet avec description et statut activé
+openstack project create --description "Mon nouveau projet pour les tests" --enable mon-nouveau-projet</code></pre>
+      
+      <h3>Utiliser le tableau de bord Horizon</h3>
+      <p>
+        Vous pouvez également créer des projets via le tableau de bord OpenStack Horizon :
+      </p>
+      <ol>
+        <li>Connectez-vous au tableau de bord Horizon avec les identifiants administratifs</li>
+        <li>Naviguez vers <strong>Identity → Projects</strong></li>
+        <li>Cliquez sur le bouton <strong>+ Create Project</strong></li>
+        <li>Remplissez les détails du projet :
+          <ul>
+            <li><strong>Nom</strong> : Entrez un nom unique pour le projet</li>
+            <li><strong>Description</strong> : Fournissez une brève description</li>
+            <li><strong>Domaine</strong> : Sélectionnez le domaine approprié (généralement Default)</li>
+            <li><strong>Activé</strong> : Cochez pour activer le projet</li>
+          </ul>
+        </li>
+        <li>Cliquez sur <strong>Create Project</strong> pour finaliser</li>
+      </ol>
+      
+      <p>
+        Une fois créé, les projets peuvent être assignés aux utilisateurs avec les rôles appropriés. Cela garantit un isolement adéquat des ressources et un contrôle d'accès dans votre environnement OpenStack.
+      </p>
+
+      <h2>3. Créer un utilisateur dans Keycloak</h2>
       <p>
         Connectez-vous à la console d'administration Keycloak avec les
         identifiants super-admin, puis naviguez vers
@@ -64,8 +108,8 @@
 
       <figure>
         <img src="../assets/images/keycloak-users-management.png"
-             alt="Console d'administration Keycloak — Écran de gestion des utilisateurs"
-             loading="lazy">
+              alt="Console d'administration Keycloak — Écran de gestion des utilisateurs"
+              loading="lazy">
         <figcaption>Console d'administration Keycloak — Écran de gestion des utilisateurs</figcaption>
       </figure>
 
@@ -81,8 +125,8 @@
 
       <figure>
         <img src="../assets/images/keycloak-users-credentials.png"
-             alt="Console d'administration Keycloak — Écran des identifiants utilisateur"
-             loading="lazy">
+              alt="Console d'administration Keycloak — Écran des identifiants utilisateur"
+              loading="lazy">
         <figcaption>Console d'administration Keycloak — Écran des identifiants utilisateur</figcaption>
       </figure>
 
@@ -99,8 +143,8 @@
 
       <figure>
         <img src="../assets/images/keycloak-users-attributes.png"
-             alt="Console d'administration Keycloak — Écran des attributs utilisateur"
-             loading="lazy">
+              alt="Console d'administration Keycloak — Écran des attributs utilisateur"
+              loading="lazy">
         <figcaption>Console d'administration Keycloak — Écran des attributs utilisateur</figcaption>
       </figure>
       <ul>

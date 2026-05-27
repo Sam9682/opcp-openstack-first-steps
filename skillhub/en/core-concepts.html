@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkillHub — Core Concepts</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <header class="site-header" role="banner">
+    <div class="logo"><a href="index.html" aria-label="SkillHub home">SkillHub</a></div>
+    <div class="header-right">
+      <div class="lang-toggle" aria-label="Language selector"></div>
+      <div class="progress-bar-container" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Learning progress">
+        <div class="progress-bar-fill"></div>
+      </div>
+      <span class="progress-text">0% complete</span>
+      <button class="hamburger-btn" aria-label="Toggle navigation menu" aria-expanded="false">☰</button>
+    </div>
+  </header>
+  <div class="sidebar-overlay" aria-hidden="true"></div>
+  <div class="site-wrapper">
+    <aside class="sidebar" role="navigation" aria-label="Lesson navigation">
+      <nav id="sidebar-nav"></nav>
+    </aside>
+    <main class="main-content" role="main">
+      <div class="breadcrumbs" aria-label="Breadcrumb navigation"></div>
+
+      <h1>Core Concepts of OpenStack</h1>
+      <p class="lesson-meta">Difficulty: <strong>Beginner</strong> · Estimated time: <strong>15 min</strong></p>
+
+      <p>
+        OpenStack is a cloud operating system that controls large pools of compute, storage, and networking resources throughout a data center, all managed through a dashboard or via the command line interface. It's composed of independent services that work together to provide a complete cloud computing platform.
+      </p>
+
+      <h2>Understanding OpenStack Services</h2>
+      
+      <h3>Nova - Compute Service</h3>
+      <p>
+        Nova is the core service responsible for managing and provisioning virtual machines (instances) in OpenStack. It handles the lifecycle of instances including creation, scheduling, running, and termination. Nova works with various hypervisors such as KVM, Xen, VMware, and Hyper-V.
+      </p>
+
+      <h3>Neutron - Networking Service</h3>
+      <p>
+        Neutron provides networking as a service for OpenStack. It allows users to define and manage virtual networks, subnets, routers, and firewalls. Neutron supports various network topologies and can integrate with physical network infrastructure.
+      </p>
+
+      <h3>Cinder - Block Storage Service</h3>
+      <p>
+        Cinder provides persistent block storage for instances managed by Nova. It enables users to create, attach, and detach storage volumes that can be used by virtual machines. Cinder supports various storage backends including local storage, SAN, and NAS solutions.
+      </p>
+
+      <h3>Keystone - Identity Service</h3>
+      <p>
+        Keystone is OpenStack's identity service that provides authentication and authorization for all other OpenStack services. It manages users, tenants (projects), roles, and services. Keystone supports various authentication methods including username/password, tokens, and application credentials.
+      </p>
+      <p>
+        In OPCP Core, Keystone is federated by Keycloak, which is the Identity Provider for Layer 1. Both Keystone and Keycloak are running inside OPCP Controller.
+      </p>
+
+      <h3>Glance - Image Service</h3>
+      <p>
+        Glance serves as the image service in OpenStack, storing and retrieving virtual machine images. It supports various image formats and provides metadata management for images. Users can upload, download, and manage images that are used to create instances.
+      </p>
+
+      <h2>Key Concepts</h2>
+      
+      <h3>Projects (Tenants)</h3>
+      <p>
+        Projects are organizational units in OpenStack where resources such as instances, networks, and volumes are grouped. Each project has its own set of users and permissions, allowing for resource isolation and management.
+      </p>
+
+      <h3>Endpoints</h3>
+      <p>
+        Endpoints are URLs that expose OpenStack services. Each service exposes HTTP endpoints that clients can query to interact with the service. These endpoints are listed in the Keystone service catalog after authentication.
+      </p>
+
+      <h3>Authentication</h3>
+      <p>
+        Authentication in OpenStack is handled by Keystone. Users can authenticate using various methods including username/password, tokens, or application credentials. Once authenticated, users receive a token that grants access to OpenStack services.
+      </p>
+
+      <h2>How They Work Together</h2>
+      <p>
+        These services work together to provide a complete cloud computing platform. For example, when creating a new instance:
+      </p>
+      <ol>
+        <li>Keystone authenticates the user and provides a token</li>
+        <li>Neutron creates the necessary network connectivity</li>
+        <li>Cinder provisions storage volumes</li>
+        <li>Nova launches the virtual machine with the specified resources</li>
+        <li>Glance provides the base image for the instance</li>
+      </ol>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>OpenStack consists of independent services that work together to provide cloud computing capabilities</li>
+        <li>Nova manages virtual machines, Neutron handles networking, Cinder provides storage, Keystone handles identity, and Glance manages images</li>
+        <li>Resources are organized into projects for isolation and management</li>
+        <li>All services communicate through standardized APIs accessible via endpoints</li>
+      </ul>
+
+      <button class="mark-complete-btn" type="button" aria-label="Mark this lesson as complete">
+        ✓ Mark as Complete
+      </button>
+      <div class="prev-next-nav" aria-label="Lesson navigation"></div>
+    </main>
+  </div>
+  <footer class="site-footer" role="contentinfo">
+    <a href="https://github.com/opcp-openstack-first-steps" aria-label="Project on GitHub">GitHub</a> ·
+    <a href="../../LICENSE" aria-label="Project license">License</a> ·
+    SkillHub Training — OVHcloud
+  </footer>
+  <script src="../assets/js/lessons.js"></script>
+  <script src="../assets/js/i18n.js"></script>
+  <script src="../assets/js/navigation.js"></script>
+  <script src="../assets/js/code-highlight.js"></script>
+  <script src="../assets/js/main.js"></script>
+</body>
+</html>

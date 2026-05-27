@@ -27,7 +27,7 @@ SkillHub is a static, multi-language (EN/FR) site that guides learners through t
 
 1. **Introduction** — overview and setup validation
 2. **Prerequisites** — environment setup and tooling
-3. **First Steps** — core OpenStack concepts (projects, services, endpoints)
+3. **Core Concepts** — fundamental OpenStack services (Nova, Neutron, Cinder, Keystone, Glance)
 4. **User Management** — creating users in Keycloak and assigning OPCP roles
 5. **Authentication** — authenticating via Keystone with application credentials
 6. **Networking** — networks, subnets, and routers (Neutron)
@@ -36,6 +36,7 @@ SkillHub is a static, multi-language (EN/FR) site that guides learners through t
 9. **LACP Configuration** — link aggregation and bond configuration (Neutron)
 10. **Summary & Next Steps** — recap and further learning
 11. **Cleanup Resources** — tearing down lab resources
+12. **Appendix A - Accessing OpenStack** — core OpenStack concepts (projects, services, endpoints)
 
 Open `skillhub/index.html` in a browser to start. The site auto-detects the browser language and redirects to the appropriate locale.
 
@@ -84,13 +85,13 @@ The lab framework runs inside a Docker container and connects to a real OpenStac
 
 ### Module Overview
 
-| Module | Exercises | Topics |
-|--------|-----------|--------|
-| first_steps | 3 | Create instance, network, volume |
-| compute | 3 | Launch, resize, snapshots |
-| networking | 3 | Network, subnet, router |
-| storage | 3 | Volume, attach, snapshots |
-| lacp | 3 | Create bond, configure LACP, attach to instance |
+|    Module   | Exercises |                      Topics                     |
+|-------------|-----------|-------------------------------------------------|
+| first_steps | 3         | Create instance, network, volume                |
+| compute     | 3         | Launch, resize, snapshots                       |
+| networking  | 3         | Network, subnet, router                         |
+| storage     | 3         | Volume, attach, snapshots                       |
+| lacp        | 3         | Create bond, configure LACP, attach to instance |
 
 Each exercise provides a problem statement, step-by-step instructions, automated assessment, and a reference solution under `solutions/`.
 
@@ -102,4 +103,4 @@ python3 -m labs.scripts.cleanup_lab --student-id <your-id>
 
 ## License
 
-See [LICENSE](LICENSE).
+Libre.

@@ -37,8 +37,8 @@
 
       <figure>
         <img src="../assets/images/OPCP-core.png"
-             alt="OPCP Core architecture overview"
-             loading="lazy">
+              alt="OPCP Core architecture overview"
+              loading="lazy">
         <figcaption>OPCP Core architecture overview</figcaption>
       </figure>
 
@@ -59,20 +59,8 @@
         <li>An OVHcloud Public Cloud project with API access</li>
         <li>Basic familiarity with a terminal / command line</li>
         <li>Python 3.9+ installed</li>
-        <li>Docker installed (for the lab container environment)</li>
+   
       </ul>
-
-      <h2>Quick Start — Validate Your Setup</h2>
-      <p>Run these commands to confirm your environment is ready:</p>
-
-      <pre><code class="language-bash"># Verify the OpenStack CLI is installed
-openstack --version
-
-# Check that your credentials are configured
-env | grep OS_
-
-# Test authentication by issuing a token
-openstack token issue</code></pre>
 
       <h2>Set Your Student ID</h2>
       <p>
@@ -95,6 +83,18 @@ echo $STUDENT_ID</code></pre>
         training, the cleanup script uses this prefix to delete all your
         resources in one go.
       </p>
+
+      <h2>Quick Start — Validate Your Setup</h2>
+      <p>Run these commands to confirm your environment is ready:</p>
+
+      <pre><code class="language-bash"># Verify the OpenStack CLI is installed
+openstack --version
+
+# Check that your credentials are configured
+env | grep OS_
+
+# Test authentication by issuing a token
+openstack token issue</code></pre>
 
       <button class="mark-complete-btn" type="button" aria-label="Mark this lesson as complete">
         ✓ Mark as Complete

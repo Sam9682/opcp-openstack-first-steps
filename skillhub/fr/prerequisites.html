@@ -35,106 +35,44 @@
         comment vérifier qu'elle est correctement installée.
       </p>
 
-      <h2>1. Python 3.9+</h2>
+      <h2>1. Environnement Bash</h2>
       <p>
-        Le framework de labs et tous les exercices sont écrits en Python. Vous
-        avez besoin de Python <strong>3.9 ou supérieur</strong> (3.11 recommandé).
+        Tous les exercices nécessitent un environnement Bash. Vous pouvez utiliser :
       </p>
-      <pre><code class="language-bash"># Vérifier votre version de Python
-python3 --version
-# Sortie attendue : Python 3.11.x (ou tout 3.9+)</code></pre>
+      <ul>
+        <li>Distributions GNU/Linux (Ubuntu, CentOS, Fedora, etc.)</li>
+        <li>macOS</li>
+        <li>Windows avec Windows Subsystem for Linux (WSL) et Ubuntu</li>
+      </ul>
       <p>
-        Si Python n'est pas installé, téléchargez-le depuis
-        <a href="https://www.python.org/downloads/" target="_blank" rel="noopener">python.org</a>
-        ou utilisez votre gestionnaire de paquets :
+        Si vous utilisez Windows, installez WSL Ubuntu avec la commande suivante :
       </p>
-      <pre><code class="language-bash"># Debian / Ubuntu
-sudo apt update &amp;&amp; sudo apt install -y python3 python3-pip python3-venv
-
-# macOS (Homebrew)
-brew install python@3.11</code></pre>
-
-      <h2>2. pip (gestionnaire de paquets Python)</h2>
+      <pre><code class="language-bash">wsl --install -d Ubuntu</code></pre>
       <p>
-        <code>pip</code> sert à installer les dépendances Python requises par
-        les labs (openstacksdk, PyYAML, pytest, etc.).
+        Après l'installation, lancez Ubuntu depuis le menu Démarrer et terminez le processus d'installation.
       </p>
-      <pre><code class="language-bash"># Vérifier que pip est disponible
-pip3 --version
-# Sortie attendue : pip 2x.x from … (python 3.x)</code></pre>
-      <p>Si pip est absent, installez-le avec :</p>
-      <pre><code class="language-bash">sudo apt install -y python3-pip</code></pre>
 
-      <h2>3. Client CLI OpenStack</h2>
+      <h2>2. Client CLI OpenStack</h2>
       <p>
         Tous les exercices utilisent le client en ligne de commande <code>openstack</code>.
         Installez-le via pip :
       </p>
-      <pre><code class="language-bash"># Installer le client CLI OpenStack
-pip3 install python-openstackclient
-
-# Vérifier l'installation
-openstack --version
-# Sortie attendue : openstack 7.x.x (ou supérieur)</code></pre>
-
-      <h2>4. OpenStack SDK et dépendances Python (optionnel)</h2>
-      <p>
-        Si vous souhaitez aussi utiliser le moteur d'évaluation automatisé,
-        installez les paquets Python suivants (définis dans
-        <code>labs/base/requirements.txt</code>) :
-      </p>
-      <ul>
-        <li><strong>openstacksdk 4.6.0</strong> — SDK Python officiel pour les API OpenStack</li>
-        <li><strong>PyYAML 6.0.2</strong> — lecture de la configuration YAML</li>
-        <li><strong>pytest 8.3.4</strong> — exécuteur de tests utilisé par le moteur d'évaluation</li>
-        <li><strong>hypothesis 6.112.5</strong> — bibliothèque de tests par propriétés</li>
-      </ul>
-      <p>Installez-les dans un environnement virtuel :</p>
-      <pre><code class="language-bash"># Créer et activer un environnement virtuel
+      <pre><code class="language-bash">sudo apt update &amp;&amp; sudo apt install -y python3 python3-pip python3-venv
+# Vérifiez la version de Python. Python 3.9+ minimum.
+python3 --version
+# Dans votre répertoire de travail, générez un nouveau venv Python puis activez le
 python3 -m venv .venv
-source .venv/bin/activate   # Linux / macOS
-# .venv\Scripts\activate    # Windows
+source .venv/bin/activate
+# Installez openstack client CLI (incluant ironic client)
+pip3 install python-openstackclient 
+pip3 install python-ironicclient
+# fermez votre session de terminal, puis retournez dans votre venv
+exit
+source .venv/bin/activate
+# Vérifiez la présence des commandes Ironic (baremetal). La commande doit vous proposer des sous-commandes "baremetal"
+openstack baremetal</code></pre>
 
-# Installer les dépendances
-pip install -r labs/base/requirements.txt</code></pre>
-
-      <h2>4. Docker (optionnel — pour les labs conteneurisés)</h2>
-      <p>
-        Les labs peuvent tourner dans un conteneur Docker qui embarque toutes
-        les dépendances. Si vous préférez cette approche, installez Docker :
-      </p>
-      <pre><code class="language-bash"># Vérifier que Docker est installé
-docker --version
-# Sortie attendue : Docker version 2x.x.x</code></pre>
-      <p>
-        Installez Docker depuis
-        <a href="https://docs.docker.com/get-docker/" target="_blank" rel="noopener">docs.docker.com</a>.
-      </p>
-
-      <h3>Installation de Docker sur Ubuntu (si absent)</h3>
-      <p>
-        Si Docker n'est pas installé sur votre machine Ubuntu, suivez les étapes
-        ci-dessous pour l'installer proprement depuis le dépôt officiel Docker :
-      </p>
-      <pre><code class="language-bash"># Supprimer d'éventuelles configurations existantes cassées
-sudo rm -f /etc/apt/sources.list.d/docker.list
-sudo rm -f /etc/apt/sources.list.d/docker.sources
-
-# Ajouter le dépôt Docker avec le codename noble
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-  noble stable" | \
-  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-
-# S'assurer que la clé GPG existe
-sudo install -m 0755 -d /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-sudo chmod a+r /etc/apt/keyrings/docker.gpg
-
-# Mettre à jour et installer Docker
-sudo apt-get update
-sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin</code></pre>
-
-      <h2>5. shai CLI (optionnel — assistant IA en terminal)</h2>
+      <h2>3. shai CLI (optionnel — assistant IA en terminal)</h2>
       <p>
         <a href="https://github.com/ovh/shai" target="_blank" rel="noopener">shai</a>
         est un agent de programmation interactif qui vit dans votre terminal.
@@ -153,64 +91,7 @@ curl -fsSL https://raw.githubusercontent.com/ovh/shai/main/install.sh | sh</code
       <pre><code class="language-bash"># Ajouter à votre PATH si nécessaire
 export PATH="$HOME/.local/bin:$PATH"</code></pre>
 
-      <h3>Installer VS Code sous Windows</h3>
-      <p>
-        Si vous n'avez pas encore VS Code, suivez ces étapes :
-      </p>
-      <ol>
-        <li>Téléchargez l'installateur depuis <a href="https://code.visualstudio.com/download" target="_blank" rel="noopener">code.visualstudio.com</a>.</li>
-        <li>Exécutez le fichier <code>.exe</code> et suivez l'assistant d'installation.</li>
-        <li>Cochez bien <strong>« Ajouter au PATH »</strong> pendant l'installation pour pouvoir utiliser la commande <code>code</code> depuis un terminal.</li>
-      </ol>
-      <p>Vous pouvez aussi l'installer via <code>winget</code> depuis un terminal PowerShell :</p>
-      <pre><code class="language-bash">winget install -e --id Microsoft.VisualStudioCode</code></pre>
-      <p>Vérifiez l'installation :</p>
-      <pre><code class="language-bash">code --version</code></pre>
-
-      <h3>shai-dev — Extension VS Code (alternative)</h3>
-      <p>
-        Si vous préférez utiliser shai directement dans VS Code plutôt qu'en
-        terminal, vous pouvez installer l'extension
-        <a href="https://marketplace.visualstudio.com/items?itemName=shai-dev.shai-vscode" target="_blank" rel="noopener">shai-dev</a>.
-        Elle intègre les fonctionnalités de shai (assistance au code, corrections,
-        questions) directement dans votre éditeur.
-      </p>
-      <p>Pour l'installer :</p>
-      <ul>
-        <li>Ouvrez VS Code, allez dans l'onglet Extensions (<code>Ctrl+Shift+X</code>), recherchez <strong>shai-dev</strong> et cliquez sur <em>Installer</em>.</li>
-        <li>Ou installez-la en ligne de commande :</li>
-      </ul>
-      <pre><code class="language-bash">code --install-extension shai-dev.shai-vscode</code></pre>
-
-      <h2>6. Identifiants OpenStack</h2>
-      <p>
-        Le lanceur de labs a besoin d'identifiants OpenStack valides. Vous
-        pouvez les fournir via des <strong>variables d'environnement</strong> ou
-        un <strong>fichier d'identifiants</strong>.
-      </p>
-
-      <h3>Option A — Variables d'environnement (Application Credentials)</h3>
-      <pre><code class="language-bash">export OS_AUTH_URL="https://auth.cloud.ovh.net/v3"
-export OS_AUTH_TYPE="v3applicationcredential"
-export OS_APPLICATION_CREDENTIAL_ID="votre-credential-id"
-export OS_APPLICATION_CREDENTIAL_SECRET="votre-credential-secret"</code></pre>
-
-      <h3>Option A — Variables d'environnement (Utilisateur / Mot de passe)</h3>
-      <pre><code class="language-bash">export OS_AUTH_URL="https://auth.cloud.ovh.net/v3"
-export OS_USERNAME="votre-utilisateur"
-export OS_PASSWORD="votre-mot-de-passe"
-export OS_PROJECT_NAME="votre-projet"
-export OS_DOMAIN_NAME="Default"</code></pre>
-
-      <h3>Option B — Fichier d'identifiants</h3>
-      <p>Créez <code>~/.openstack/credentials.yaml</code> :</p>
-      <pre><code class="language-yaml">auth_url: https://auth.cloud.ovh.net/v3
-username: votre-utilisateur
-password: votre-mot-de-passe
-project_name: votre-projet
-domain_name: Default</code></pre>
-
-      <h2>7. Connaissances de base du terminal</h2>
+      <h2>4. Connaissances de base du terminal</h2>
       <p>
         Vous devez être à l'aise avec l'exécution de commandes dans un terminal
         (bash, zsh ou PowerShell). Tous les exercices se lancent en ligne de
