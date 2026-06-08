@@ -103,27 +103,12 @@ openstack server resize confirm ${STUDENT_ID}-compute-instance
 # Vérifier le nouveau flavor
 openstack server show ${STUDENT_ID}-compute-instance -f value -c flavor</code></pre>
 
-      <h2>4. Exercice 3 — Gérer les snapshots</h2>
-      <p>
-        Créez un snapshot de votre instance. Les snapshots capturent l'état actuel
-        et peuvent être utilisés pour restaurer ou cloner des instances.
-      </p>
-
-      <pre><code class="language-bash"># Créer un snapshot de l'instance
-openstack server image create \
-  --name ${STUDENT_ID}-compute-snapshot \
-  ${STUDENT_ID}-compute-instance
-
-# Vérifier que le snapshot a été créé
-openstack image show ${STUDENT_ID}-compute-snapshot -f value -c status</code></pre>
-
       <h2>Résumé</h2>
       <ul>
         <li>Générez une paire de clés SSH avec <code>ssh-keygen</code> et enregistrez-la avec <code>openstack keypair create</code>.</li>
         <li>Utilisez <code>--key-name</code> lors de la création d'une instance pour injecter la clé publique.</li>
         <li>Utilisez les commandes <code>openstack server</code> pour lancer, redimensionner et snapshotter des instances.</li>
         <li>Les flavors définissent le <strong>CPU, la RAM et le disque</strong> alloués à une instance.</li>
-        <li>Les snapshots capturent l'<strong>état actuel</strong> pour la sauvegarde et la récupération.</li>
         <li>Les erreurs de flavor ou d'image manquants sont signalées avec des <strong>messages clairs</strong> par le CLI.</li>
       </ul>
 

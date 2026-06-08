@@ -52,6 +52,65 @@
         <li><strong>DC Operator</strong> — operates the data-center infrastructure layer.</li>
       </ul>
 
+      <h2>1.1. Create a new client</h2>
+      <p>
+        Log in to your Keycloak instance (https://admin.keycloak.FQDN) and select the realm in which the OpenStack users are defined.
+        Create a new client. Go to the <strong>Clients</strong> section and click on <strong>Create a client</strong>. Enter a <em>Client ID</em> in the format ${STUDENT-ID}-cli, for example: slepetre-cli. Click on <strong>Next</strong>.
+      </p>
+
+      <h2>1.2. Enable client authentication</h2>
+      <p>
+        Enable Client Authentication (set to ON). Click on Next, then on Save.
+      </p>
+
+      <h2>1.3. Configure scopes (Client Scopes)</h2>
+      <p>
+        Open the <em>Client Scopes</em> tab. Select the scope named: [your-client-id]-dedicated. Click on <strong>Configure a new mapper</strong>.
+      </p>
+
+      <h2>1.4. Add a user group attribute mapper</h2>
+      <p>
+        Choose the mapper type aggregated-user-group-attribute-mapper. Configure the following fields:
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Field</th>
+            <th>Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Name</td>
+            <td><code>projects</code></td>
+          </tr>
+          <tr>
+            <td>User Attribute</code></td>
+            <td><code>project</code></td>
+          </tr>
+          <tr>
+            <td>Token Claim Name</td>
+            <td><code>projects</code></td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        Click on Save.
+      </p>
+
+      <h2>1.5. Retrieve the client credentials</h2>
+      <p>
+        Go to the <strong>Credentials</strong> tab of the client you just created. Copy and securely store the <em>Client Secret</em> — it will be needed when configuring the OpenStack CLI.
+      </p>
+
+      <h2>1.6. Retrieve the project ID from OpenStack Horizon</h2>
+      <p>
+        In a new browser tab, go to <code>https://admin.dashboard.&lt;your-FQDN&gt;</code> then Horizon - Project > API access > View Credentials and copy/paste the project ID. Store it for next steps.
+      </p>
+      <h2>1.7. Setup your environment variables</h2>
+      <p>
+        Run script <em>env_setup.sh</em>, enter the information collected from previous steps. A new *-openrc.sh file is generated starting with your project ID. Run <pre><code class="language-bash">source &lt;project-id&gt;-openrc.sh</code></pre> to add the new environnement variables. You must run this command every time you start a new terminal session.
+      </p>
       <h2>2. Create a new project</h2>
       <p>
         Before creating users, you may need to create OpenStack projects (also known as tenants). Projects are organizational units in OpenStack where resources such as instances, networks, and volumes are grouped.
@@ -65,36 +124,15 @@
         To create a new project using the OpenStack CLI, you need to have administrative privileges. Run the following command:
       </p>
       <pre><code class="language-bash"># Create a new project
-openstack project create my-new-project</code></pre>
+openstack project create my-new-project --domain keycloak</code></pre>
       
       <p>
         You can also specify additional options when creating a project:
       </p>
       <pre><code class="language-bash"># Create a project with description and enabled status
-openstack project create --description "My new project for testing" --enable my-new-project</code></pre>
-      
-      <h3>Using the Horizon Dashboard</h3>
-      <p>
-        Alternatively, you can create projects through the OpenStack Horizon dashboard:
-      </p>
-      <ol>
-        <li>Log in to the Horizon dashboard with administrative credentials</li>
-        <li>Navigate to <strong>Identity → Projects</strong></li>
-        <li>Click the <strong>+ Create Project</strong> button</li>
-        <li>Fill in the project details:
-          <ul>
-            <li><strong>Name</strong>: Enter a unique name for the project</li>
-            <li><strong>Description</strong>: Provide a brief description</li>
-            <li><strong>Domain</strong>: Select the appropriate domain (usually Default)</li>
-            <li><strong>Enabled</strong>: Check to enable the project</li>
-          </ul>
-        </li>
-        <li>Click <strong>Create Project</strong> to finalize</li>
-      </ol>
-      
-      <p>
-        Once created, projects can be assigned to users with appropriate roles. This ensures proper resource isolation and access control within your OpenStack environment.
-      </p>
+openstack project create --description "My new project for testing" --enable my-new-project --domain keycloak</code></pre>
+    
+      <strong>You must not use Horizon interface to create projects in OPCP because it does not provide a way to chose a specific domain.</strong>
 
       <h2>3. Creating a User in Keycloak</h2>
       <p>
