@@ -30,192 +30,87 @@
       <p class="lesson-meta">Difficulty: <strong>Intermediate</strong> · Estimated time: <strong>20 min</strong></p>
 
       <p>
-        Networks are the foundation of any cloud deployment. In this lesson you will
-        create virtual networks, configure subnets with CIDR validation, and set up
-        routers — all using the Neutron API through the lab framework.
+        OpenStack networking is handled by the Neutron service. In this lesson you
+        will create networks, subnets, and routers to connect your instances to
+        the outside world or to each other.
       </p>
 
-      <h2>1. Exercise 1 — Create a Network</h2>
+      <h2>Objective</h2>
       <p>
-        Use the <code>openstack</code> CLI to create a virtual network named
-        <code>${STUDENT_ID}-net-network</code>.
+        We will now go through the steps to configure network on baremetal node using Openstack CLI client.
       </p>
 
-      <pre><code class="language-bash"># Create a virtual network
-openstack network create ${STUDENT_ID}-net-network
+      <h2>Create a private network and subnet</h2>
 
-# Verify the network was created
-openstack network show ${STUDENT_ID}-net-network -f value -c status</code></pre>
-
-      <h2>2. Exercise 2 — Create a Subnet</h2>
+      <h3>Step 1: Create the private network</h3>
       <p>
-        Create a subnet within your network. Use <code>10.0.0.0/24</code> as the
-        address range.
+        Before deploying your instance, it is generally necessary to create a <strong>private network</strong> so that it is accessible within your local infrastructure.
+        If you already have a private network with a subnet on your project that you want to use, you can skip the creation step and directly list your networks to retrieve the name or ID of the network concerned.
       </p>
-
-      <pre><code class="language-bash"># Create a subnet with CIDR 10.0.0.0/24
-openstack subnet create \
-  --network ${STUDENT_ID}-net-network \
-  --subnet-range 10.0.0.0/24 \
-  ${STUDENT_ID}-net-subnet
-
-# Verify the subnet was created
-openstack subnet show ${STUDENT_ID}-net-subnet</code></pre>
-
-      <h2>3. VLAN-backed Networks and Ports</h2>
+      
+      <pre><code class="language-bash">openstack network create ${STUDENT_ID}-net</code></pre>
+      
       <p>
-        In production environments, networks are often backed by specific VLANs.
-        You can create a VLAN-backed network and assign a port to it so that
-        traffic is tagged with the correct VLAN ID on the physical switch.
+        By default, a network is only visible to the project that created it (as well as administrators) and segment-id is auto-generated.
       </p>
-
-      <h3>Create a VLAN-backed network</h3>
-      <pre><code class="language-bash"># Create a network with a specific VLAN segmentation ID
-openstack network create \
-  --provider-network-type vlan \
-  --provider-physical-network physnet1 \
-  --provider-segment 100 \
-  ${STUDENT_ID}-vlan100-network
-
-# Create a subnet on the VLAN network
-openstack subnet create \
-  --network ${STUDENT_ID}-vlan100-network \
-  --subnet-range 10.100.0.0/24 \
-  ${STUDENT_ID}-vlan100-subnet</code></pre>
-
-      <h3>Create a port on a specific VLAN network</h3>
-      <pre><code class="language-bash"># Create a port bound to the VLAN network
-openstack port create \
-  --network ${STUDENT_ID}-vlan100-network \
-  ${STUDENT_ID}-vlan100-port
-
-# Verify the port details (VLAN binding)
-openstack port show ${STUDENT_ID}-vlan100-port</code></pre>
-
-      <h2>4. Baremetal VLAN Assignment</h2>
+      
       <p>
-        When working with baremetal instances (Ironic), you can assign VLAN
-        networks directly to physical interfaces. This is useful for isolating
-        traffic on dedicated hardware.
+        If you want to create a <strong>shared network across all your projects</strong>, you can use the <code>--share</code> parameter.
       </p>
-
-      <pre><code class="language-bash"># Create a VLAN network for baremetal use
-openstack network create \
-  --provider-network-type vlan \
-  --provider-physical-network physnet1 \
-  --provider-segment 200 \
-  ${STUDENT_ID}-bm-vlan200
-
-# Create a subnet
-openstack subnet create \
-  --network ${STUDENT_ID}-bm-vlan200 \
-  --subnet-range 10.200.0.0/24 \
-  ${STUDENT_ID}-bm-vlan200-subnet
-
-# Create a port for the baremetal node
-openstack port create \
-  --network ${STUDENT_ID}-bm-vlan200 \
-  --vnic-type baremetal \
-  ${STUDENT_ID}-bm-port
-
-# Deploy a baremetal instance using this port
-openstack server create \
-  --flavor baremetal \
-  --image "Ubuntu 22.04" \
-  --port ${STUDENT_ID}-bm-port \
-  --wait \
-  ${STUDENT_ID}-bm-instance</code></pre>
-
-      <h2>5. Trunk Ports</h2>
+      
       <p>
-        Trunk ports allow a single parent port to carry traffic from multiple
-        VLAN networks via subports. This is commonly used when an instance
-        needs access to several VLANs simultaneously.
+        To share a network only with specific projects, you need to use OpenStack's <strong>Role-Based Access Control (RBAC)</strong> mechanism: <a href="https://docs.openstack.org/neutron/pike/admin/config-rbac.html" target="_blank">Neutron RBAC Documentation</a>.
       </p>
-
-      <pre><code class="language-bash"># Create the parent port
-openstack port create \
-  --network ${STUDENT_ID}-net-network \
-  ${STUDENT_ID}-trunk-parent
-
-# Create a subport on a different VLAN network
-openstack port create \
-  --network ${STUDENT_ID}-vlan100-network \
-  ${STUDENT_ID}-trunk-sub1
-
-# Create the trunk with the parent port and attach the subport
-openstack network trunk create \
-  --parent-port ${STUDENT_ID}-trunk-parent \
-  --subport port=${STUDENT_ID}-trunk-sub1,segmentation-type=vlan,segmentation-id=100 \
-  ${STUDENT_ID}-trunk
-
-# Add another subport later
-openstack port create \
-  --network ${STUDENT_ID}-bm-vlan200 \
-  ${STUDENT_ID}-trunk-sub2
-
-openstack network trunk set \
-  --subport port=${STUDENT_ID}-trunk-sub2,segmentation-type=vlan,segmentation-id=200 \
-  ${STUDENT_ID}-trunk
-
-# Verify the trunk configuration
-openstack network trunk show ${STUDENT_ID}-trunk</code></pre>
-
-      <h2>6. QinQ (802.1ad) — Double VLAN Tagging</h2>
+      
       <p>
-        QinQ (also known as VLAN stacking or 802.1ad) encapsulates one VLAN tag
-        inside another. This is useful when a service provider needs to
-        transport customer VLAN traffic across its own VLAN infrastructure
-        without conflicts. The outer tag (S-VLAN) identifies the provider
-        segment, while the inner tag (C-VLAN) preserves the customer's
-        original VLAN.
+        Additionally, if you want to create the private network in a <strong>specific VLAN</strong>, you can specify it using the following parameters:
       </p>
+      
+      <pre><code class="language-bash">--provider-network-type vlan
+--provider-physical-network physnet1 # Static value in OPCP
+--provider-segment $VLAN_ID # Neutron segment-id</code></pre>
 
-      <h3>Use case</h3>
+      
       <p>
-        A hosting provider runs multiple tenants on the same physical
-        infrastructure. Each tenant uses their own VLANs internally (e.g.
-        VLAN 10, 20, 30). With QinQ, the provider wraps each tenant's traffic
-        in a unique outer VLAN so that tenant VLAN IDs can overlap without
-        interference.
+        For example, if you want to create a shared private network in VLAN 2050 named <code>${STUDENT_ID}-net</code>:
+      </p>
+      
+      <pre><code class="language-bash">openstack network create --share --provider-network-type vlan --provider-physical-network physnet1 --provider-segment 2050 ${STUDENT_ID}-NET</code></pre>
+      
+      <p>
+        Once the network is created, you can list it using the command:
+      </p>
+      
+      <pre><code class="language-bash">openstack network list --name ${STUDENT_ID}-net</code></pre>
+      
+      <p>
+        If needed, you can list all networks by removing the <code>--name</code> argument.
       </p>
 
-      <pre><code class="language-bash"># Create a provider network with VLAN type for the outer (S-VLAN) tag
-openstack network create \
-  --provider-network-type vlan \
-  --provider-physical-network physnet1 \
-  --provider-segment 500 \
-  ${STUDENT_ID}-qinq-provider
-
-# Create a subnet on the provider network
-openstack subnet create \
-  --network ${STUDENT_ID}-qinq-provider \
-  --subnet-range 10.50.0.0/24 \
-  ${STUDENT_ID}-qinq-provider-subnet
-
-# Create the parent port on the provider network
-openstack port create \
-  --network ${STUDENT_ID}-qinq-provider \
-  ${STUDENT_ID}-qinq-parent
-
-# Create a trunk and attach a subport with the inner (C-VLAN) tag
-openstack network trunk create \
-  --parent-port ${STUDENT_ID}-qinq-parent \
-  --subport port=${STUDENT_ID}-trunk-sub1,segmentation-type=vlan,segmentation-id=10 \
-  ${STUDENT_ID}-qinq-trunk
-
-# The instance sees the inner VLAN 10 traffic,
-# while the physical network carries it inside outer VLAN 500
-openstack network trunk show ${STUDENT_ID}-qinq-trunk</code></pre>
+      <h3>Step 2: Create the subnet</h3>
+      <p>
+        By defat, the only element needed to create a subnet on your network is the CIDR you want to configure and the network you just created:
+      </p>
+      
+      <pre><code class="language-bash">openstack subnet create --network ${STUDENT_ID}-net --subnet-range 192.168.120.0/24 ${STUDENT_ID}-subnet</code></pre>
+      
+      <p>
+        If you want to specify an <em>allocation pool</em>, you can do so with several parameters.
+        For example, if you want to create a subnet with the CIDR 192.168.120.0/24, allocating only 50 IP addresses from the CIDR with a specific gateway, you can use the following command:
+      </p>
+      
+      <pre><code class="language-bash">openstack subnet create --network ${STUDENT_ID}-net --subnet-range 192.168.120.0/24 --allocation-pool start=192.168.120.11,end=192.168.120.60 --gateway 192.168.120.8 ${STUDENT_ID}-subnet</code></pre>
+      
+      <p>
+        This subnet can then be used to deploy an instance, allowing OpenStack to assign an IP address to it during installation.
+      </p>
 
       <h2>Summary</h2>
       <ul>
-        <li>Use <code>openstack network</code> and <code>openstack subnet</code> commands.</li>
-        <li>Subnets require a valid <strong>CIDR range</strong> (e.g. <code>10.0.0.0/24</code>).</li>
-        <li>VLAN-backed networks use <code>--provider-network-type vlan</code> with a <code>--provider-segment</code> ID.</li>
-        <li>Baremetal ports use <code>--vnic-type baremetal</code> to bind to physical interfaces.</li>
-        <li>Trunk ports carry multiple VLANs via <code>openstack network trunk</code> commands.</li>
-        <li>QinQ (802.1ad) stacks an inner C-VLAN inside an outer S-VLAN for multi-tenant isolation.</li>
+        <li>Neutron handles OpenStack networking</li>
+        <li>Create networks with <code>openstack network create</code></li>
+        <li>Specify segment ID for network if needed</code></li>
+        <li>Create subnets with <code>openstack subnet create</code></li>
       </ul>
 
       <button class="mark-complete-btn" type="button" aria-label="Mark this lesson as complete">

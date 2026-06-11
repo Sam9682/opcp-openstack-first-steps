@@ -48,7 +48,7 @@
       <ul>
         <li><strong>Nova</strong> — Compute (virtual machine instances)</li>
         <li><strong>Neutron</strong> — Networking (virtual networks, subnets, routers)</li>
-        <li><strong>Cinder</strong> — Block Storage (volumes, snapshots)</li>
+        <li><strong>Cinder</strong> — Block Storage (volumes, snapshots) for creating Software RAID arrays</li>
         <li><strong>Keystone</strong> — Identity (authentication, authorization)</li>
         <li><strong>Glance</strong> — Image (virtual machine images)</li>
       </ul>
@@ -231,7 +231,9 @@ ansible-galaxy collection install openstack.cloud</code></pre>
       <p>
         In this training we primarily use the <strong>OpenStack CLI</strong> for
         its simplicity, but feel free to reproduce the exercises with any of the
-        approaches above.
+        approaches above. For Software RAID configuration, we will use the CLI to
+        provision volumes and then configure the RAID arrays directly on the
+        instances.
       </p>
 
       <h2>Summary</h2>

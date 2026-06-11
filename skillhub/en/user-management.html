@@ -36,7 +36,9 @@
         right roles and project attributes.
       </p>
 
-      <h2>1. Built-in Roles</h2>
+      <h2>1. Log into Keycloak</h2>
+      <p>For this lab, you should have been provided an admin account on Demo OPCP platform. Go to <strong>https://admin.keycloak.&lt;FQDN&gt;</strong> to authenticate.</p>
+      <h2>2. Built-in Roles</h2>
       <p>
         After the very first installation of OPCP, a super-admin account
         (login / password) is communicated to you. This account is used to
@@ -52,25 +54,29 @@
         <li><strong>DC Operator</strong> — operates the data-center infrastructure layer.</li>
       </ul>
 
-      <h2>1.1. Create a new client</h2>
+      <h2>3.1. Create a new client</h2>
       <p>
         Log in to your Keycloak instance (https://admin.keycloak.FQDN) and select the realm in which the OpenStack users are defined.
-        Create a new client. Go to the <strong>Clients</strong> section and click on <strong>Create a client</strong>. Enter a <em>Client ID</em> in the format ${STUDENT-ID}-cli, for example: slepetre-cli. Click on <strong>Next</strong>.
+        Create a new client. Go to the <strong>Clients</strong> section and click on <strong>Create a client</strong>. Enter a <em>Client ID</em> in the format ${STUDENT-ID}-cli, for example: slepetre-cli. Client type must be <em>OpenID Connect</em>. Click on <strong>Next</strong>.
       </p>
 
-      <h2>1.2. Enable client authentication</h2>
+      <h2>3.2. Enable client authentication</h2>
       <p>
-        Enable Client Authentication (set to ON). Click on Next, then on Save.
+        Enable Client Authentication (set to ON).
+        <br>
+        Authentication Flow must have both <em>Standard Flow</em> and <em>Direct Access grants</em>
+        <br>
+        Click on Next, then on Save.
       </p>
 
-      <h2>1.3. Configure scopes (Client Scopes)</h2>
+      <h2>3.3. Configure scopes (Client Scopes)</h2>
       <p>
         Open the <em>Client Scopes</em> tab. Select the scope named: [your-client-id]-dedicated. Click on <strong>Configure a new mapper</strong>.
       </p>
 
-      <h2>1.4. Add a user group attribute mapper</h2>
+      <h2>3.4. Add a user group attribute mapper</h2>
       <p>
-        Choose the mapper type aggregated-user-group-attribute-mapper. Configure the following fields:
+        Choose the mapper type <em>Aggregate User/Group Attribute (as JSON String)</em>. Configure the following fields:
       </p>
       <table>
         <thead>
@@ -98,25 +104,27 @@
         Click on Save.
       </p>
 
-      <h2>1.5. Retrieve the client credentials</h2>
+      <h2>3.5. Retrieve the client credentials</h2>
       <p>
         Go to the <strong>Credentials</strong> tab of the client you just created. Copy and securely store the <em>Client Secret</em> — it will be needed when configuring the OpenStack CLI.
       </p>
 
-      <h2>1.6. Retrieve the project ID from OpenStack Horizon</h2>
+      <h2>3.6. Retrieve the admin project ID from OpenStack Horizon</h2>
       <p>
         In a new browser tab, go to <code>https://admin.dashboard.&lt;your-FQDN&gt;</code> then Horizon - Project > API access > View Credentials and copy/paste the project ID. Store it for next steps.
       </p>
-      <h2>1.7. Setup your environment variables</h2>
+      <h2>3.7. Setup your environment variables</h2>
       <p>
-        Run script <em>env_setup.sh</em>, enter the information collected from previous steps. A new *-openrc.sh file is generated starting with your project ID. Run <pre><code class="language-bash">source &lt;project-id&gt;-openrc.sh</code></pre> to add the new environnement variables. You must run this command every time you start a new terminal session.
+        Run script <code>bash env_setup.sh</code>, enter the information collected from previous steps. A new *-openrc.sh file is generated starting with your project ID. Run following command to add the new environnement variables. You must run this command every time you start a new terminal session.<pre><code class="language-bash">source &lt;project-id&gt;-openrc.sh</code></pre>
       </p>
-      <h2>2. Create a new project</h2>
+      <p>Retrieve a token to verify you can authenticate using :</p>
+      <pre><code class="language-bash">openstack token issue</code></pre>
+      <h2>4. Create a new project</h2>
       <p>
         Before creating users, you may need to create OpenStack projects (also known as tenants). Projects are organizational units in OpenStack where resources such as instances, networks, and volumes are grouped.
       </p>
       <p>
-        In OPCP, projects are typically created through the OpenStack Horizon dashboard or via the command line interface. Here's how to create a new project:
+        In OPCP, projects are typically created through via the command line interface. Here's how to create a new project:
       </p>
       
       <h3>Using the OpenStack CLI</h3>
@@ -124,17 +132,33 @@
         To create a new project using the OpenStack CLI, you need to have administrative privileges. Run the following command:
       </p>
       <pre><code class="language-bash"># Create a new project
-openstack project create my-new-project --domain keycloak</code></pre>
+openstack project create my-new-project --domain keycloak-admin</code></pre>
       
       <p>
         You can also specify additional options when creating a project:
       </p>
       <pre><code class="language-bash"># Create a project with description and enabled status
-openstack project create --description "My new project for testing" --enable my-new-project --domain keycloak</code></pre>
+openstack project create --description "My new project for testing" --enable my-new-project --domain keycloak-admin</code></pre>
     
       <strong>You must not use Horizon interface to create projects in OPCP because it does not provide a way to chose a specific domain.</strong>
 
-      <h2>3. Creating a User in Keycloak</h2>
+      <p>You should get an output similar to this, copy the <em>id</em> field value.</p>
+
+      <pre><code>+-------------+----------------------------------+
+| Field       | Value                            |
++-------------+----------------------------------+
+| description |                                  |
+| domain_id   | 0e3839624d2140099818cfcc802e6f1b |
+| enabled     | True                             |
+| id          | da6a123229fb4f94ba4d3db97ceb469d |
+| is_domain   | False                            |
+| name        | jdoe-project                     |
+| options     | {}                               |
+| parent_id   | 0e3839624d2140099818cfcc802e6f1b |
+| tags        | []                               |
++-------------+----------------------------------+</code></pre>
+
+      <h2>5. Creating a User in Keycloak</h2>
       <p>
         Log in to the Keycloak administration console with the super-admin
         credentials, then navigate to <strong>Users → Add user</strong>.
@@ -164,7 +188,7 @@ openstack project create --description "My new project for testing" --enable my-
         <figcaption>Keycloak administration console — User credentials screen</figcaption>
       </figure>
 
-      <h2>3. Configuring an IT Admin User</h2>
+      <h2>6. Configuring User attributes</h2>
       <p>
         When you need to create an IT Admin — someone who administers
         OpenStack projects and manages resources for end-users — you must
@@ -186,41 +210,32 @@ openstack project create --description "My new project for testing" --enable my-
         <li><strong>Value:</strong> a single-line JSON object (see below)</li>
       </ul>
 
-      <pre><code class="language-json">{"domain": {"name": "Default"}, "name": "admin", "roles": [{"name": "admin"}, {"name": "service"}]}</code></pre>
+      <pre><code class="language-json">{"domain": {"name": "keycloak-admin"}, "name": "jdoe-project", "roles": [{"name": "admin"}, {"name": "service"}]}</code></pre>
 
       <p>Adapt the values to match your setup:</p>
       <ul>
-        <li><strong>domain → name</strong> — the OpenStack domain (e.g. <code>Default</code>).</li>
+        <li><strong>domain → name</strong> — the OpenStack domain (e.g. <code>keycloak-admin</code>).</li>
         <li><strong>name</strong> — the OpenStack project name (e.g. <code>admin</code>).</li>
         <li><strong>roles</strong> — the OpenStack roles to grant (e.g. <code>admin</code>, <code>service</code>).</li>
       </ul>
-
-      <h2>4. Configuring an End-User</h2>
+      <h2>7. Test user authentication using openrc file</h2>
       <p>
-        End-users need access to specific projects on OpenStack within a
-        restricted domain. After creating the user, open the
-        <strong>Attributes</strong> tab and add a key-value pair:
+        Copy your previous openrc file and modify your environment variables to authenticate as your new user. Modify following values :
+        <ul>
+          <li>OS_USERNAME</li>
+          <li>OS_PASSWORD</li>
+          <li>OS_PROJECT_ID</li>
+        </ul>
       </p>
-      <ul>
-        <li><strong>Key:</strong> <code>project</code></li>
-        <li><strong>Value:</strong> a single-line JSON object (see below)</li>
-      </ul>
-
-      <pre><code class="language-json">{"domain": {"name": "keycloak"}, "name": "$project", "roles": [{"name": "member"}, {"name": "reader"}]}</code></pre>
-
-      <p>
-        The <code>keycloak</code> domain is the restricted domain accessible
-        to end-users. Replace <code>$project</code> with the actual OpenStack
-        project name the user should have access to.
-      </p>
+      <p><code>openstack token issue</code> should work and <code>openstack baremetal node list</code> should return empty response.</p>
+      <p><strong>Source back your admin openrc file, we will need it for next steps.</strong></p>
 
       <h2>Summary</h2>
       <ul>
         <li>OPCP ships with pre-configured Keycloak realms, roles, and groups.</li>
         <li>Three built-in roles: <strong>Master Admin role</strong>, <strong>IT Admin</strong>, and <strong>DC Operator</strong>.</li>
         <li>User passwords are set in the <strong>Credentials</strong> tab; enable <strong>Temporary</strong> to force a reset on first login.</li>
-        <li>IT Admins receive a <code>project</code> attribute on the <code>Default</code> domain with <code>admin</code> / <code>service</code> roles.</li>
-        <li>End-users receive a <code>project</code> attribute on the <code>keycloak</code> domain with <code>member</code> / <code>reader</code> roles.</li>
+        <li>IT Admins receive a <code>project</code> attribute on the <code>keycloak-admin</code> domain with <code>admin</code> / <code>service</code> roles.</li>
       </ul>
 
       <button class="mark-complete-btn" type="button" aria-label="Mark this lesson as complete">

@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkillHub — Software RAID Configuration</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <header class="site-header" role="banner">
+    <div class="logo"><a href="index.html" aria-label="SkillHub home">SkillHub</a></div>
+    <div class="header-right">
+      <div class="lang-toggle" aria-label="Language selector"></div>
+      <div class="progress-bar-container" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Learning progress">
+        <div class="progress-bar-fill"></div>
+      </div>
+      <span class="progress-text">0% complete</span>
+      <button class="hamburger-btn" aria-label="Toggle navigation menu" aria-expanded="false">☰</button>
+    </div>
+  </header>
+  <div class="sidebar-overlay" aria-hidden="true"></div>
+  <div class="site-wrapper">
+    <aside class="sidebar" role="navigation" aria-label="Lesson navigation">
+      <nav id="sidebar-nav"></nav>
+    </aside>
+    <main class="main-content" role="main">
+      <div class="breadcrumbs" aria-label="Breadcrumb navigation"></div>
+
+      <h1>Software RAID Configuration</h1>
+      <p class="lesson-meta">Difficulty: <strong>Advanced</strong> · Estimated time: <strong>25 min</strong></p>
+
+      <p>
+        This section explains how to configure and manage <strong>software RAID</strong> (software RAID) on an OpenStack Ironic node in your OPCP environment.
+      </p>
+
+      <p>
+        Software RAID allows you to create a redundancy configuration at the software level, without requiring a dedicated hardware RAID controller. This solution is particularly useful for improving the availability and storage performance of your instances.
+      </p>
+
+      <p>
+        <strong>What you will be covered:</strong>
+      </p>
+      <ul>
+        <li>Configuring software RAID via the Ironic agent interface</li>
+        <li>Verifying the RAID configuration</li>
+        <li>Best practices for managing software RAID</li>
+      </ul>
+
+      <div class="alert alert-warning">
+        <p><strong>Important:</strong> Software RAID configuration must be performed <strong>before</strong> deploying an instance on the node.
+        Once an instance is deployed, modifying the RAID configuration requires deleting the instance and reconfiguring the node.
+        Creating or modifying a RAID erases data on the disks used.</p>
+        
+        <p>Software RAID monitoring is the responsibility of the end customer. We do not have access to the deployed instance to manage monitoring. It is recommended to set up an alerting system (for example using the command <code>mdadm --monitor</code>) and integrate this monitoring into your existing monitoring tools.</p>
+      </div>
+
+      <h2>Why Use Software RAID?</h2>
+      <p>Software RAID offers several advantages in an OPCP environment:</p>
+      <ul>
+        <li><strong>Data redundancy</strong>: Protection against data loss in case of disk failure.</li>
+        <li><strong>Improved performance</strong>: Distribution of read/write operations across multiple disks.</li>
+        <li><strong>Reduced cost</strong>: No need for a dedicated hardware RAID controller.</li>
+      </ul>
+
+      <h2>Implementation</h2>
+
+      <h3>1. Check Available Disks on the Node</h3>
+      <p>Before configuring RAID, you need to identify the available disks on your node.</p>
+
+      <p><strong>List available nodes:</strong></p>
+      <pre><code class="language-bash">openstack baremetal node list</code></pre>
+
+      <p><strong>Check hardware properties of the node:</strong></p>
+      <pre><code class="language-bash">openstack baremetal node show &lt;node-id&gt;</code></pre>
+
+      <h3>2. Enable Maintenance Mode</h3>
+      <p>Before any configuration modification, place the node in <strong>maintenance mode</strong>:</p>
+      <pre><code class="language-bash">openstack baremetal node maintenance set &lt;node-id&gt; --reason "Software RAID configuration"</code></pre>
+
+      <h3>3. Supported RAID Levels</h3>
+      <p>Ironic supports several software RAID levels. The following values are accepted in the JSON configuration:</p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>RAID Level</th>
+            <th>JSON Value</th>
+            <th>Description</th>
+            <th>Minimum Number of Disks</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>RAID 1</strong></td>
+            <td><code>"1"</code></td>
+            <td>Mirroring</td>
+            <td>2</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="alert alert-warning">
+        <p><strong>Important constraint</strong>: The first logical disk with <code>is_root_volume: true</code> <strong>must be mandatory in RAID 1</strong>. Other RAID levels (RAID 0, 5, 6, 10, etc.) are not allowed for the root volume.</p>
+        <p>Therefore, only RAID 1 can be used for instance deployment.</p>
+      </div>
+
+      <h3>4. Configure Software RAID</h3>
+      <p>Ironic allows you to configure software RAID via the <strong>agent interface</strong>. This configuration is applied automatically during instance deployment.</p>
+
+      <h4>4.1. Check and Activate Agent Interface if Necessary</h4>
+      <p>Before configuring RAID, check the currently configured RAID interface on the node:</p>
+      <pre><code class="language-bash">openstack baremetal node show &lt;node-id&gt; -f json | jq '.raid_interface'</code></pre>
+
+      <p>If the output is <code>null</code> or different from <code>"agent"</code>, activate the agent interface for RAID:</p>
+      <pre><code class="language-bash">openstack baremetal node set &lt;node-id&gt; --raid-interface=agent</code></pre>
+
+      <h4>4.2. Create RAID Configuration File</h4>
+      <p>Create a JSON file containing the desired RAID configuration. Here's an example to create a RAID 1 (mirroring) with two disks:</p>
+      <pre><code class="language-bash">cat &gt; /tmp/raid1.json &lt;&lt;EOF
+{
+  "logical_disks": [{
+    "controller": "software",
+    "size_gb": "MAX",
+    "raid_level": "1",
+    "is_root_volume": true,
+    "physical_disks": [
+      {"size": "&lt;1000"},
+      {"size": "&lt;1000"}
+    ]
+  }]
+}
+EOF</code></pre>
+
+      <div class="alert alert-info">
+        <p>The parameter <code>"size": "&lt;1000"</code> in <code>physical_disks</code> allows you to automatically select disks smaller than 1000 GB. You can adjust this value according to the size of your disks or use other selection criteria.</p>
+      </div>
+
+      <h4>4.3. Apply RAID Configuration</h4>
+      <p>Once the configuration file is created, apply it to the node:</p>
+      <pre><code class="language-bash">openstack baremetal node set &lt;node-id&gt; --target-raid-config /tmp/raid1.json</code></pre>
+
+      <h4>4.4. Verify RAID Configuration</h4>
+      <p>To verify the RAID configuration applied on a node:</p>
+      <pre><code class="language-bash">openstack baremetal node show &lt;node-id&gt; -f json | jq '.target_raid_config'</code></pre>
+
+      <h3>5. Disable Maintenance Mode</h3>
+      <p>Once the RAID configuration is complete, disable maintenance mode:</p>
+      <pre><code class="language-bash">openstack baremetal node maintenance unset &lt;node-id&gt;</code></pre>
+
+      <h2>Summary of Main Commands</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Action</th>
+            <th>Command</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>List nodes</td>
+            <td><code>openstack baremetal node list</code></td>
+          </tr>
+          <tr>
+            <td>Enable maintenance mode</td>
+            <td><code>openstack baremetal node maintenance set &lt;node-id&gt;</code></td>
+          </tr>
+          <tr>
+            <td>Check RAID interface</td>
+            <td><code>openstack baremetal node show &lt;node-id&gt; -f json | jq '.raid_interface'</code></td>
+          </tr>
+          <tr>
+            <td>Activate agent RAID interface</td>
+            <td><code>openstack baremetal node set &lt;node-id&gt; --raid-interface=agent</code></td>
+          </tr>
+          <tr>
+            <td>Apply RAID configuration</td>
+            <td><code>openstack baremetal node set &lt;node-id&gt; --target-raid-config /tmp/raid1.json</code></td>
+          </tr>
+          <tr>
+            <td>Verify RAID configuration</td>
+            <td><code>openstack baremetal node show &lt;node-id&gt; -f json | jq '.target_raid_config'</code></td>
+          </tr>
+          <tr>
+            <td>Disable maintenance mode</td>
+            <td><code>openstack baremetal node maintenance unset &lt;node-id&gt;</code></td>
+          </tr>
+          <tr>
+            <td>Deploy an instance</td>
+            <td><code>openstack server create --image &lt;image-name&gt; --flavor &lt;flavor-id&gt; --key-name &lt;keypair-name&gt; --nic net-id=&lt;network-id&gt; --availability-zone "nova::&lt;node-id&gt;" &lt;instance-name&gt;</code></td>
+          </tr>
+          <tr>
+            <td>Check RAID status (from instance)</td>
+            <td><code>cat /proc/mdstat</code></td>
+          </tr>
+          <tr>
+            <td>Disable RAID interface</td>
+            <td><code>openstack baremetal node set &lt;node-id&gt; --raid-interface=no-raid</code></td>
+          </tr>
+          <tr>
+            <td>Clear RAID configuration</td>
+            <td><code>openstack baremetal node set &lt;node-id&gt; --target-raid-config "{}"</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Summary</h2>
+      <ul>
+        <li><strong>Configure RAID before deployment</strong>: Configuration must be performed on a node without an active instance.</li>
+        <li><strong>Use maintenance mode</strong>: Always place the node in maintenance before any modification.</li>
+        <li><strong>Regular backups</strong>: RAID is not a backup solution; perform regular backups of your data.</li>
+        <li><strong>RAID monitoring</strong>: Set up RAID monitoring (for example via <code>mdadm --monitor</code>) and integrate alerts into your monitoring tools to detect quickly any degradation or disk failure.</li>
+        <li><strong>Performance</strong>: Software RAID can impact CPU performance compared to hardware RAID.</li>
+        <li><strong>Compatibility</strong>: Not all operating systems support all software RAID levels.</li>
+        <li><strong>Reconstruction</strong>: RAID reconstruction after disk replacement can take time and consume resources.</li>
+      </ul>
+  
+      <button class="mark-complete-btn" type="button" aria-label="Mark this lesson as complete">
+        ✓ Mark as Complete
+      </button>
+      <div class="prev-next-nav" aria-label="Lesson navigation"></div>
+    </main>
+  </div>
+  <footer class="site-footer" role="contentinfo">
+    <a href="https://github.com/opcp-openstack-first-steps" aria-label="Project on GitHub">GitHub</a> ·
+    <a href="../../LICENSE" aria-label="Project license">License</a> ·
+    SkillHub Training — OVHcloud
+  </footer>
+  <script src="../assets/js/lessons.js"></script>
+  <script src="../assets/js/i18n.js"></script>
+  <script src="../assets/js/navigation.js"></script>
+  <script src="../assets/js/code-highlight.js"></script>
+  <script src="../assets/js/main.js"></script>
+</body>
+</html>

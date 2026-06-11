@@ -63,20 +63,41 @@ openstack keypair create \
 # Vérifier que la keypair est enregistrée
 openstack keypair show ${STUDENT_ID}-keypair</code></pre>
 
-      <h2>2. Exercice 1 — Lancer une instance avec clé SSH</h2>
+      <h2>2. Exercice 1 — Lancer une instance</h2>
       <p>
         Utilisez le CLI <code>openstack</code> pour lancer une instance avec un flavor,
         une image et votre paire de clés SSH. Nommez-la <code>${STUDENT_ID}-compute-instance</code>.
       </p>
+      <p>
+        Par défaut, OpenStack sélectionne un hôte en fonction du <strong>flavor</strong> choisi et des <strong>règles du scheduler</strong>, ce qui ne garantit pas que le nœud que vous venez de configurer sera utilisé.
+      </p>
+      <p>
+        Pour vous assurer que votre instance sera déployée sur ce nœud précis, vous pouvez cibler ce dernier utilisant sa <strong>zone de disponibilité</strong> :
+      </p>
+      
+      <pre><code class="language-bash">openstack server create --availability-zone "nova::`&lt;node-id&gt;`"</code></pre>
 
-      <pre><code class="language-bash"># Lancer une instance de Compute avec votre clé SSH
+      <p>
+        Les images par défaut sur OPCP Core n'ont pas de mot de passe défini. Si vous voulez fournir un mot de passe pour pouvoir vous connecter via la console de l'instance, utilisez des fichiers Cloud-init. Voici un exemple de configuration basique utilisateur/mot de passe pour Debian 12 dans un fichier cloud-init.yaml (DOIT commencer par la ligne #cloud-config) :
+      </p>
+      
+      <pre><code class="language-bash">#cloud-config
+users:
+  - name: debian
+    lock_passwd: false
+    plain_text_passwd: 'debian'
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+ssh_pwauth: true </code></pre>
+
+      <pre><code class="language-bash"># Lancer une instance de Compute
 openstack server create \
-  --flavor scale-1 \
-  --image "Ubuntu 24.04 BMPOD" \
-  --network Ext-Net \
-  --key-name ${STUDENT_ID}-keypair \
-  --wait \
-  ${STUDENT_ID}-compute-instance
+  --flavor scale-1 \ # modèle d'instance à utiliser
+  --image "Debian 12 LVM OPCP" \ # image système à déployer
+  --network ${STUDENT_ID}-net \ # réseau auquel attacher l'instance
+  --availability-zone "nova::`&lt;node-id&gt;`" \ # sélectionner un nœud spécifique, nécessaire quand vous avez pré-configuré un nœud spécifique
+  --key-name ${STUDENT_ID}-keypair \ # clé SSH publique à utiliser
+  --user-data ./cloud-init.yaml \ # fichier cloud-init
+  ${STUDENT_ID}-compute-instance # Nom de l'instance
 
 # Vérifier que l'instance est active
 openstack server show ${STUDENT_ID}-compute-instance -f value -c status</code></pre>
@@ -88,28 +109,136 @@ IP=$(openstack server show ${STUDENT_ID}-compute-instance -f value -c addresses 
 # Se connecter avec votre clé privée
 ssh -i ~/.ssh/${STUDENT_ID}-key ubuntu@$IP</code></pre>
 
-      <h2>3. Exercice 2 — Redimensionner une instance</h2>
+    <h3>Configuration du système d'exploitation LACP</h3>
       <p>
-        Redimensionnez votre instance en cours d'exécution vers un flavor différent.
-        Utile quand votre charge de travail nécessite plus (ou moins) de ressources.
+        Après avoir configuré votre nœud dans OpenStack et déployé un système d'exploitation, il reste à configurer le réseau afin de bénéficier du réseau <strong>bonding</strong>, qui permet d'agréger plusieurs interfaces réseau pour plus de performance et de redondance.
       </p>
 
-      <pre><code class="language-bash"># Redimensionner l'instance vers un flavor plus grand
-openstack server resize --flavor s1-4 ${STUDENT_ID}-compute-instance
+      <h4>Vérifier la configuration du bonding</h4>
+      <p>
+        Sur certaines images (comme <strong>Debian 12</strong> ou <strong>Ubuntu 22.04</strong>), la configuration du <strong>bonding</strong> est automatiquement détectée et configurée.
+      </p>
+      <p>
+        Cependant, d'autres distributions peuvent nécessiter un ajustement manuel.
+      </p>
+      
+      <h5>1. Vérifier les bonds actifs</h5>
+      
+      <pre><code class="language-bash">ls /proc/net/bonding/
+bond0</code></pre>
+      
+      <h5>2. Vérifier les interfaces membres</h5>
+      
+      <pre><code class="language-bash">cat /proc/net/bonding/bond0 | grep Interface
+Slave Interface: ens22f1np1
+Slave Interface: ens22f0np0
+Slave Interface: ens21f1np1
+Slave Interface: ens21f0np0</code></pre>
+      
+      <h5>3. Vérifier la politique de hachage (<code>Transmit Hash Policy</code>)</h5>
+      
+      <pre><code class="language-bash">cat /proc/net/bonding/* | grep Trans
+Transmit Hash Policy: layer2 (0)</code></pre>
+      
+      <div class="alert alert-warning">
+        <strong>Avertissement :</strong> Pour exploiter toute la bande passante, configurez la politique <code>layer3+4</code> (par défaut, certains OS utilisent <code>layer2</code>, moins performante).
+        <br><br>
+        Plus de détails : <a href="https://help.ubuntu.com/community/UbuntuBonding?utm_source=chatgpt.com" target="_blank">Documentation Ubuntu Bonding</a>
+      </div>
 
-# Attendre la fin du redimensionnement, puis confirmer
-openstack server resize confirm ${STUDENT_ID}-compute-instance
+      <h4>Modifier la configuration</h4>
+      
+      <h5>1. Changement à chaud (non persistant)</h5>
+      <p>
+        Si vous souhaitez tester votre configuration manuellement, vous pouvez utiliser la commande suivante :
+      </p>
+      
+      <pre><code class="language-bash">sudo ip link set bond0 type bond xmit_hash_policy layer3+4</code></pre>
+      
+      <p>
+        Attention, cette configuration sera réinitialisée si votre machine redémarre.
+      </p>
+      
+      <h5>2. Changement persistant (exemple via Netplan et cloud-init)</h5>
+      <p>
+        Créez votre fichier de configuration (ex. <code>/etc/cloud/cloud.cfg.d/99-custom-network.cfg</code>) pour y inclure :
+      </p>
+      
+      <pre><code class="language-yaml">network:
+  version: 2
+  ethernets:
+    ens21f0np0: {}
+    ens21f1np1: {}
+    ens22f0np0: {}
+    ens22f1np1: {}
+  bonds:
+    bond0:
+      dhcp4: true
+      interfaces:
+        - ens21f0np0
+        - ens21f1np1
+        - ens22f0np0
+        - ens22f1np1
+      macaddress: 00:00:00:20:00:23
+      parameters:
+        mode: 802.3ad
+        transmit-hash-policy: layer3+4
+        lacp-rate: fast
+        mii-monitor-interval: 100</code></pre>
+      
+      <p>
+        Puis appliquez la configuration en rédémarrant l'instance.
+      </p>
 
-# Vérifier le nouveau flavor
-openstack server show ${STUDENT_ID}-compute-instance -f value -c flavor</code></pre>
+      <h4>Tester la bande passante avec <code>iperf3</code></h4>
+      <p>
+        Pour tester correctement LACP, vous devez disposer de <strong>2 nœuds</strong> dans le <strong>même réseau</strong>, tous deux configurés avec LACP.
+      </p>
+      
+      <h5>Serveur Iperf3 (nœud 1)</h5>
+      
+      <pre><code class="language-bash">iperf3 -s</code></pre>
+      
+      <h5>Client Iperf3 (nœud 2)</h5>
+      <p>
+        Utilisez <code>-P</code> pour générer plusieurs flux parallèles, afin d’atteindre la bande passante maximale.
+      </p>
+      
+      <pre><code class="language-bash">iperf3 -c &lt;ip-du-nœud&gt; -P 64</code></pre>
+      
+      <p><strong>Exemple de résultat</strong></p>
+      
+      <pre><code>[SUM] 0.0000-10.0121 sec   110 GBytes  94.0 Gbits/sec</code></pre>
+      
+      <p>
+        Avec un lien 4×25 Gbps, vous devriez atteindre environ <strong>100 Gbps</strong>.
+        Il peux être nécessaire d'ajuster certains paramètres système pour exploiter pleinement cette capacité.
+      </p>  
+
+      <h3>Vérifier la configuration RAID après déploiement</h3>
+      <p>Une fois l'instance déployée, vous pouvez vérifier la configuration RAID depuis l'instance :</p>
+
+      <p><strong>Vérifier les dispositifs RAID :</strong></p>
+      <pre><code class="language-bash">cat /proc/mdstat</code></pre>
+
+      <p><strong>Exemple de sortie :</strong></p>
+      <pre><code>
+Personalities : [raid1] [raid10] [linear] [multipath] [raid0] [raid6] [raid5] [raid4]
+md0 : active raid1 sda[0] sdb[1]
+      500G 0 blocks super 1.2 [2/2] [UU]
+
+unused devices: &lt;none&gt;
+</code></pre>
 
       <h2>Résumé</h2>
       <ul>
         <li>Générez une paire de clés SSH avec <code>ssh-keygen</code> et enregistrez-la avec <code>openstack keypair create</code>.</li>
         <li>Utilisez <code>--key-name</code> lors de la création d'une instance pour injecter la clé publique.</li>
-        <li>Utilisez les commandes <code>openstack server</code> pour lancer, redimensionner et snapshotter des instances.</li>
+        <li>Utilisez les commandes <code>openstack server</code> pour lancer des instances.</li>
         <li>Les flavors définissent le <strong>CPU, la RAM et le disque</strong> alloués à une instance.</li>
         <li>Les erreurs de flavor ou d'image manquants sont signalées avec des <strong>messages clairs</strong> par le CLI.</li>
+        <li>Configurer et vérifier LACP</li>
+        <li>Vérifier l'état du RAID logiciel</li>
       </ul>
 
       <button class="mark-complete-btn" type="button" aria-label="Marquer cette leçon comme terminée">

@@ -36,85 +36,249 @@
         using the Neutron API through the lab framework.
       </p>
 
-      <h2>Background — What is LACP?</h2>
+      <h2>Objective</h2>
       <p>
-        LACP (IEEE 802.3ad) negotiates link aggregation between two endpoints
-        automatically. In an OpenStack context this is typically used to bond
-        ports on bare-metal or SR-IOV instances, or to configure trunk ports
-        that carry multiple VLANs over an aggregated link.
+        LACP configuration must be applied to the node before deploying an instance,
+        so that network interfaces are properly aggregated. This guide explains how to configure a node (physical server) in OPCP to enable LACP (Link Aggregation Control Protocol)
+      </p>
+
+      <h2>Warnings</h2>
+        <ul>
+        <li>A standard user cannot configure LACP themselves. You must be <strong>admin</strong>, or have <strong>node available</strong> in your OpenStack project.</li>
+        <li>It is recommended to configure LACP <strong>before</strong> deploying an instance. This guide <strong>does not cover</strong> configuring a node already in production.</li>
+        </ul>
+
+      <h2>Why Use LACP?</h2>
+      <p>
+        LACP can be used in two specific use cases:
       </p>
       <ul>
-        <li><strong>Active mode</strong> — the interface sends LACPDU frames to initiate negotiation.</li>
-        <li><strong>Passive mode</strong> — the interface responds to LACPDU frames but does not initiate.</li>
-        <li><strong>Bond modes</strong> — <code>balance-rr</code>, <code>active-backup</code>, <code>balance-xor</code>, <code>802.3ad</code> (LACP).</li>
+        <li><strong>Increase network capacity:</strong> By aggregating multiple network cards, you can add the bandwidth of each card added to this aggregate for the same networks.</li>
+        <li><strong>Increase resilience:</strong> Each OPCP server benefits from 4 25G interfaces. Each server is connected to two network switches (A&B) to ensure resilience in case of hardware failure of one of them. LACP allows creating resilient virtual interfaces in case of hardware failure by aggregating two network cards connected to different switches.</li>
       </ul>
 
-      <h2>1. Exercise 1 — Create a LACP Bond Port</h2>
+      <h2>Configuration</h2>
+
+      <h3>Node Configuration</h3>
+
+      <h4>1. Transfer Node Ownership (Admin Only)</h4>
       <p>
-        Use the <code>openstack</code> CLI to create two Neutron ports on the same
-        network, then create a trunk port that aggregates them using LACP
-        (<code>802.3ad</code> bond mode).
+        An admin can transfer ownership of a node to a given project:
+      </p>
+      
+      <pre><code class="language-bash">openstack baremetal node set &lt;node-id&gt; --owner &lt;project-id&gt;</code></pre>
+
+      <h4>2. List Network Ports</h4>
+      <p>
+        Each physical network card, called Network Interface Card (NIC), of a node is represented in OpenStack by a port.
+      </p>
+      <p>
+        To display the list of ports associated with a node:
+      </p>
+      
+      <pre><code class="language-bash">openstack baremetal port list --node &lt;node-id&gt;</code></pre>
+      
+      <p><strong>Example output:</strong></p>
+      
+      <pre><code>+--------------------------------------+-------------------+
+| UUID                                 | Address           |
++--------------------------------------+-------------------+
+| 068a06b2-ebf9-48c9-a3c3-94016ca5e3da | 85:32:f2:87:29:da |
+| 4937d704-7517-4525-86d1-abecb94a7ce9 | 85:32:f2:87:29:db |
+| 422eece6-dcfa-40cd-975d-ba8bb11c774e | 85:32:f2:89:66:f8 |
+| 34073903-92ad-47d1-a751-15aa96991415 | 85:32:f2:89:66:f9 |
++--------------------------------------+-------------------+</code></pre>
+      
+      <p>
+        To view details of a port, including physical connection information.
+        This is particularly useful if you want to configure a <strong>LACP bonding 2x2</strong>,
+        distributing NICs across two different switches to ensure <strong>better redundancy and fault tolerance</strong>.
+      </p>
+      
+      <pre><code class="language-bash">openstack baremetal port show &lt;port-id&gt;</code></pre>
+      
+      <p><strong>Example output:</strong></p>
+      
+      <pre><code>+-----------------------+------------------------------------------------------------------------------------------------+
+| Field                 | Value                                                                                          |
++-----------------------+------------------------------------------------------------------------------------------------+
+| address               | 85:32:f2:89:66:f9                                                                              |
+| created_at            | 2025-01-06T10:43:38.020574+00:00                                                               |
+| extra                 | {}                                                                                             |
+| internal_info         | {}                                                                                             |
+| is_smartnic           | False                                                                                          |
+| local_link_connection | {'switch_id': 'c0:00:15:8c:33:78', 'port_id': 'Ethernet25/2', 'switch_info': 'demo-tor1b-a70'} |
+| node_uuid             | ddc7c763-74fc-4900-b9e6-5463233836b0                                                           |
+| physical_network      | None                                                                                           |
+| portgroup_uuid        | c3d3fcb3-7a92-4257-b944-736d222e8c4a                                                           |
+| pxe_enabled           | False                                                                                          |
+| updated_at            | 2025-11-06T09:52:46.355883+00:00                                                               |
+| uuid                  | 71899d54-546d-4fdd-8d8b-52ad986bf425                                                           |
++-----------------------+------------------------------------------------------------------------------------------------+</code></pre>
+
+      <h4>3. Enable Maintenance Mode</h4>
+      <p>
+        Before any network configuration modification, the node must be placed in <strong>maintenance mode</strong>. This ensures that this node cannot be deployed during the operation:
+      </p>
+      
+      <pre><code class="language-bash">openstack baremetal node maintenance set &lt;node-id&gt;</code></pre>
+
+      <h4>4. Create a Port Group (LACP Bond)</h4>
+      <p>
+        The <strong>port group</strong> allows enabling LACP aggregation between multiple network interfaces.
+      </p>
+      
+      <div class="alert alert-tip">
+        <strong>Success:</strong> You can create:
+        <ul>
+          <li>a <strong>single port group</strong> for a 1×4 bond, or<br /></li>
+          <li>two <strong>port groups</strong> for 2×2 bonds.</li>
+        </ul>
+      </div>
+      
+      <p>
+        Use the <code>--mode 802.3ad</code> parameter to enable LACP.
+      </p>
+      <p>
+        The <code>--address &lt;MAC&gt;</code> parameter must be equal to the MAC address of the PXE port if it is used. Otherwise, you can omit the parameter or set the MAC address from one of the physical interfaces you will use.
+      </p>
+      <p>
+        You can list all ports with <code>openstack baremetal port list --node &lt;node-id&gt; --long</code> and check if PXE is used or not.
+      </p>
+      <pre><code class="language-bash">openstack baremetal port list --node 48b7b966-c8e3-415d-b286-c097224043aa --long -c uuid -c address -c pxe_enabled</code></pre>
+      <p>Output</p>
+      <pre><code class="language-bash">+--------------------------------------+-------------------+-------------+
+| uuid                                 | address           | pxe_enabled |
++--------------------------------------+-------------------+-------------+
+| 8c367cef-7be9-44c3-8232-e05be8dac402 | e0:9d:73:79:bb:7c | True        |
+| deef9d45-71a4-4f86-af48-289d20e4fee8 | e0:9d:73:79:bb:7d | False       |
+| 8fe90cc0-93b6-47b5-9d68-0a56ecea1704 | e0:9d:73:ba:73:6c | False       |
+| a741e9b4-c54c-4970-bfba-3eafbdbfc269 | e0:9d:73:ba:73:6d | False       |
++--------------------------------------+-------------------+-------------+</code></pre>
+      <p>
+        Note: It is recommended to prefix the port group name with the node name (e.g. <code>&lt;node-name&gt;-&lt;name&gt;</code>) to facilitate identification.
+      </p>
+      
+      <p><strong>Example:</strong></p>
+      
+      <pre><code class="language-bash">openstack baremetal port group create \
+  --node &lt;node_uuid&gt; \
+  --name ${STUDENT_ID}-&lt;node_name&gt;-pg-lacp \
+  --mode 802.3ad \
+  --address e0:9d:73:79:bb:7c</code></pre>
+      
+      <p><strong>Example output:</strong></p>
+      
+      <pre><code>+----------------------------+--------------------------------------+
+| Field                      | Value                                |
++----------------------------+--------------------------------------+
+| uuid                       | 68484ee0-ed39-462c-a049-4e20bb294b2b |
+| address                    | e0:9d:73:79:bb:7c                    |
+| created_at                 | 2026-06-11T11:30:41.197987+00:00     |
+| extra                      | {}                                   |
+| standalone_ports_supported | True                                 |
+| node_uuid                  | 48b7b966-c8e3-415d-b286-c097224043aa |
+| name                       | jdoe-HXQF3CO2807B-pg-lacp            |
+| updated_at                 | None                                 |
+| internal_info              | {}                                   |
+| mode                       | 802.3ad                              |
+| properties                 | {}                                   |
+| physical_network           |                                      |
+| category                   |                                      |
++----------------------------+--------------------------------------+</code></pre>
+
+      <h4>5. Associate Ports with the Group</h4>
+      <p>
+        Each port of the node must be associated with the created port group:
+      </p>
+      
+      <pre><code class="language-bash">openstack baremetal port set --port-group `&lt;port-group-id&gt;` `&lt;port-id&gt;`</code></pre>
+      
+      <p><strong>Example:</strong></p>
+      
+      <pre><code class="language-bash">openstack baremetal port set --port-group d082c2ab-5960-44e3-920d-3d6dfb6811e9 068a06b2-ebf9-48c9-a3c3-94016ca5e3da
+openstack baremetal port set --port-group d082c2ab-5960-44e3-920d-3d6dfb6811e9 4937d704-7517-4525-86d1-abecb94a7ce9
+openstack baremetal port set --port-group d082c2ab-5960-44e3-920d-3d6dfb6811e9 422eece6-dcfa-40cd-975d-ba8bb11c774e
+openstack baremetal port set --port-group d082c2ab-5960-44e3-920d-3d6dfb6811e9 34073903-92ad-47d1-a751-15aa96991415</code></pre>
+
+      <h4>8. Disable Maintenance Mode</h4>
+      <p>
+        Once the configuration is complete, disable maintenance mode:
+      </p>
+      
+      <pre><code class="language-bash">openstack baremetal node maintenance unset `&lt;node-id&gt;`</code></pre>
+
+      <h3>Summary of Steps</h3>
+      
+      <table>
+        <thead>
+          <tr>
+            <th>Step</th>
+            <th>Action</th>
+            <th>Command</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td>List nodes</td>
+            <td><code>openstack baremetal node list</code></td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>Transfer ownership</td>
+            <td><code>openstack baremetal node set &lt;node-id&gt; --owner &lt;tenant-id&gt;</code></td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td>List ports</td>
+            <td><code>openstack baremetal port list --node &lt;node-id&gt;</code></td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td>Enable maintenance mode</td>
+            <td><code>openstack baremetal node maintenance set &lt;node-id&gt;</code></td>
+          </tr>
+          <tr>
+            <td>5</td>
+            <td>Create LACP group</td>
+            <td><code>openstack baremetal port group create --node &lt;node-id&gt; --name &lt;port-group-name&gt; --mode 802.3ad</code></td>
+          </tr>
+          <tr>
+            <td>6</td>
+            <td>Associate ports</td>
+            <td><code>openstack baremetal port set --port-group &lt;port-group-id&gt; &lt;port-id&gt;</code></td>
+          </tr>
+          <tr>
+            <td>7</td>
+            <td>Disable maintenance mode</td>
+            <td><code>openstack baremetal node maintenance unset &lt;node-id&gt;</code></td>
+          </tr>
+          <tr>
+            <td>8</td>
+            <td>Create instance</td>
+            <td><code>openstack server create --image &lt;image-name&gt; --nic net-id=&lt;network-1&gt; --flavor &lt;flavor-id&gt; --key-name &lt;keypair-name&gt; --availability-zone "nova::&lt;node-id&gt;" &lt;instance-name&gt;</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Conclusion</h2>
+      <p>
+        You have configured:
+      </p>
+      <ul>
+        <li>The <strong>LACP (802.3ad)</strong> at the OpenStack Baremetal node level;</li>
+        <li>The <strong>bonding configuration</strong> in the guest OS;</li>
+        <li>And validated the <strong>network performance</strong> via <code>iperf3</code>.</li>
+      </ul>
+      <p>
+        Your instance is now ready to exploit all available bandwidth of the aggregated link.
       </p>
 
-      <pre><code class="language-bash"># Create the base network
-openstack network create ${STUDENT_ID}-lacp-network
-
-# Create two member ports on the network
-openstack port create \
-  --network ${STUDENT_ID}-lacp-network \
-  ${STUDENT_ID}-lacp-port-1
-
-openstack port create \
-  --network ${STUDENT_ID}-lacp-network \
-  ${STUDENT_ID}-lacp-port-2
-
-# Create a trunk port using the first port as parent
-openstack network trunk create \
-  --parent-port ${STUDENT_ID}-lacp-port-1 \
-  --subport port=${STUDENT_ID}-lacp-port-2,segmentation-type=vlan,segmentation-id=100 \
-  ${STUDENT_ID}-lacp-bond
-
-# Verify the trunk was created
-openstack network trunk show ${STUDENT_ID}-lacp-bond</code></pre>
-
-      <h2>2. Exercise 2 — Configure LACP Parameters</h2>
-      <p>
-        Fine-tune the LACP bond by updating the trunk port configuration.
-        These parameters control how the bond negotiates and distributes traffic.
-      </p>
-
-      <pre><code class="language-bash"># Add another subport to the trunk
-openstack network trunk set \
-  --subport port=${STUDENT_ID}-lacp-port-2,segmentation-type=vlan,segmentation-id=200 \
-  ${STUDENT_ID}-lacp-bond
-
-# Verify the trunk configuration
-openstack network trunk show ${STUDENT_ID}-lacp-bond</code></pre>
-
-      <h2>3. Exercise 3 — Attach LACP Bond to an Instance</h2>
-      <p>
-        Attach the LACP bond to a compute instance so the instance benefits from
-        the aggregated bandwidth and link redundancy.
-      </p>
-
-      <pre><code class="language-bash"># Launch an instance using the trunk parent port
-openstack server create \
-  --flavor s1-4 \
-  --image "ubuntu-22.04" \
-  --port ${STUDENT_ID}-lacp-port-1 \
-  --wait \
-  ${STUDENT_ID}-lacp-instance
-
-# Verify the instance is active and connected
-openstack server show ${STUDENT_ID}-lacp-instance -f value -c status
-openstack port show ${STUDENT_ID}-lacp-port-1 -f value -c status</code></pre>
 
       <h2>Summary</h2>
       <ul>
         <li>LACP (<strong>802.3ad</strong>) bonds multiple ports into a single logical link.</li>
-        <li>Use <code>openstack network trunk</code> commands to create and manage trunk ports.</li>
-        <li>Subports are added with <code>--subport</code> specifying segmentation type and ID.</li>
-        <li>Instances connect to trunks via the <strong>parent port</strong> using <code>--port</code>.</li>
       </ul>
 
       <button class="mark-complete-btn" type="button" aria-label="Mark this lesson as complete">

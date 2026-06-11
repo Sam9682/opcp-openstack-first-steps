@@ -32,14 +32,14 @@
         Welcome to <strong>SkillHub</strong>, the hands-on training companion for the
         <em>opcp-openstack-first-steps</em> project. This course walks you through
         the fundamentals of OpenStack — from your first authenticated API call to
-        creating instances, networks, volumes, and LACP bond configurations.
+        creating instances, core concepts, user management, networks, soft RAID, and LACP bond configurations.
       </p>
 
       <figure>
+        <figcaption>OPCP Core Dashboard overview</figcaption>
         <img src="../assets/images/OPCP-core.png"
-              alt="OPCP Core architecture overview"
+              alt="OPCP Core overview"
               loading="lazy">
-        <figcaption>OPCP Core architecture overview</figcaption>
       </figure>
 
       <h2>What You Will Learn</h2>
@@ -47,19 +47,17 @@
       <ul>
         <li><strong>OpenStack core concepts</strong> — projects, users, services, and endpoints</li>
         <li><strong>User Management</strong> — creating users in Keycloak and assigning roles</li>
-        <li><strong>Authentication</strong> — authenticating via Keystone using application credentials</li>
+        <li><strong>Authentication</strong> — authenticating against Keycloak/Keystone</li>
         <li><strong>Networking</strong> — creating networks, subnets, and routers with Neutron</li>
-        <li><strong>Storage</strong> — creating and attaching volumes with Cinder</li>
+        <li><strong>Software RAID</strong> — configuring software RAID arrays with mdadm</li>
         <li><strong>Compute</strong> — launching and managing instances with Nova</li>
         <li><strong>LACP Configuration</strong> — bonding multiple network interfaces for bandwidth and redundancy</li>
       </ul>
 
       <h2>Prerequisites</h2>
       <ul>
-        <li>An OVHcloud Public Cloud project with API access</li>
         <li>Basic familiarity with a terminal / command line</li>
         <li>Python 3.9+ installed</li>
-   
       </ul>
 
       <h2>Set Your Student ID</h2>
@@ -83,18 +81,6 @@ echo $STUDENT_ID</code></pre>
         training, the cleanup script uses this prefix to delete all your
         resources in one go.
       </p>
-
-      <h2>Quick Start — Validate Your Setup</h2>
-      <p>Run these commands to confirm your environment is ready:</p>
-
-      <pre><code class="language-bash"># Verify the OpenStack CLI is installed
-openstack --version
-
-# Check that your credentials are configured
-env | grep OS_
-
-# Test authentication by issuing a token
-openstack token issue</code></pre>
 
       <button class="mark-complete-btn" type="button" aria-label="Mark this lesson as complete">
         ✓ Mark as Complete

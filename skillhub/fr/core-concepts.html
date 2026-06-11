@@ -26,6 +26,15 @@
     <main class="main-content" role="main">
       <div class="breadcrumbs" aria-label="Fil d'Ariane"></div>
 
+      <h2>OPCP Core modules principaux</h2>
+      <p>Voici les principaux composants exécutés dans le contrôleur OPCP, y compris les modules OpenStack.</p>
+      <figure>
+        <img src="../assets/images/OPCP_main_components.png"
+             alt="OPCP Core main components"
+             loading="lazy">
+      </figure>
+
+
       <h1>Concepts Fondamentaux d'OpenStack</h1>
       <p class="lesson-meta">Difficulté : <strong>Débutant</strong> · Durée estimée : <strong>15 min</strong></p>
 
@@ -37,17 +46,12 @@
       
       <h3>Nova - Service de Calcul</h3>
       <p>
-        Nova est le service principal responsable de la gestion et de l'approvisionnement des machines virtuelles (instances) dans OpenStack. Il gère le cycle de vie des instances, y compris leur création, leur planification, leur exécution et leur terminaison. Nova fonctionne avec divers hyperviseurs tels que KVM, Xen, VMware et Hyper-V.
+        Nova est le service principal responsable de la gestion et de l'approvisionnement des instances dans OpenStack. Il gère le cycle de vie des instances, y compris leur création, leur planification, leur exécution et leur terminaison. Dans OPCP, Nova fonctionne avec divers hyperviseurs tels que KVM, VMware et peut déployer du baremetal en appelant le module Ironic.
       </p>
 
       <h3>Neutron - Service de Réseau</h3>
       <p>
         Neutron fournit le réseau comme service pour OpenStack. Il permet aux utilisateurs de définir et de gérer les réseaux virtuels, les sous-réseaux, les routeurs et les pare-feux. Neutron supporte diverses topologies réseau et peut s'intégrer à l'infrastructure réseau physique.
-      </p>
-
-      <h3>Cinder - Service de Stockage Bloc</h3>
-      <p>
-        Cinder fournit un stockage persistant pour les instances gérées par Nova. Il permet aux utilisateurs de créer, attacher et détacher des volumes de stockage qui peuvent être utilisés par les machines virtuelles. Cinder supporte divers backends de stockage y compris le stockage local, le SAN et le NAS.
       </p>
 
       <h3>Keystone - Service d'Identité</h3>
@@ -77,7 +81,7 @@
 
       <h3>Authentification</h3>
       <p>
-        L'authentification dans OpenStack est gérée par Keystone. Les utilisateurs peuvent s'authentifier en utilisant diverses méthodes y compris le nom d'utilisateur/mot de passe, les jetons ou les identifiants d'application. Une fois authentifié, les utilisateurs reçoivent un jeton qui leur donne accès aux services OpenStack.
+         OPCP utilise Keycloak comme service IAM et fédère ses informations avec le module OpenStack Keystone. Les utilisateurs peuvent s'authentifier en utilisant diverses méthodes y compris le nom d'utilisateur/mot de passe, les jetons ou les identifiants d'application. Une fois authentifié, les utilisateurs reçoivent un jeton qui leur donne accès aux services OpenStack.
       </p>
 
       <h2>Comment Ils Fonctionnent Ensemble</h2>
@@ -85,9 +89,8 @@
         Ces services fonctionnent ensemble pour fournir une plateforme de calcul cloud complète. Par exemple, lors de la création d'une nouvelle instance :
       </p>
       <ol>
-        <li>Keystone authentifie l'utilisateur et lui fournit un jeton</li>
+        <li>Keystone authentifie l'utilisateur Keycloak et lui fournit un jeton</li>
         <li>Neutron crée la connectivité réseau nécessaire</li>
-        <li>Cinder provisionne les volumes de stockage</li>
         <li>Nova lance la machine virtuelle avec les ressources spécifiées</li>
         <li>Glance fournit l'image de base pour l'instance</li>
       </ol>
@@ -95,7 +98,7 @@
       <h2>Résumé</h2>
       <ul>
         <li>OpenStack se compose de services indépendants qui travaillent ensemble pour fournir des capacités de calcul cloud</li>
-        <li>Nova gère les machines virtuelles, Neutron gère le réseau, Cinder fournit le stockage, Keystone gère l'identité, et Glance gère les images</li>
+        <li>Nova gère les machines virtuelles, Neutron gère le réseau, Keycloak et Keystone gère l'identité, et Glance gère les images</li>
         <li>Les ressources sont organisées en projets pour l'isolement et la gestion</li>
         <li>Tous les services communiquent via des API standard accessibles via des endpoints</li>
       </ul>

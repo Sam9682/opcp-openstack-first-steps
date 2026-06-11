@@ -35,189 +35,82 @@
         CIDR et mettre en place des routeurs via l'API Neutron.
       </p>
 
-      <h2>1. Exercice 1 — Créer un réseau</h2>
+      <h2>Objectif</h2>
       <p>
-        Utilisez le CLI <code>openstack</code> pour créer un réseau virtuel nommé
-        <code>${STUDENT_ID}-net-network</code>.
+        Nous allons maintenant passer en revue les étapes pour configurer le réseau sur un nœud baremetal en utilisant le client CLI Openstack.
       </p>
 
-      <pre><code class="language-bash"># Créer un réseau virtuel
-openstack network create ${STUDENT_ID}-net-network
+      <h2>Créer un réseau privé et un sous-réseau</h2>
 
-# Vérifier que le réseau a été créé
-openstack network show ${STUDENT_ID}-net-network -f value -c status</code></pre>
-
-      <h2>2. Exercice 2 — Créer un sous-réseau</h2>
+      <h3>Étape 1 : Créer le réseau privé</h3>
       <p>
-        Créez un sous-réseau dans votre réseau.
-        Utilisez <code>10.0.0.0/24</code> comme plage d'adresses.
+        Avant de déployer votre instance, il est généralement nécessaire de créer un <strong>réseau privé</strong> afin qu’il soit accessible au sein de votre infrastructure locale.
+        Si vous avez déjà un réseau privé avec un subnet sur votre projet que vous souhaitez utiliser, vous pouvez ignorer l'étape de création et directement lister vos réseaux pour récupérer le nom ou l'ID du réseau concerné.
+      </p>
+      
+      <pre><code class="language-bash">openstack network create ${STUDENT_ID}-net</code></pre>
+      
+      <p>
+        Par défaut, un réseau n’est visible que par le projet qui l’a créé (ainsi que par les utilisateurs administrateurs) et l'ID de segment est généré automatiquement.
+      </p>
+      
+      <p>
+        Si vous souhaitez créer un réseau <strong>partagé entre tous vos projets</strong>, vous pouvez utiliser le paramètre <code>--share</code>.
+      </p>
+      
+      <p>
+        Pour partager un réseau uniquement avec certains projets spécifiques, il est nécessaire d’utiliser le mécanisme <strong>Role-Based Access Control (RBAC)</strong> d’OpenStack : <a href="https://docs.openstack.org/neutron/pike/admin/config-rbac.html" target="_blank">Documentation RBAC Neutron</a>.
+      </p>
+      
+      <p>
+        Par ailleurs, si vous souhaitez créer le réseau privé dans un <strong>VLAN particulier</strong>, vous pouvez le préciser à l’aide des paramètres suivants :
+      </p>
+      
+      <pre><code class="language-bash">--provider-network-type vlan
+--provider-physical-network physnet1 # Valeur statique dans OPCP
+--provider-segment $VLAN_ID # Segment-id de Neutron</code></pre>
+
+      
+      <p>
+        Par exemple, si vous souhaitez créer un réseau privé partagé dans le VLAN 2050 nommé <code>${STUDENT_ID}-net</code> :
+      </p>
+      
+      <pre><code class="language-bash">openstack network create --share --provider-network-type vlan --provider-physical-network physnet1 --provider-segment 2050 ${STUDENT_ID}-NET</code></pre>
+      
+      <p>
+        Une fois le réseau créé, vous pouvez le lister via la commande :
+      </p>
+      
+      <pre><code class="language-bash">openstack network list --name ${STUDENT_ID}-net</code></pre>
+      
+      <p>
+        Si nécessaire, vous pouvez lister l'ensemble des réseaux en retirant l'argument <code>--name</code>.
       </p>
 
-      <pre><code class="language-bash"># Créer un sous-réseau avec le CIDR 10.0.0.0/24
-openstack subnet create \
-  --network ${STUDENT_ID}-net-network \
-  --subnet-range 10.0.0.0/24 \
-  ${STUDENT_ID}-net-subnet
-
-# Vérifier que le sous-réseau a été créé
-openstack subnet show ${STUDENT_ID}-net-subnet</code></pre>
-
-      <h2>3. Réseaux VLAN et ports</h2>
+      <h3>Étape 2 : Créer le sous-réseau</h3>
       <p>
-        En environnement de production, les réseaux sont souvent adossés à des
-        VLANs spécifiques. Vous pouvez créer un réseau VLAN et y assigner un
-        port afin que le trafic soit tagué avec le bon VLAN ID sur le switch
-        physique.
+        Par défaut, le seul élément nécessaire pour créer un sous-réseau sur votre réseau est le CIDR que vous souhaitez configurer et le réseau que vous venez de créer :
       </p>
-
-      <h3>Créer un réseau VLAN</h3>
-      <pre><code class="language-bash"># Créer un réseau avec un VLAN ID spécifique
-openstack network create \
-  --provider-network-type vlan \
-  --provider-physical-network physnet1 \
-  --provider-segment 100 \
-  ${STUDENT_ID}-vlan100-network
-
-# Créer un sous-réseau sur le réseau VLAN
-openstack subnet create \
-  --network ${STUDENT_ID}-vlan100-network \
-  --subnet-range 10.100.0.0/24 \
-  ${STUDENT_ID}-vlan100-subnet</code></pre>
-
-      <h3>Créer un port sur un réseau VLAN spécifique</h3>
-      <pre><code class="language-bash"># Créer un port lié au réseau VLAN
-openstack port create \
-  --network ${STUDENT_ID}-vlan100-network \
-  ${STUDENT_ID}-vlan100-port
-
-# Vérifier les détails du port (binding VLAN)
-openstack port show ${STUDENT_ID}-vlan100-port</code></pre>
-
-      <h2>4. Assignation VLAN pour le baremetal</h2>
+      
+      <pre><code class="language-bash">openstack subnet create --network ${STUDENT_ID}-net --subnet-range 192.168.120.0/24 ${STUDENT_ID}-subnet</code></pre>
+      
       <p>
-        Lorsque vous travaillez avec des instances baremetal (Ironic), vous
-        pouvez assigner des réseaux VLAN directement aux interfaces physiques.
-        Cela permet d'isoler le trafic sur du matériel dédié.
+        Si vous souhaitez cependant préciser un <em>allocation pool</em>, vous pouvez le spécifier via différents paramètres.
+        Par exemple, si vous souhaitez créer un sous réseau avec le CIDR 192.168.120.0/24 en allouant uniquement 50 adresses IP du CIDR et avec une gateway spécifique, vous pouvez utiliser la commande suivante :
       </p>
-
-      <pre><code class="language-bash"># Créer un réseau VLAN pour le baremetal
-openstack network create \
-  --provider-network-type vlan \
-  --provider-physical-network physnet1 \
-  --provider-segment 200 \
-  ${STUDENT_ID}-bm-vlan200
-
-# Créer un sous-réseau
-openstack subnet create \
-  --network ${STUDENT_ID}-bm-vlan200 \
-  --subnet-range 10.200.0.0/24 \
-  ${STUDENT_ID}-bm-vlan200-subnet
-
-# Créer un port pour le nœud baremetal
-openstack port create \
-  --network ${STUDENT_ID}-bm-vlan200 \
-  --vnic-type baremetal \
-  ${STUDENT_ID}-bm-port
-
-# Déployer une instance baremetal avec ce port
-openstack server create \
-  --flavor baremetal \
-  --image "Ubuntu 22.04" \
-  --port ${STUDENT_ID}-bm-port \
-  --wait \
-  ${STUDENT_ID}-bm-instance</code></pre>
-
-      <h2>5. Ports trunk</h2>
+      
+      <pre><code class="language-bash">openstack subnet create --network ${STUDENT_ID}-net --subnet-range 192.168.120.0/24 --allocation-pool start=192.168.120.11,end=192.168.120.60 --gateway 192.168.120.8 ${STUDENT_ID}-subnet</code></pre>
+      
       <p>
-        Les ports trunk permettent à un seul port parent de transporter le
-        trafic de plusieurs réseaux VLAN via des subports. C'est couramment
-        utilisé lorsqu'une instance a besoin d'accéder à plusieurs VLANs
-        simultanément.
+        Ce sous-réseau pourra ensuite être utilisé pour déployer une instance, permettant ainsi à OpenStack d'attribuer une adresse IP à celle-ci lors de l'installation.
       </p>
-
-      <pre><code class="language-bash"># Créer le port parent
-openstack port create \
-  --network ${STUDENT_ID}-net-network \
-  ${STUDENT_ID}-trunk-parent
-
-# Créer un subport sur un autre réseau VLAN
-openstack port create \
-  --network ${STUDENT_ID}-vlan100-network \
-  ${STUDENT_ID}-trunk-sub1
-
-# Créer le trunk avec le port parent et attacher le subport
-openstack network trunk create \
-  --parent-port ${STUDENT_ID}-trunk-parent \
-  --subport port=${STUDENT_ID}-trunk-sub1,segmentation-type=vlan,segmentation-id=100 \
-  ${STUDENT_ID}-trunk
-
-# Ajouter un autre subport ultérieurement
-openstack port create \
-  --network ${STUDENT_ID}-bm-vlan200 \
-  ${STUDENT_ID}-trunk-sub2
-
-openstack network trunk set \
-  --subport port=${STUDENT_ID}-trunk-sub2,segmentation-type=vlan,segmentation-id=200 \
-  ${STUDENT_ID}-trunk
-
-# Vérifier la configuration du trunk
-openstack network trunk show ${STUDENT_ID}-trunk</code></pre>
-
-      <h2>6. QinQ (802.1ad) — Double encapsulation VLAN</h2>
-      <p>
-        Le QinQ (aussi appelé VLAN stacking ou 802.1ad) encapsule un tag VLAN
-        à l'intérieur d'un autre. C'est utile lorsqu'un fournisseur de services
-        doit transporter le trafic VLAN de ses clients à travers sa propre
-        infrastructure VLAN sans conflit. Le tag externe (S-VLAN) identifie le
-        segment du fournisseur, tandis que le tag interne (C-VLAN) préserve le
-        VLAN original du client.
-      </p>
-
-      <h3>Cas d'usage</h3>
-      <p>
-        Un hébergeur exploite plusieurs locataires sur la même infrastructure
-        physique. Chaque locataire utilise ses propres VLANs en interne (ex.
-        VLAN 10, 20, 30). Avec le QinQ, le fournisseur encapsule le trafic de
-        chaque locataire dans un VLAN externe unique, permettant aux VLAN IDs
-        des locataires de se chevaucher sans interférence.
-      </p>
-
-      <pre><code class="language-bash"># Créer un réseau fournisseur avec le type VLAN pour le tag externe (S-VLAN)
-openstack network create \
-  --provider-network-type vlan \
-  --provider-physical-network physnet1 \
-  --provider-segment 500 \
-  ${STUDENT_ID}-qinq-provider
-
-# Créer un sous-réseau sur le réseau fournisseur
-openstack subnet create \
-  --network ${STUDENT_ID}-qinq-provider \
-  --subnet-range 10.50.0.0/24 \
-  ${STUDENT_ID}-qinq-provider-subnet
-
-# Créer le port parent sur le réseau fournisseur
-openstack port create \
-  --network ${STUDENT_ID}-qinq-provider \
-  ${STUDENT_ID}-qinq-parent
-
-# Créer un trunk et attacher un subport avec le tag interne (C-VLAN)
-openstack network trunk create \
-  --parent-port ${STUDENT_ID}-qinq-parent \
-  --subport port=${STUDENT_ID}-trunk-sub1,segmentation-type=vlan,segmentation-id=10 \
-  ${STUDENT_ID}-qinq-trunk
-
-# L'instance voit le trafic du VLAN interne 10,
-# tandis que le réseau physique le transporte dans le VLAN externe 500
-openstack network trunk show ${STUDENT_ID}-qinq-trunk</code></pre>
 
       <h2>Résumé</h2>
       <ul>
-        <li>Utilisez les commandes <code>openstack network</code> et <code>openstack subnet</code>.</li>
-        <li>Les sous-réseaux nécessitent une <strong>plage CIDR</strong> valide (ex. <code>10.0.0.0/24</code>).</li>
-        <li>Les réseaux VLAN utilisent <code>--provider-network-type vlan</code> avec un <code>--provider-segment</code> ID.</li>
-        <li>Les ports baremetal utilisent <code>--vnic-type baremetal</code> pour se lier aux interfaces physiques.</li>
-        <li>Les ports trunk transportent plusieurs VLANs via les commandes <code>openstack network trunk</code>.</li>
-        <li>Le QinQ (802.1ad) empile un C-VLAN interne dans un S-VLAN externe pour l'isolation multi-locataire.</li>
+        <li>Neutron gère le réseau OpenStack</li>
+        <li>Créez des réseaux avec <code>openstack network create</code></li>
+        <li>Spécifiez l'ID de segment pour le réseau si nécessaire</code></li>
+        <li>Créez des sous-réseaux avec <code>openstack subnet create</code></li>
       </ul>
 
       <button class="mark-complete-btn" type="button" aria-label="Marquer cette leçon comme terminée">

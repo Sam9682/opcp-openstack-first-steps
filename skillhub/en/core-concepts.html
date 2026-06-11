@@ -33,21 +33,25 @@
         OpenStack is a cloud operating system that controls large pools of compute, storage, and networking resources throughout a data center, all managed through a dashboard or via the command line interface. It's composed of independent services that work together to provide a complete cloud computing platform.
       </p>
 
+      <h2>OPCP Core main components</h2>
+      <p>Here are the main components running in OPCP controller, including OpenStack modules.</p>
+      <figure>
+        <img src="../assets/images/OPCP_main_components.png"
+             alt="OPCP Core main components"
+             loading="lazy">
+      </figure>
+
+      
       <h2>Understanding OpenStack Services</h2>
       
       <h3>Nova - Compute Service</h3>
       <p>
-        Nova is the core service responsible for managing and provisioning virtual machines (instances) in OpenStack. It handles the lifecycle of instances including creation, scheduling, running, and termination. Nova works with various hypervisors such as KVM, Xen, VMware, and Hyper-V.
+        Nova is the core service responsible for managing and provisioning instances in OpenStack. It handles the lifecycle of instances including creation, scheduling, running, and termination. In OPCP, Nova works with various hypervisors such as KVM, VMware and can deploy baremetal by calling Ironic module.
       </p>
 
       <h3>Neutron - Networking Service</h3>
       <p>
         Neutron provides networking as a service for OpenStack. It allows users to define and manage virtual networks, subnets, routers, and firewalls. Neutron supports various network topologies and can integrate with physical network infrastructure.
-      </p>
-
-      <h3>Cinder - Block Storage Service</h3>
-      <p>
-        Cinder provides persistent block storage for instances managed by Nova. It enables users to create, attach, and detach storage volumes that can be used by virtual machines. Cinder supports various storage backends including local storage, SAN, and NAS solutions.
       </p>
 
       <h3>Keystone - Identity Service</h3>
@@ -77,7 +81,7 @@
 
       <h3>Authentication</h3>
       <p>
-        Authentication in OpenStack is handled by Keystone. Users can authenticate using various methods including username/password, tokens, or application credentials. Once authenticated, users receive a token that grants access to OpenStack services.
+        OPCP uses Keycloak as the IAM service and federates with OpenStack Keystone module. Users can authenticate using various methods including username/password, tokens, or application credentials. Once authenticated, users receive a token that grants access to OpenStack services.
       </p>
 
       <h2>How They Work Together</h2>
@@ -87,7 +91,6 @@
       <ol>
         <li>Keystone authenticates the user and provides a token</li>
         <li>Neutron creates the necessary network connectivity</li>
-        <li>Cinder provisions storage volumes</li>
         <li>Nova launches the virtual machine with the specified resources</li>
         <li>Glance provides the base image for the instance</li>
       </ol>
@@ -95,7 +98,7 @@
       <h2>Summary</h2>
       <ul>
         <li>OpenStack consists of independent services that work together to provide cloud computing capabilities</li>
-        <li>Nova manages virtual machines, Neutron handles networking, Cinder provides storage, Keystone handles identity, and Glance manages images</li>
+        <li>Nova manages virtual machines, Neutron handles networking, Keycloak and Keystone handles identity, and Glance manages images</li>
         <li>Resources are organized into projects for isolation and management</li>
         <li>All services communicate through standardized APIs accessible via endpoints</li>
       </ul>

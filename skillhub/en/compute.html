@@ -63,20 +63,41 @@ openstack keypair create \
 # Verify the keypair was registered
 openstack keypair show ${STUDENT_ID}-keypair</code></pre>
 
-      <h2>2. Exercise 1 — Launch an Instance with SSH Key</h2>
+      <h2>2. Exercise 1 — Launch an Instance</h2>
       <p>
         Use the <code>openstack</code> CLI to launch an instance with a specified
         flavor, image, and your SSH key pair. Name it <code>${STUDENT_ID}-compute-instance</code>.
       </p>
+      <p>
+        By default, OpenStack selects a host based on the chosen <strong>flavor</strong> and <strong>scheduler rules</strong>, which does not guarantee that the node you just configured will be used.
+      </p>
+      <p>
+        To ensure your instance will be deployed on this specific node, you can target it using its <strong>availability zone</strong>:
+      </p>
+      
+      <pre><code class="language-bash">openstack server create --availability-zone "nova::`&lt;node-id&gt;`"</code></pre>
 
-      <pre><code class="language-bash"># Launch a compute instance with your SSH key
+      <p>
+        Default images on OPCP Core have no password set, if you want to provide a password so you can log in through the instance's console, use Cloud-init files. Here is an example of basic user/password configuration for Debian 12 in cloud-init.yaml file (MUST start with #cloud-config line)</strong>:
+      </p>
+      
+      <pre><code class="language-bash">#cloud-config
+users:
+  - name: debian
+    lock_passwd: false
+    plain_text_passwd: 'debian'
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+ssh_pwauth: true </code></pre>
+
+      <pre><code class="language-bash"># Launch a compute instance
 openstack server create \
-  --flavor scale-1 \
-  --image "Ubuntu 24.04 BMPOD" \
-  --network Ext-Net \
-  --key-name ${STUDENT_ID}-keypair \
-  --wait \
-  ${STUDENT_ID}-compute-instance
+  --flavor scale-1 \ # template of instance to use
+  --image "Debian 12 LVM OPCP" \ # system image to deploy
+  --network ${STUDENT_ID}-net \ # network to attach to
+  --availability-zone "nova::`&lt;node-id&gt;`" \ # select specific node, needed when you pre-configured a specific node
+  --key-name ${STUDENT_ID}-keypair \ # public SSH key to use
+  --user-data ./cloud-init.yaml \ # Cloud init file
+  ${STUDENT_ID}-compute-instance # Instance name
 
 # Verify the instance is active
 openstack server show ${STUDENT_ID}-compute-instance -f value -c status</code></pre>
@@ -88,28 +109,136 @@ IP=$(openstack server show ${STUDENT_ID}-compute-instance -f value -c addresses 
 # Connect using your private key
 ssh -i ~/.ssh/${STUDENT_ID}-key ubuntu@$IP</code></pre>
 
-      <h2>3. Exercise 2 — Resize an Instance</h2>
+      <h3> Verify RAID Configuration After Deployment</h3>
+      <p>Once the instance is deployed, you can verify the RAID configuration from the instance:</p>
+
+      <p><strong>Check RAID devices:</strong></p>
+      <pre><code class="language-bash">cat /proc/mdstat</code></pre>
+
+      <p><strong>Example output:</strong></p>
+      <pre><code>
+Personalities : [raid1] [raid10] [linear] [multipath] [raid0] [raid6] [raid5] [raid4]
+md0 : active raid1 sda[0] sdb[1]
+      500G 0 blocks super 1.2 [2/2] [UU]
+
+unused devices: &lt;none&gt;
+</code></pre>
+
+    <h3>LACP Operating System Configuration</h3>
       <p>
-        Resize your running instance to a different flavor. This is useful when
-        your workload needs more (or fewer) resources.
+        After configuring your node in OpenStack and deploying an operating system, you still need to configure the network to benefit from the <strong>bonding</strong> network, which allows aggregating multiple network interfaces for better performance and redundancy.
       </p>
 
-      <pre><code class="language-bash"># Resize the instance to a larger flavor
-openstack server resize --flavor s1-4 ${STUDENT_ID}-compute-instance
+      <h4>Check Bonding Configuration</h4>
+      <p>
+        On some images (such as <strong>Debian 12</strong> or <strong>Ubuntu 22.04</strong>), the <strong>bonding</strong> configuration is automatically detected and configured.
+      </p>
+      <p>
+        However, other distributions may require manual adjustment.
+      </p>
+      
+      <h5>1. Check Active Bonds</h5>
+      
+      <pre><code class="language-bash">ls /proc/net/bonding/
+bond0</code></pre>
+      
+      <h5>2. Check Member Interfaces</h5>
+      
+      <pre><code class="language-bash">cat /proc/net/bonding/bond0 | grep Interface
+Slave Interface: ens22f1np1
+Slave Interface: ens22f0np0
+Slave Interface: ens21f1np1
+Slave Interface: ens21f0np0</code></pre>
+      
+      <h5>3. Check Transmission Hash Policy</h5>
+      
+      <pre><code class="language-bash">cat /proc/net/bonding/* | grep Trans
+Transmit Hash Policy: layer2 (0)</code></pre>
+      
+      <div class="alert alert-warning">
+        <strong>Warning:</strong> To exploit full bandwidth, configure the policy to <code>layer3+4</code> (by default, some OS use <code>layer2</code>, less performant).
+        <br><br>
+        More details: <a href="https://help.ubuntu.com/community/UbuntuBonding?utm_source=chatgpt.com" target="_blank">Ubuntu Bonding Documentation</a>
+      </div>
 
-# Wait for the resize to complete, then confirm it
-openstack server resize confirm ${STUDENT_ID}-compute-instance
+      <h4>Modify Configuration</h4>
+      
+      <h5>1. Hot Change (Non-persistent)</h5>
+      <p>
+        If you want to manually test your configuration, you can use the following command:
+      </p>
+      
+      <pre><code class="language-bash">sudo ip link set bond0 type bond xmit_hash_policy layer3+4</code></pre>
+      
+      <p>
+        Note: This configuration will be reset if your machine restarts.
+      </p>
+      
+      <h5>2. Persistent Change (Example via Netplan and cloud-init)</h5>
+      <p>
+        Create your configuration file (e.g. <code>/etc/cloud/cloud.cfg.d/99-custom-network.cfg</code>) to include:
+      </p>
+      
+      <pre><code class="language-yaml">network:
+  version: 2
+  ethernets:
+    ens21f0np0: {}
+    ens21f1np1: {}
+    ens22f0np0: {}
+    ens22f1np1: {}
+  bonds:
+    bond0:
+      dhcp4: true
+      interfaces:
+        - ens21f0np0
+        - ens21f1np1
+        - ens22f0np0
+        - ens22f1np1
+      macaddress: 00:00:00:20:00:23
+      parameters:
+        mode: 802.3ad
+        transmit-hash-policy: layer3+4
+        lacp-rate: fast
+        mii-monitor-interval: 100</code></pre>
+      
+      <p>
+        Then apply the configuration by rebooting the instance.
+      </p>
 
-# Verify the new flavor
-openstack server show ${STUDENT_ID}-compute-instance -f value -c flavor</code></pre>
+      <h4>Test Bandwidth with iperf3</h4>
+      <p>
+        To properly test LACP, you need to have <strong>2 nodes</strong> in the <strong>same network</strong>, both configured with LACP.
+      </p>
+      
+      <h5>iperf3 Server (Node 1)</h5>
+      
+      <pre><code class="language-bash">iperf3 -s</code></pre>
+      
+      <h5>iperf3 Client (Node 2)</h5>
+      <p>
+        Use <code>-P</code> to generate multiple parallel streams to reach maximum bandwidth.
+      </p>
+      
+      <pre><code class="language-bash">iperf3 -c &lt;node-ip&gt; -P 64</code></pre>
+      
+      <p><strong>Example result</strong></p>
+      
+      <pre><code>[SUM] 0.0000-10.0121 sec   110 GBytes  94.0 Gbits/sec</code></pre>
+      
+      <p>
+        With a 4×25 Gbps link, you should reach approximately <strong>100 Gbps</strong>.
+        It may be necessary to adjust some system parameters to fully exploit this capacity.
+      </p>
 
       <h2>Summary</h2>
       <ul>
         <li>Generate an SSH key pair with <code>ssh-keygen</code> and register it with <code>openstack keypair create</code>.</li>
         <li>Use <code>--key-name</code> when creating an instance to inject the public key.</li>
-        <li>Use <code>openstack server</code> commands to launch, resize, and snapshot instances.</li>
+        <li>Use <code>openstack server</code> commands to launch instances.</li>
         <li>Flavors define the <strong>CPU, RAM, and disk</strong> allocated to an instance.</li>
         <li>Missing flavor or image errors are reported with <strong>clear messages</strong> by the CLI.</li>
+        <li>Configure and verify LACP</li>
+        <li>Verify software RAID state</li>
       </ul>
 
       <button class="mark-complete-btn" type="button" aria-label="Mark this lesson as complete">

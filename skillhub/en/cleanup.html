@@ -52,8 +52,8 @@
           <tr><td>First Steps</td><td>Volume</td><td><code>${STUDENT_ID}-first-volume</code></td></tr>
           <tr><td>Compute</td><td>Instance</td><td><code>${STUDENT_ID}-compute-instance</code></td></tr>
           <tr><td>Compute</td><td>Snapshot</td><td><code>${STUDENT_ID}-compute-snapshot</code></td></tr>
-          <tr><td>Storage</td><td>Volume</td><td><code>${STUDENT_ID}-storage-volume</code></td></tr>
-          <tr><td>Storage</td><td>Snapshot</td><td><code>${STUDENT_ID}-storage-snapshot</code></td></tr>
+          <tr><td>Software RAID</td><td>Volume</td><td><code>${STUDENT_ID}-raid-volume</code></td></tr>
+          <tr><td>Software RAID</td><td>Snapshot</td><td><code>${STUDENT_ID}-raid-snapshot</code></td></tr>
           <tr><td>Security Groups</td><td>Security Group</td><td><code>${STUDENT_ID}-sg-web</code></td></tr>
           <tr><td>LACP</td><td>Network</td><td><code>${STUDENT_ID}-lacp-network</code></td></tr>
           <tr><td>LACP</td><td>Ports</td><td><code>${STUDENT_ID}-lacp-port-1</code>, <code>${STUDENT_ID}-lacp-port-2</code></td></tr>
@@ -100,17 +100,10 @@ python3 -m labs.scripts.cleanup_lab --student-id your-student-id</code></pre>
         CLI. Follow the deletion order above:
       </p>
 
-      <pre><code class="language-bash"># 1. Detach volumes from instances
-openstack server remove volume ${STUDENT_ID}-compute-instance ${STUDENT_ID}-storage-volume
-
-# 2. Delete snapshots (instance and volume)
-openstack image delete ${STUDENT_ID}-compute-snapshot
-openstack volume snapshot delete ${STUDENT_ID}-storage-snapshot
+      <pre><code class="language-bash">
 
 # 3. Delete instances
-openstack server delete ${STUDENT_ID}-first-instance
 openstack server delete ${STUDENT_ID}-compute-instance
-openstack server delete ${STUDENT_ID}-lacp-instance
 
 # 4. Delete trunks and ports
 openstack network trunk delete ${STUDENT_ID}-lacp-bond
@@ -150,8 +143,7 @@ openstack volume list --name "your-student-id-*"
 # List any remaining networks
 openstack network list --name "your-student-id-*"
 
-# List any remaining security groups
-openstack security group list --project your-project-id | grep "your-student-id"</code></pre>
+</code></pre>
 
       <p>
         If any resources remain, delete them manually using the

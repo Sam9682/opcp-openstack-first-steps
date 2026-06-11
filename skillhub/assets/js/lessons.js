@@ -47,30 +47,30 @@
       prerequisites: ['core-concepts']
     },
     {
-      id: 'auth',
-      slug: 'app-credentials',
-      titleEN: 'App Credentials',
-      titleFR: 'Identifiants d\'Application',
-      difficulty: 'beginner',
-      estimatedMinutes: 15,
-      prerequisites: ['user-management']
-    },
-    {
       id: 'network',
       slug: 'networking',
       titleEN: 'Networking',
       titleFR: 'Réseau',
       difficulty: 'intermediate',
       estimatedMinutes: 20,
-      prerequisites: ['auth']
+      prerequisites: ['user-management']
     },
     {
       id: 'storage',
-      slug: 'storage',
-      titleEN: 'Storage',
-      titleFR: 'Stockage',
+      slug: 'software-raid',
+      titleEN: 'Software RAID',
+      titleFR: 'RAID Logiciel',
       difficulty: 'advanced',
       estimatedMinutes: 25,
+      prerequisites: ['network']
+    },
+    {
+      id: 'lacp',
+      slug: 'lacp',
+      titleEN: 'LACP Configuration',
+      titleFR: 'Configuration LACP',
+      difficulty: 'advanced',
+      estimatedMinutes: 30,
       prerequisites: ['network']
     },
     {
@@ -83,22 +83,13 @@
       prerequisites: ['storage']
     },
     {
-      id: 'lacp',
-      slug: 'lacp',
-      titleEN: 'LACP Configuration',
-      titleFR: 'Configuration LACP',
-      difficulty: 'advanced',
-      estimatedMinutes: 30,
-      prerequisites: ['network']
-    },
-    {
       id: 'summary',
       slug: 'summary',
       titleEN: 'Summary & Next Steps',
       titleFR: 'Résumé & Prochaines étapes',
       difficulty: 'beginner',
       estimatedMinutes: 5,
-      prerequisites: ['compute']
+      prerequisites: ['network']
     },
     {
       id: 'cleanup',
