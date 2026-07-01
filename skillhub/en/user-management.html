@@ -117,6 +117,26 @@
       <p>
         Run script <code>bash env_setup.sh</code>, enter the information collected from previous steps. A new *-openrc.sh file is generated starting with your project ID. Run following command to add the new environnement variables. You must run this command every time you start a new terminal session.<pre><code class="language-bash">source &lt;project-id&gt;-openrc.sh</code></pre>
       </p>
+      <p>
+        Otherwise, you can manually adapt following informations and copy it into a openrc.sh file. <strong>Change information between &lt;&gt;.</strong>
+      </p>
+      <pre><code class="language-bash">export OS_INTERFACE=public
+export OS_IDENTITY_API_VERSION=3
+export OS_AUTH_URL=https://keystone.&lt;your-FQDN&gt;
+export OS_AUTH_TYPE=v3oidcpassword
+export OS_PROTOCOL=openid
+export OS_IDENTITY_PROVIDER=keycloak-admin
+export OS_CLIENT_ID=&lt;your-client-id&gt;
+export OS_CLIENT_SECRET=&lt;your-client-secret&gt;
+export OS_DISCOVERY_ENDPOINT=https://admin.keycloak.&lt;your-FQDN&gt;/realms/master/.well-known/openid-configuration
+export OS_USERNAME=tfevre
+export OS_PASSWORD=&lt;your-user-password&gt;
+export OS_PROJECT_ID=&lt;your-project-id&gt;
+export OS_CACERT=&lt;path-to-cert-if-needed&gt;
+export http_proxy=&lt;proxy-url-if-needed&gt;
+export https_proxy=&lt;proxy-url-if-needed&gt;</code></pre>
+      <p>Source openrc.sh to load environment variables</p>
+      <pre><code>source openrc.sh</code></pre>
       <p>Retrieve a token to verify you can authenticate using :</p>
       <pre><code class="language-bash">openstack token issue</code></pre>
       <h2>4. Create a new project</h2>

@@ -2,6 +2,7 @@ version: '3.8'
 
 services:
   app:
+    runtime: ${RUNTIME_TYPE:-runc}
     build:
       context: .
       dockerfile: Dockerfile
@@ -27,6 +28,7 @@ services:
       start_period: 40s
 
   nginx:
+    runtime: ${RUNTIME_TYPE:-runc}
     image: nginx:alpine
     container_name: opcp-openstack-first-steps-nginx-${USER_ID:-0}-${HTTPS_PORT:-5001}
     ports:
