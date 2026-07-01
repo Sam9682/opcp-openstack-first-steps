@@ -47,20 +47,12 @@
           <tr><th>Module</th><th>Type de ressource</th><th>Nom</th></tr>
         </thead>
         <tbody>
-          <tr><td>Premiers pas</td><td>Instance</td><td><code>${STUDENT_ID}-first-instance</code></td></tr>
-          <tr><td>Premiers pas</td><td>Réseau</td><td><code>${STUDENT_ID}-first-network</code></td></tr>
-          <tr><td>Premiers pas</td><td>Volume</td><td><code>${STUDENT_ID}-first-volume</code></td></tr>
+          <tr><td>Réseau</td><td>Réseau</td><td><code>${STUDENT_ID}-net</code></td></tr>
+          <tr><td>Réseau</td><td>Sous-réseau</td><td><code>${STUDENT_ID}-subnet</code></td></tr>
           <tr><td>Compute</td><td>Instance</td><td><code>${STUDENT_ID}-compute-instance</code></td></tr>
-          <tr><td>Compute</td><td>Snapshot</td><td><code>${STUDENT_ID}-compute-snapshot</code></td></tr>
-          <tr><td>RAID Logiciel</td><td>Volume</td><td><code>${STUDENT_ID}-raid-volume</code></td></tr>
-          <tr><td>RAID Logiciel</td><td>Snapshot</td><td><code>${STUDENT_ID}-raid-snapshot</code></td></tr>
-          <tr><td>Groupes de sécurité</td><td>Groupe de sécurité</td><td><code>${STUDENT_ID}-sg-web</code></td></tr>
-          <tr><td>LACP</td><td>Réseau</td><td><code>${STUDENT_ID}-lacp-network</code></td></tr>
-          <tr><td>LACP</td><td>Ports</td><td><code>${STUDENT_ID}-lacp-port-1</code>, <code>${STUDENT_ID}-lacp-port-2</code></td></tr>
-          <tr><td>LACP</td><td>Bond</td><td><code>${STUDENT_ID}-lacp-bond</code></td></tr>
-          <tr><td>LACP</td><td>Instance</td><td><code>${STUDENT_ID}-lacp-instance</code></td></tr>
-          <tr><td>Setup</td><td>Réseaux</td><td><code>${STUDENT_ID}-compute-network</code>, <code>${STUDENT_ID}-storage-network</code>, <code>${STUDENT_ID}-sg-network</code></td></tr>
-          <tr><td>Setup</td><td>Groupe de sécurité</td><td><code>${STUDENT_ID}-default-sg</code></td></tr>
+          <tr><td>LACP</td><td>Groupe de ports</td><td><code>${STUDENT_ID}-pg-lacp</code></td></tr>
+          <tr><td>Gestion des utilisateurs</td><td>Projet</td><td><code>${STUDENT_ID}-project</code></td></tr>
+          <tr><td>Gestion des utilisateurs</td><td>Utilisateur Keycloak</td><td><code>${STUDENT_ID}-user</code></td></tr>
         </tbody>
       </table>
 
@@ -70,13 +62,10 @@
         mauvais ordre provoquera des erreurs. L'ordre correct est :
       </p>
       <ol>
-        <li><strong>Détacher les volumes</strong> des instances (Cinder).</li>
-        <li><strong>Supprimer les snapshots</strong> — snapshots d'instances (Glance/Nova) et de volumes (Cinder).</li>
         <li><strong>Supprimer les instances</strong> (Nova).</li>
-        <li><strong>Supprimer les bonds et ports</strong> (Neutron).</li>
-        <li><strong>Supprimer les volumes</strong> (Cinder).</li>
-        <li><strong>Supprimer les groupes de sécurité</strong> (Neutron).</li>
-        <li><strong>Supprimer les réseaux</strong> (Neutron) — les sous-réseaux sont supprimés automatiquement.</li>
+        <li><strong>Supprimer les ports et groupes de ports</strong> (Neutron).</li>
+        <li><strong>Supprimer les sous-réseaux et réseaux</strong> (Neutron) — les sous-réseaux sont supprimés automatiquement.</li>
+        <li><strong>Supprimer les projets</strong> (Keystone) — notez que les utilisateurs doivent être supprimés en premier.</li>
       </ol>
 
       <h2>3. Nettoyage automatisé</h2>
@@ -103,11 +92,21 @@ python3 -m labs.scripts.cleanup_lab --student-id votre-student-id</code></pre>
 
       <pre><code class="language-bash">
 
-# 3. Supprimer les instances
+# 1. Supprimer les instances
 openstack server delete ${STUDENT_ID}-compute-instance
 
-# 4. Supprimer les trunks et ports
-openstack network trunk delete ${STUDENT_ID}-lacp-bond</code></pre>
+# 2. Supprimer les ports et groupes de ports
+# Pour les groupes de ports LACP (si créés)
+openstack baremetal port group delete ${STUDENT_ID}-pg-lacp
+
+# 3. Supprimer les sous-réseaux et réseaux
+openstack subnet delete ${STUDENT_ID}-subnet
+openstack network delete ${STUDENT_ID}-net
+
+# 4. Supprimer les projets (et utilisateurs)
+# Note : Les utilisateurs doivent être supprimés avant les projets dans OpenStack
+openstack user delete ${STUDENT_ID}-user
+openstack project delete ${STUDENT_ID}-project</code></pre>
 
       <h2>5. Vérifier le nettoyage</h2>
       <p>
@@ -115,7 +114,18 @@ openstack network trunk delete ${STUDENT_ID}-lacp-bond</code></pre>
         listant avec le CLI OpenStack :
       </p>
 
-      <pre><code class="language-bash"></code></pre>
+      <pre><code class="language-bash"># Liste des instances restantes
+openstack server list --name "votre-student-id-*"
+
+# Liste des réseaux restants
+openstack network list --name "votre-student-id-*"
+
+# Liste des projets restants
+openstack project list --name "votre-student-id-*"
+
+# Liste des utilisateurs restants
+openstack user list --name "votre-student-id-*"
+</code></pre>
 
       <p>
         Si des ressources subsistent, supprimez-les manuellement avec le CLI

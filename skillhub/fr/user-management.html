@@ -59,7 +59,7 @@
       <h2>3.1. Créer un nouveau client</h2>
       <p>
         Connectez-vous à votre instance Keycloak (https://admin.keycloak.FQDN) et sélectionnez le realm dans lequel les utilisateurs OpenStack sont définis.
-        Créez un nouveau client. Allez dans la section <strong>Clients</strong> et cliquez sur <strong>Create a client</strong>. Entrez un <em>Client ID</em> au format ${STUDENT-ID}-cli, par exemple : slepetre-cli. Le type de client doit être <em>OpenID Connect</em>. Cliquez sur <strong>Next</strong>.
+        Créez un nouveau client. Allez dans la section <strong>Clients</strong> et cliquez sur <strong>Create a client</strong>. Entrez un <em>Client ID</em> au format ${STUDENT-ID}-cli, par exemple : jdoe-cli. Le type de client doit être <em>OpenID Connect</em>. Cliquez sur <strong>Next</strong>.
       </p>
 
       <h2>3.2. Activer l'authentification client</h2>
@@ -134,13 +134,13 @@
         Pour créer un nouveau projet avec l'interface en ligne de commande OpenStack, vous devez disposer des privilèges administratifs. Exécutez la commande suivante :
       </p>
       <pre><code class="language-bash"># Créer un nouveau projet
-openstack project create my-new-project --domain keycloak-admin</code></pre>
+openstack project create ${STUDENT_ID}-project --domain keycloak-admin</code></pre>
       
       <p>
         Vous pouvez également spécifier des options supplémentaires lors de la création d'un projet :
       </p>
       <pre><code class="language-bash"># Créer un projet avec description et statut activé
-openstack project create --description "Mon nouveau projet pour les tests" --enable my-new-project --domain keycloak-admin</code></pre>
+openstack project create --description "Mon nouveau projet pour les tests" --enable ${STUDENT_ID}-project --domain keycloak-admin</code></pre>
     
       <strong>Vous ne devez pas utiliser l'interface Horizon pour créer des projets dans OPCP car elle ne permet pas de choisir un domaine spécifique.</strong>
       

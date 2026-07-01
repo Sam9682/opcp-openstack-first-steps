@@ -156,14 +156,15 @@
 | a741e9b4-c54c-4970-bfba-3eafbdbfc269 | e0:9d:73:ba:73:6d | False       |
 +--------------------------------------+-------------------+-------------+</code></pre>
       <p>
-        Note: It is recommended to prefix the port group name with the node name (e.g. <code>&lt;node-name&gt;-&lt;name&gt;</code>) to facilitate identification.
+        Note: <strong>It is recommended to prefix the port group name with the node name (e.g. <code>&lt;node-name&gt;-&lt;name&gt;</code>) to facilitate identification.</strong>
+        In this exercice, to ease the cleanup at the end of it, we will omit the node name in following example. 
       </p>
       
       <p><strong>Example:</strong></p>
       
       <pre><code class="language-bash">openstack baremetal port group create \
   --node &lt;node_uuid&gt; \
-  --name ${STUDENT_ID}-&lt;node_name&gt;-pg-lacp \
+  --name ${STUDENT_ID}-pg-lacp \
   --mode 802.3ad \
   --address e0:9d:73:79:bb:7c</code></pre>
       
@@ -178,7 +179,7 @@
 | extra                      | {}                                   |
 | standalone_ports_supported | True                                 |
 | node_uuid                  | 48b7b966-c8e3-415d-b286-c097224043aa |
-| name                       | jdoe-HXQF3CO2807B-pg-lacp            |
+| name                       | jdoe-pg-lacp                         |
 | updated_at                 | None                                 |
 | internal_info              | {}                                   |
 | mode                       | 802.3ad                              |

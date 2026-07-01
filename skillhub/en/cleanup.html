@@ -47,20 +47,12 @@
           <tr><th>Module</th><th>Resource type</th><th>Name pattern</th></tr>
         </thead>
         <tbody>
-          <tr><td>First Steps</td><td>Instance</td><td><code>${STUDENT_ID}-first-instance</code></td></tr>
-          <tr><td>First Steps</td><td>Network</td><td><code>${STUDENT_ID}-first-network</code></td></tr>
-          <tr><td>First Steps</td><td>Volume</td><td><code>${STUDENT_ID}-first-volume</code></td></tr>
+          <tr><td>Networking</td><td>Network</td><td><code>${STUDENT_ID}-net</code></td></tr>
+          <tr><td>Networking</td><td>Subnet</td><td><code>${STUDENT_ID}-subnet</code></td></tr>
           <tr><td>Compute</td><td>Instance</td><td><code>${STUDENT_ID}-compute-instance</code></td></tr>
-          <tr><td>Compute</td><td>Snapshot</td><td><code>${STUDENT_ID}-compute-snapshot</code></td></tr>
-          <tr><td>Software RAID</td><td>Volume</td><td><code>${STUDENT_ID}-raid-volume</code></td></tr>
-          <tr><td>Software RAID</td><td>Snapshot</td><td><code>${STUDENT_ID}-raid-snapshot</code></td></tr>
-          <tr><td>Security Groups</td><td>Security Group</td><td><code>${STUDENT_ID}-sg-web</code></td></tr>
-          <tr><td>LACP</td><td>Network</td><td><code>${STUDENT_ID}-lacp-network</code></td></tr>
-          <tr><td>LACP</td><td>Ports</td><td><code>${STUDENT_ID}-lacp-port-1</code>, <code>${STUDENT_ID}-lacp-port-2</code></td></tr>
-          <tr><td>LACP</td><td>Bond</td><td><code>${STUDENT_ID}-lacp-bond</code></td></tr>
-          <tr><td>LACP</td><td>Instance</td><td><code>${STUDENT_ID}-lacp-instance</code></td></tr>
-          <tr><td>Setup</td><td>Networks</td><td><code>${STUDENT_ID}-compute-network</code>, <code>${STUDENT_ID}-storage-network</code>, <code>${STUDENT_ID}-sg-network</code></td></tr>
-          <tr><td>Setup</td><td>Security Group</td><td><code>${STUDENT_ID}-default-sg</code></td></tr>
+          <tr><td>LACP</td><td>Port Group</td><td><code>${STUDENT_ID}-pg-lacp</code></td></tr>
+          <tr><td>User Management</td><td>Project</td><td><code>${STUDENT_ID}-project</code></td></tr>
+          <tr><td>User Management</td><td>Keycloak Client</td><td><code>${STUDENT_ID}-cli</code></td></tr>
         </tbody>
       </table>
 
@@ -70,13 +62,11 @@
         will fail. The correct order is:
       </p>
       <ol>
-        <li><strong>Detach volumes</strong> from instances (Cinder).</li>
-        <li><strong>Delete snapshots</strong> — both instance snapshots (Glance/Nova) and volume snapshots (Cinder).</li>
         <li><strong>Delete instances</strong> (Nova).</li>
-        <li><strong>Delete bonds and ports</strong> (Neutron).</li>
-        <li><strong>Delete volumes</strong> (Cinder).</li>
-        <li><strong>Delete security groups</strong> (Neutron).</li>
-        <li><strong>Delete networks</strong> (Neutron) — subnets are removed automatically.</li>
+        <li><strong>Delete ports and port groups</strong> (Neutron).</li>
+        <li><strong>Delete subnets and networks</strong> (Neutron) — subnets are removed automatically.</li>
+        <li><strong>Delete client and user</strong> (Keycloak)</li>
+        <li><strong>Delete projects</strong> (Keystone) — note that users must be deleted first.</li>
       </ol>
 
       <h2>3. Automated Cleanup</h2>
@@ -87,7 +77,7 @@
       </p>
 
       <pre><code class="language-bash"># Clean up all resources for your student session
-python3 -m labs.scripts.cleanup_lab --student-id your-student-id</code></pre>
+python3 -m labs.scripts.cleanup_lab --student-id ${STUDENT_ID}</code></pre>
 
       <p>
         The script uses a best-effort approach: if a single resource fails to
@@ -102,31 +92,22 @@ python3 -m labs.scripts.cleanup_lab --student-id your-student-id</code></pre>
 
       <pre><code class="language-bash">
 
-# 3. Delete instances
+# 1. Delete instances
 openstack server delete ${STUDENT_ID}-compute-instance
 
-# 4. Delete trunks and ports
-openstack network trunk delete ${STUDENT_ID}-lacp-bond
-openstack port delete ${STUDENT_ID}-lacp-port-1
-openstack port delete ${STUDENT_ID}-lacp-port-2
+# 2. Delete ports and port groups
+# For LACP port groups (if created)
+openstack baremetal port group delete ${STUDENT_ID}-pg-lacp
 
-# 5. Delete volumes
-openstack volume delete ${STUDENT_ID}-first-volume
-openstack volume delete ${STUDENT_ID}-storage-volume
+# 3. Delete subnets and networks
+openstack subnet delete ${STUDENT_ID}-subnet
+openstack network delete ${STUDENT_ID}-net
 
-# 6. Delete security groups
-openstack security group delete ${STUDENT_ID}-sg-web
-openstack security group delete ${STUDENT_ID}-default-sg
+# 4. Delete client and user in Keycloak
+Must be done through Keycloak UI
 
-# 7. Delete routers (remove interfaces first) and networks
-openstack router remove subnet ${STUDENT_ID}-net-router ${STUDENT_ID}-net-subnet
-openstack router delete ${STUDENT_ID}-net-router
-openstack network delete ${STUDENT_ID}-first-network
-openstack network delete ${STUDENT_ID}-net-network
-openstack network delete ${STUDENT_ID}-lacp-network
-openstack network delete ${STUDENT_ID}-compute-network
-openstack network delete ${STUDENT_ID}-storage-network
-openstack network delete ${STUDENT_ID}-sg-network</code></pre>
+# 5. Delete projects (and users)
+openstack project delete ${STUDENT_ID}-project</code></pre>
 
       <h2>5. Verify Cleanup</h2>
       <p>
@@ -135,14 +116,16 @@ openstack network delete ${STUDENT_ID}-sg-network</code></pre>
       </p>
 
       <pre><code class="language-bash"># List any remaining instances
-openstack server list --name "your-student-id-*"
-
-# List any remaining volumes
-openstack volume list --name "your-student-id-*"
+openstack server list --name ${STUDENT_ID}-*
 
 # List any remaining networks
-openstack network list --name "your-student-id-*"
+openstack network list --name ${STUDENT_ID}-*
 
+# List any remaining projects
+openstack project list --name ${STUDENT_ID}-*
+
+# List any remaining users
+openstack user list --name ${STUDENT_ID}-*
 </code></pre>
 
       <p>
