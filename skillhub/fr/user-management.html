@@ -51,9 +51,9 @@
         solution OPCP est livrée avec les rôles intégrés suivants :
       </p>
       <ul>
-        <li><strong>Master Admin role</strong> — le super-admin pré-configuré livré avec OPCP.</li>
+        <li><strong>Rôle Master Admin</strong> — le super-admin pré-configuré livré avec OPCP.</li>
         <li><strong>IT Admin</strong> — administre les projets OpenStack et gère les ressources pour les utilisateurs finaux.</li>
-        <li><strong>DC Operator</strong> — opère la couche d'infrastructure du data-center.</li>
+        <li><strong>Opérateur DC</strong> — opère la couche d'infrastructure du data-center.</li>
       </ul>
 
       <h2>3.1. Créer un nouveau client</h2>
@@ -164,7 +164,7 @@ openstack project create --description "Mon nouveau projet pour les tests" --ena
       <p>
         Connectez-vous à la console d'administration Keycloak avec les
         identifiants super-admin, puis naviguez vers
-        <strong>Users → Add user</strong>. Remplissez les champs requis
+        <strong>Users → Add user</strong>. <strong>Remplissez les champs requis</strong>
         (nom d'utilisateur, email, prénom / nom) et enregistrez.
       </p>
 
@@ -214,7 +214,7 @@ openstack project create --description "Mon nouveau projet pour les tests" --ena
         <li><strong>Valeur :</strong> un objet JSON sur une seule ligne (voir ci-dessous)</li>
       </ul>
 
-      <pre><code class="language-json">{"domain": {"name": "keycloak-admin"}, "name": "jdoe-project", "roles": [{"name": "admin"}, {"name": "service"}]}</code></pre>
+      <pre><code class="language-json">{"domain": {"name": "keycloak-admin"}, "name": "jdoe-project", "roles": [{"name": "member"}]}</code></pre>
 
       <p>Adaptez les valeurs à votre configuration :</p>
       <ul>
@@ -233,14 +233,14 @@ openstack project create --description "Mon nouveau projet pour les tests" --ena
         </ul>
       </p>
       <p><code>openstack token issue</code> devrait fonctionner et <code>openstack baremetal node list</code> devrait retourner une réponse vide.</p>
-      <p><strong>Sourcez à nouveau votre fichier openrc admin, nous aurons besoin de celui-ci pour les étapes suivantes.</strong></p>
+      <p style="font-size: 20px;"><strong>Sourcez à nouveau votre fichier openrc admin, nous aurons besoin de celui-ci pour les étapes suivantes.</strong></p>
 
       <h2>Résumé</h2>
       <ul>
         <li>OPCP est livré avec des realms, rôles et groupes Keycloak pré-configurés.</li>
-        <li>Trois rôles intégrés : <strong>Master Admin role</strong>, <strong>IT Admin</strong>, et <strong>DC Operator</strong>.</li>
+        <li>Trois rôles intégrés : <strong>Rôle Master Admin</strong>, <strong>IT Admin</strong>, et <strong>Opérateur DC</strong>.</li>
         <li>Les mots de passe sont définis dans l'onglet <strong>Credentials</strong> ; activez <strong>Temporary</strong> pour forcer une réinitialisation à la première connexion.</li>
-        <li>Les IT Admins reçoivent un attribut <code>project</code> sur le domaine <code>keycloak-admin</code> avec les rôles <code>admin</code> / <code>service</code>.</li>
+        <li>Les IT Admins reçoivent un attribut <code>project</code> sur le domaine <code>keycloak-admin</code> avec les rôles <code>member</code>.</li>
       </ul>
 
       <button class="mark-complete-btn" type="button" aria-label="Marquer cette leçon comme terminée">

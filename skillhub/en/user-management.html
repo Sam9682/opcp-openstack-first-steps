@@ -182,8 +182,7 @@ openstack project create --description "My new project for testing" --enable ${S
       <p>
         Log in to the Keycloak administration console with the super-admin
         credentials, then navigate to <strong>Users → Add user</strong>.
-        Fill in the required fields (username, email, first / last name) and
-        save.
+        <strong>Fill in the required fields (username, email, first / last name) and save.</strong>
       </p>
 
       <figure>
@@ -230,12 +229,12 @@ openstack project create --description "My new project for testing" --enable ${S
         <li><strong>Value:</strong> a single-line JSON object (see below)</li>
       </ul>
 
-      <pre><code class="language-json">{"domain": {"name": "keycloak-admin"}, "name": "jdoe-project", "roles": [{"name": "admin"}, {"name": "service"}]}</code></pre>
+      <pre><code class="language-json">{"domain": {"name": "keycloak-admin"}, "name": "jdoe-project", "roles": [{"name": "member"}]}</code></pre>
 
       <p>Adapt the values to match your setup:</p>
       <ul>
         <li><strong>domain → name</strong> — the OpenStack domain (e.g. <code>keycloak-admin</code>).</li>
-        <li><strong>name</strong> — the OpenStack project name (e.g. <code>admin</code>).</li>
+        <li><strong>name</strong> — the OpenStack project name (e.g. <code>jdoe-project</code>).</li>
         <li><strong>roles</strong> — the OpenStack roles to grant (e.g. <code>admin</code>, <code>service</code>).</li>
       </ul>
       <h2>7. Test user authentication using openrc file</h2>
@@ -248,14 +247,14 @@ openstack project create --description "My new project for testing" --enable ${S
         </ul>
       </p>
       <p><code>openstack token issue</code> should work and <code>openstack baremetal node list</code> should return empty response.</p>
-      <p><strong>Source back your admin openrc file, we will need it for next steps.</strong></p>
+      <p style="font-size: 20px"><strong>Source back your admin openrc file, we will need it for next steps.</strong></p>
 
       <h2>Summary</h2>
       <ul>
         <li>OPCP ships with pre-configured Keycloak realms, roles, and groups.</li>
         <li>Three built-in roles: <strong>Master Admin role</strong>, <strong>IT Admin</strong>, and <strong>DC Operator</strong>.</li>
         <li>User passwords are set in the <strong>Credentials</strong> tab; enable <strong>Temporary</strong> to force a reset on first login.</li>
-        <li>IT Admins receive a <code>project</code> attribute on the <code>keycloak-admin</code> domain with <code>admin</code> / <code>service</code> roles.</li>
+        <li>IT Admins receive a <code>project</code> attribute on the <code>keycloak-admin</code> domain with <code>member</code> roles.</li>
       </ul>
 
       <button class="mark-complete-btn" type="button" aria-label="Mark this lesson as complete">

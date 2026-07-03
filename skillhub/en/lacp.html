@@ -140,12 +140,12 @@
         Use the <code>--mode 802.3ad</code> parameter to enable LACP.
       </p>
       <p>
-        The <code>--address &lt;MAC&gt;</code> parameter must be equal to the MAC address of the PXE port if it is used. Otherwise, you can omit the parameter or set the MAC address from one of the physical interfaces you will use.
+        The <code>--address &lt;MAC&gt;</code> parameter <strong>must be equal to the MAC address of the PXE port</strong> if it is used. Otherwise, you can omit the parameter or set the MAC address from one of the physical interfaces you will use.
       </p>
       <p>
         You can list all ports with <code>openstack baremetal port list --node &lt;node-id&gt; --long</code> and check if PXE is used or not.
       </p>
-      <pre><code class="language-bash">openstack baremetal port list --node 48b7b966-c8e3-415d-b286-c097224043aa --long -c uuid -c address -c pxe_enabled</code></pre>
+      <pre><code class="language-bash">openstack baremetal port list --node &lt;node-id&gt; --fields pxe_enabled uuid address</code></pre>
       <p>Output</p>
       <pre><code class="language-bash">+--------------------------------------+-------------------+-------------+
 | uuid                                 | address           | pxe_enabled |
@@ -157,7 +157,7 @@
 +--------------------------------------+-------------------+-------------+</code></pre>
       <p>
         Note: <strong>It is recommended to prefix the port group name with the node name (e.g. <code>&lt;node-name&gt;-&lt;name&gt;</code>) to facilitate identification.</strong>
-        In this exercice, to ease the cleanup at the end of it, we will omit the node name in following example. 
+        In this exercice, to ease the cleanup at the end of it, <strong>we will omit the node name in following example.</strong>
       </p>
       
       <p><strong>Example:</strong></p>

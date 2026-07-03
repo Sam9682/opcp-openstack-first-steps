@@ -63,7 +63,7 @@
       </p>
       
       <p>
-        Par ailleurs, si vous souhaitez créer le réseau privé dans un <strong>VLAN particulier</strong>, vous pouvez le préciser à l’aide des paramètres suivants :
+        <strong>(Rôle admin uniquement)</strong> Par ailleurs, si vous souhaitez créer le réseau privé dans un <strong>VLAN particulier</strong>, vous pouvez le préciser à l’aide des paramètres suivants :
       </p>
       
       <pre><code class="language-bash">--provider-network-type vlan
@@ -105,12 +105,148 @@
         Ce sous-réseau pourra ensuite être utilisé pour déployer une instance, permettant ainsi à OpenStack d'attribuer une adresse IP à celle-ci lors de l'installation.
       </p>
 
+      <p><strong>INFO :</strong> À ce stade, toute instance peut être déployée en donnant le nom du réseau à la création : cela créera un port Neutron standard et l'attache au réseau donné. Si vous voulez utiliser plusieurs réseaux sur un seul port, suivez les instructions de Trunk ci-dessous.</p>
+
+      <h2>Configuration des ports Trunk sur un nœud</h2>
+      <p>
+        Les ports Trunk permettent à une seule instance (bare metal ou machine virtuelle) d'envoyer et de recevoir du trafic sur plusieurs réseaux Neutron via du tagging VLAN par le biais d'une seule interface physique ou d'un [bond LACP](/fr/guides/hosted-private-cloud/opcp/how-to-setup-lacp-on-node.md).
+      </p>
+
+      <h3>Pourquoi utiliser les ports Trunk ?</h3>
+      <p>Les ports Trunk peuvent être utilisés dans trois cas d'usage précis :</p>
+      <ul>
+        <li><strong>Accès multi-réseau depuis une seule instance :</strong> Les ports Trunk permettent à un serveur bare metal ou une machine virtuelle de communiquer sur plusieurs réseaux Neutron isolés via du tagging VLAN, sans nécessiter de ports séparés pour chaque réseau.</li>
+        <li><strong>Dépasser la limite d'interfaces physiques sur bare metal :</strong> Sur un serveur bare metal, le nombre de réseaux Neutron est normalement limité par le nombre d'interfaces réseau physiques. Grâce aux ports Trunk, vous pouvez connecter plus de réseaux que d'interfaces physiques disponibles en multiplexant plusieurs vlans sur une seule interface ou un bond LACP.</li>
+        <li><strong>Gestion réseau simplifiée :</strong> Au lieu de provisionner plusieurs ports et de les attacher individuellement, vous créez un seul trunk avec des sous-ports, chacun taggé avec un VLAN ID spécifique. Cela permet de garder la topologie réseau claire et maintenable.</li>
+      </ul>
+
+      <h3>Prérequis</h3>
+      <p>Avant de commencer, assurez-vous de disposer des éléments suivants :</p>
+      <ul>
+        <li>Le rôle <strong>admin</strong> (requis pour créer des trunks et gérer les sous-ports).</li>
+        <li>Au moins <strong>deux réseaux Neutron</strong> déjà créés dans votre projet (un pour le port parent et un ou plusieurs pour les sous-ports).</li>
+      </ul>
+      <h4>Configuration réseau et Trunk</h4>
+      <h5>1. Identifier vos réseaux</h5>
+      <p>Avant de créer le trunk, identifiez les réseaux auxquels votre instance doit accéder. Créez-les maintenant ou listez les réseaux disponibles dans votre projet :</p>
+      <pre><code class="language-bash">openstack network list</code></pre>
+      <p><strong>Exemple de sortie :</strong></p>
+      <pre><code class="language-bash">+--------------------------------------+--------------------+--------------------------------------+
+| ID                                   | Name               | Subnets                              |
++--------------------------------------+--------------------+--------------------------------------+
+| 3fa85f64-5717-4562-b3fc-2c963f66afa6 | primary-network    | a1b2c3d4-e5f6-7890-abcd-ef1234567890 |
+| 7c9e6679-7425-40de-944b-e07fc1f90ae7 | network-1          | b2c3d4e5-f6a7-8901-bcde-f12345678901 |
+| 9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d | network-2          | c3d4e5f6-a7b8-9012-cdef-123456789012 |
++--------------------------------------+--------------------+--------------------------------------+</code></pre>
+      <p>Vous pouvez aussi créer les 3 réseaux comme suit : un pour le port parent du trunk et deux pour le baremetal (à configurer ultérieurement). Ajoutez un sous-réseau aux réseaux non-parents.</p>
+      <pre><code class="language-bash">openstack network create ${STUDENT_ID}-trunk-net # Réseau pour le port parent (inutilisé)
+openstack network create --provider-network-type vlan --provider-physical-network physnet1 --provider-segment 301 ${STUDENT_ID}-vlan301-net
+openstack network create --provider-network-type vlan --provider-physical-network physnet1 --provider-segment 302 ${STUDENT_ID}-vlan302-net
+
+# Sous-réseau pour le réseau non-parent
+openstack subnet create --network ${STUDENT_ID}-vlan301-net --subnet-range 192.168.31.0/24 ${STUDENT_ID}-301-subnet
+openstack subnet create --network ${STUDENT_ID}-vlan302-net --subnet-range 192.168.32.0/24 ${STUDENT_ID}-302-subnet
+
+      </code></pre>
+      <h5>2. Créer le port parent</h5>
+      <p>Créez un port Neutron qui servira de <strong>port parent</strong> du trunk. Ce port est requis par le modèle trunk de Neutron pour ancrer le trunk à l'instance.</p>
+      <pre><code class="language-bash">openstack port create --network &lt;network-name&gt; &lt;parent-port-name&gt;</code></pre>
+      <p><strong>Exemple :</strong></p>
+      <pre><code class="language-bash">openstack port create --network ${STUDENT_ID}-trunk-net ${STUDENT_ID}-trunk-port</code></pre>
+      <p><strong>Exemple de sortie :</strong></p>
+      <pre><code class="language-bash">+-------------------------+--------------------------------------+
+| Field                   | Value                                |
++-------------------------+--------------------------------------+
+| id                      | f47ac10b-58cc-4372-a567-0e02b2c3d479 |
+| mac_address             | fa:16:3e:aa:bb:cc                    |
+| name                    | primary-port                         |
+| network_id              | 3fa85f64-5717-4562-b3fc-2c963f66afa6 |
+| status                  | DOWN                                 |
++-------------------------+--------------------------------------+</code></pre>
+      <div class="alert alert-warning">
+        <p>Sur les <strong>instances bare metal</strong>, le port parent est un <strong>port fictif</strong>. Il existe dans la base de données Neutron mais n'a <strong>aucun effet sur le fabric réseau</strong>. Le réseau assigné au port parent ne transportera <strong>aucun</strong> trafic vers l'instance. Toute la connectivité réseau réelle doit être configurée via les <strong>sous-ports</strong> (voir étapes 4 et 5).</p>
+      </div>
+
+      <h5>3. Créer le Trunk</h5>
+      <p>Créez un trunk Neutron en utilisant le port parent créé à l'étape précédente :</p>
+      <pre><code class="language-bash">openstack network trunk create --parent-port &lt;parent-port-name&gt; &lt;trunk-name&gt;</code></pre>
+      <p><strong>Exemple :</strong></p>
+      <pre><code class="language-bash">openstack network trunk create --parent-port ${STUDENT_ID}-trunk-port ${STUDENT_ID}-trunk</code></pre>
+      <p><strong>Exemple de sortie :</strong></p>
+      <pre><code class="language-bash">+----------------+--------------------------------------+
+| Field          | Value                                |
++----------------+--------------------------------------+
+| id             | 550e8400-e29b-41d4-a716-446655440000 |
+| name           | my-trunk                             |
+| parent_port_id | f47ac10b-58cc-4372-a567-0e02b2c3d479 |
+| status         | DOWN                                 |
+| sub_ports      |                                      |
++----------------+--------------------------------------+</code></pre>
+      <div class="alert alert-info">
+        <p>À ce stade, le trunk existe mais n'est pas attaché à aucun serveur. Le port parent est un port Neutron standard qui sera référencé lors de la création de l'instance.</p>
+      </div>
+      <div class="alert alert-info">
+        <p>Le port trunk doit avoir une IP fixe, fixez-la en utilisant la commande suivante : </p>
+      </div>
+      <p><strong>Exemple :</strong></p>
+      <pre><code class="language-bash">openstack port set --fixed-ip subnet=jdoe-trunk-subnet,ip-address=192.168.1.100 ${STUDENT_ID}-trunk-port</code></pre>
+
+      <h5>4. Créer les sous-ports</h5>
+      <p>Créez un port Neutron sur chaque réseau que vous souhaitez rendre accessible via le trunk :</p>
+      <pre><code class="language-bash">openstack port create --network &lt;network-name&gt; &lt;sub-port-name&gt;</code></pre>
+      <p><strong>Exemple :</strong></p>
+      <pre><code class="language-bash">openstack port create --network ${STUDENT_ID}-vlan301-net ${STUDENT_ID}-sub-port-1
+openstack port create --network ${STUDENT_ID}-vlan302-net ${STUDENT_ID}-sub-port-2
+      </code></pre>
+
+      <h5>5. Ajouter le sous-port au Trunk</h5>
+      <p>Attachez le sous-port au trunk en spécifiant le type de segmentation (<code>vlan</code>) et l'ID de segmentation correspondant (le tag VLAN du réseau) :</p>
+      <pre><code class="language-bash">openstack network trunk set \
+  --subport port=&lt;sub-port-name&gt;,segmentation-type=vlan,segmentation-id=&lt;vlan-id&gt; \
+  &lt;trunk-name&gt;</code></pre>
+      <p><strong>Exemple :</strong></p>
+      <pre><code class="language-bash">openstack network trunk set \
+  --subport port=${STUDENT_ID}-sub-port-1,segmentation-type=vlan,segmentation-id=301 \ # segmentation-id doit correspondre à l'id de segmentation du sous-port
+  ${STUDENT_ID}-trunk</code></pre>
+  <pre><code class="language-bash">openstack network trunk set \
+  --subport port=${STUDENT_ID}-sub-port-2,segmentation-type=vlan,segmentation-id=302 \ # segmentation-id doit correspondre à l'id de segmentation du sous-port
+  ${STUDENT_ID}-trunk</code></pre>
+<p>Le <code>segmentation-id</code> <strong>doit correspondre</strong> à l'ID de segmentation du réseau assigné au sous-port. Neutron ne vérifie pas cette valeur, mais si elle ne correspond pas, le trafic n'atteindra pas l'instance.</p>
+<p>Pour ajouter des réseaux supplémentaires, répétez les étapes 4 et 5 pour chaque réseau supplémentaire. Pour les instances bare metal, utilisez l'ID de segmentation correspondant à chaque réseau.</p>
+
+      <h5>6. Vérifier la configuration du Trunk</h5>
+      <p>Confirmez que le trunk est correctement configuré avec tous les sous-ports attendus :</p>
+      <pre><code class="language-bash">openstack network trunk show &lt;trunk-name&gt;</code></pre>
+      <p><strong>Exemple de sortie avec show trunk : </strong></p>
+<pre><code class="language-bash">
+openstack network trunk show ${STUDENT_ID}-trunk
+  
++-------------------+-------------------------------------------------------------------------------------------------+
+| Field             | Value                                                                                           |
++-------------------+-------------------------------------------------------------------------------------------------+
+| created_at        | 2026-06-25T09:47:23Z                                                                            |
+| description       |                                                                                                 |
+| id                | ee2726aa-9aec-4769-aeb2-a3dce441f5af                                                            |
+| is_admin_state_up | True                                                                                            |
+| name              | jdoe-trunk                                                                                      |
+| port_id           | 8792cb77-748f-4df1-ac2a-798cc5a73f4b                                                            |
+| project_id        | eedac8d5b9cf4a299072d2c0b53f7e03                                                                |
+| revision_number   | 0                                                                                               |
+| status            | DOWN                                                                                            |
+| sub_ports         | port_id='f0f12890-2060-4966-8d1d-78b741e149bb', segmentation_id='301', segmentation_type='vlan' |
+|                   | port_id='820e8a00-f665-4735-a11b-2b9168a5e103', segmentation_id='302', segmentation_type='vlan' |
+| tags              | []                                                                                              |
+| updated_at        | 2026-06-25T10:02:44Z                                                                            |
++-------------------+-------------------------------------------------------------------------------------------------+</code></pre>
+
+
       <h2>Résumé</h2>
       <ul>
         <li>Neutron gère le réseau OpenStack</li>
         <li>Créez des réseaux avec <code>openstack network create</code></li>
         <li>Spécifiez l'ID de segment pour le réseau si nécessaire</code></li>
         <li>Créez des sous-réseaux avec <code>openstack subnet create</code></li>
+        <li>Créez un port trunk Neutron et assignez-y plusieurs réseaux</li>
       </ul>
 
       <button class="mark-complete-btn" type="button" aria-label="Marquer cette leçon comme terminée">

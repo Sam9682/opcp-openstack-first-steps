@@ -93,7 +93,8 @@ ssh_pwauth: true </code></pre>
 openstack server create \
   --flavor scale-1 \ # modèle d'instance à utiliser
   --image "Debian 12 LVM OPCP" \ # image système à déployer
-  --network ${STUDENT_ID}-net \ # réseau auquel attacher l'instance
+  --network ${STUDENT_ID}-net \ # (SI PAS DE TRUNK) réseau auquel attacher l'instance (un port standard sera créé et attaché)
+  --port ${STUDENT_ID}-trunk-port \ # (SI TRUNK) attacher le port trunk créé auparavant
   --availability-zone "nova::`&lt;node-id&gt;`" \ # sélectionner un nœud spécifique, nécessaire quand vous avez pré-configuré un nœud spécifique
   --key-name ${STUDENT_ID}-keypair \ # clé SSH publique à utiliser
   --user-data ./cloud-init.yaml \ # fichier cloud-init
