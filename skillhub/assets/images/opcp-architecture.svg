@@ -1,0 +1,144 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1250 720" font-family="Arial, Helvetica, sans-serif">
+  <defs>
+    <marker id="arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#4949FF"/>
+    </marker>
+    <marker id="arrow-primary" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#000E9C"/>
+    </marker>
+    <marker id="arrow-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#f39c12"/>
+    </marker>
+    <marker id="arrow-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#27ae60"/>
+    </marker>
+    <marker id="arrow-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8e44ad"/>
+    </marker>
+    <marker id="arrow-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#e74c3c"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1250" height="720" fill="#ffffff"/>
+
+  <text x="625" y="24" text-anchor="middle" font-size="20" font-weight="bold" fill="#000E9C">OPCP Architecture Overview</text>
+
+  <!-- Legend -->
+  <g font-size="11" fill="#1a1a2e">
+    <rect x="30" y="38" width="14" height="14" fill="#e8eaff" stroke="#4949FF" stroke-width="2"/>
+    <text x="49" y="49">OpenStack service</text>
+
+    <rect x="200" y="38" width="14" height="14" fill="#fdecea" stroke="#e74c3c" stroke-width="2"/>
+    <text x="219" y="49">Identity (Keycloak)</text>
+
+    <rect x="375" y="38" width="14" height="14" fill="#fff4e0" stroke="#f39c12" stroke-width="2"/>
+    <text x="394" y="49">OVHcloud automation</text>
+
+    <rect x="565" y="38" width="14" height="14" fill="#eafaf1" stroke="#27ae60" stroke-width="2"/>
+    <text x="584" y="49">Open-source infra tooling</text>
+
+    <rect x="760" y="38" width="14" height="14" fill="#f3e8ff" stroke="#8e44ad" stroke-width="2"/>
+    <text x="779" y="49">Monitoring</text>
+  </g>
+
+  <!-- Cloudstore — sits above the OPCP Controller -->
+  <rect x="385" y="65" width="280" height="70" rx="6" fill="#fff4e0" stroke="#f39c12" stroke-width="2"/>
+  <text x="525" y="93" text-anchor="middle" font-size="12" font-weight="bold" fill="#1a1a2e">Cloudstore</text>
+  <text x="525" y="109" text-anchor="middle" font-size="10" fill="#555">Cloud services: virtualisation + middleware</text>
+
+  <!-- Cloudstore -> OPCP Controller -->
+  <line x1="525" y1="135" x2="525" y2="155" stroke="#f39c12" stroke-width="3" marker-end="url(#arrow-orange)"/>
+
+  <!-- OPCP Controller boundary: everything except Cloudstore and Physical Infrastructure lives here -->
+  <rect x="30" y="155" width="1140" height="340" rx="12" fill="none" stroke="#000E9C" stroke-width="2" stroke-dasharray="8 4"/>
+  <text x="46" y="178" font-size="14" font-weight="bold" fill="#000E9C">OPCP Controller</text>
+
+  <!-- OpenStack Core -->
+  <rect x="55" y="190" width="470" height="185" rx="8" fill="#e8eaff" stroke="#4949FF" stroke-width="2"/>
+  <text x="290" y="212" text-anchor="middle" font-size="13" font-weight="bold" fill="#000E9C">OpenStack Core</text>
+
+  <rect x="75" y="230" width="140" height="55" rx="6" fill="#ffffff" stroke="#4949FF" stroke-width="1.5"/>
+  <text x="145" y="252" text-anchor="middle" font-size="12" font-weight="bold" fill="#1a1a2e">Keystone</text>
+  <text x="145" y="267" text-anchor="middle" font-size="10" fill="#555">Identity</text>
+
+  <rect x="225" y="230" width="140" height="55" rx="6" fill="#ffffff" stroke="#4949FF" stroke-width="1.5"/>
+  <text x="295" y="252" text-anchor="middle" font-size="12" font-weight="bold" fill="#1a1a2e">Horizon</text>
+  <text x="295" y="267" text-anchor="middle" font-size="10" fill="#555">Dashboard (Web UI)</text>
+
+  <rect x="375" y="230" width="140" height="55" rx="6" fill="#ffffff" stroke="#4949FF" stroke-width="1.5"/>
+  <text x="445" y="252" text-anchor="middle" font-size="12" font-weight="bold" fill="#1a1a2e">Ironic</text>
+  <text x="445" y="267" text-anchor="middle" font-size="10" fill="#555">Bare Metal Provisioning</text>
+
+  <rect x="75" y="300" width="140" height="55" rx="6" fill="#ffffff" stroke="#4949FF" stroke-width="1.5"/>
+  <text x="145" y="322" text-anchor="middle" font-size="12" font-weight="bold" fill="#1a1a2e">Glance</text>
+  <text x="145" y="337" text-anchor="middle" font-size="10" fill="#555">Images</text>
+
+  <rect x="225" y="300" width="140" height="55" rx="6" fill="#ffffff" stroke="#4949FF" stroke-width="1.5"/>
+  <text x="295" y="322" text-anchor="middle" font-size="12" font-weight="bold" fill="#1a1a2e">Nova</text>
+  <text x="295" y="337" text-anchor="middle" font-size="10" fill="#555">Compute</text>
+
+  <rect x="375" y="300" width="140" height="55" rx="6" fill="#ffffff" stroke="#4949FF" stroke-width="1.5"/>
+  <text x="445" y="322" text-anchor="middle" font-size="12" font-weight="bold" fill="#1a1a2e">Neutron</text>
+  <text x="445" y="337" text-anchor="middle" font-size="10" fill="#555">Networking</text>
+
+  <!-- Keycloak -->
+  <rect x="700" y="200" width="190" height="70" rx="8" fill="#fdecea" stroke="#e74c3c" stroke-width="2"/>
+  <text x="795" y="230" text-anchor="middle" font-size="12" font-weight="bold" fill="#1a1a2e">Keycloak</text>
+  <text x="795" y="246" text-anchor="middle" font-size="10" fill="#555">Identity Provider (IAM)</text>
+  <line x1="525" y1="235" x2="700" y2="235" stroke="#e74c3c" stroke-width="3" marker-end="url(#arrow-red)" marker-start="url(#arrow-red)"/>
+  <text x="612" y="225" text-anchor="middle" font-size="13" font-weight="bold" paint-order="stroke" stroke="#ffffff" stroke-width="4" stroke-linejoin="round" fill="#e74c3c">federates</text>
+
+  <!-- Netbox -->
+  <rect x="940" y="200" width="190" height="70" rx="8" fill="#eafaf1" stroke="#27ae60" stroke-width="2"/>
+  <text x="1035" y="230" text-anchor="middle" font-size="12" font-weight="bold" fill="#1a1a2e">Netbox</text>
+  <text x="1035" y="246" text-anchor="middle" font-size="10" fill="#555">DCIM / IPAM</text>
+
+  <!-- NOG -->
+  <rect x="370" y="390" width="170" height="70" rx="6" fill="#fff4e0" stroke="#f39c12" stroke-width="2"/>
+  <text x="455" y="420" text-anchor="middle" font-size="12" font-weight="bold" fill="#1a1a2e">NOG</text>
+  <text x="455" y="436" text-anchor="middle" font-size="10" fill="#555">Network Orchestration</text>
+  <path d="M445,355 L445,372 L455,372 L455,390" fill="none" stroke="#f39c12" stroke-width="3" marker-end="url(#arrow-orange)"/>
+  <text x="530" y="365" text-anchor="middle" font-size="13" font-weight="bold" paint-order="stroke" stroke="#ffffff" stroke-width="4" stroke-linejoin="round" fill="#f39c12">network created</text>
+
+  <!-- Grafana -->
+  <rect x="555" y="380" width="225" height="100" rx="10" fill="#f3e8ff" stroke="#8e44ad" stroke-width="2"/>
+  <text x="667" y="405" text-anchor="middle" font-size="12" font-weight="bold" fill="#1a1a2e">Grafana</text>
+  <text x="667" y="421" text-anchor="middle" font-size="9" fill="#555">Monitoring &amp; Observability</text>
+  <text x="667" y="437" text-anchor="middle" font-size="8" fill="#555">Metrics via Prometheus</text>
+  <text x="667" y="449" text-anchor="middle" font-size="8" fill="#555">Logs via Loki</text>
+  <text x="667" y="464" text-anchor="middle" font-size="8" fill="#555">(OpenStack, Infra)</text>
+
+  <!-- Physical Infrastructure -> Netbox (documents inventory) -->
+  <line x1="1035" y1="540" x2="1035" y2="270" stroke="#27ae60" stroke-width="3" marker-end="url(#arrow-green)"/>
+  <text x="1035" y="290" text-anchor="middle" font-size="13" font-weight="bold" paint-order="stroke" stroke="#ffffff" stroke-width="4" stroke-linejoin="round" fill="#27ae60">documents inventory</text>
+
+  <!-- Physical Infrastructure -->
+  <rect x="30" y="540" width="1140" height="150" rx="10" fill="#f5f6fa" stroke="#555555" stroke-width="2"/>
+  <text x="46" y="562" font-size="13" font-weight="bold" fill="#555555">Physical Infrastructure</text>
+
+  <rect x="100" y="580" width="340" height="90" rx="8" fill="#ffffff" stroke="#555555" stroke-width="1.5"/>
+  <text x="270" y="613" text-anchor="middle" font-size="12" font-weight="bold" fill="#1a1a2e">Compute Nodes</text>
+  <text x="270" y="629" text-anchor="middle" font-size="9" fill="#555">Baremetal OS or Hypervisors</text>
+  <text x="270" y="643" text-anchor="middle" font-size="9" fill="#555">(orchestrated by Nova)</text>
+
+  <rect x="500" y="580" width="340" height="90" rx="8" fill="#ffffff" stroke="#555555" stroke-width="1.5"/>
+  <text x="670" y="618" text-anchor="middle" font-size="12" font-weight="bold" fill="#1a1a2e">Network Switches</text>
+  <text x="670" y="634" text-anchor="middle" font-size="10" fill="#555">(Physical Fabric)</text>
+
+  <!-- NOG -> Network Switches -->
+  <path d="M455,460 L455,520 L670,520 L670,580" fill="none" stroke="#f39c12" stroke-width="3" marker-end="url(#arrow-orange)"/>
+  <text x="590" y="513" text-anchor="middle" font-size="13" font-weight="bold" paint-order="stroke" stroke="#ffffff" stroke-width="4" stroke-linejoin="round" fill="#f39c12">pushes switch config</text>
+
+  <!-- Nova -> Compute Nodes -->
+  <path d="M295,355 L295,470 L260,470 L260,580" fill="none" stroke="#4949FF" stroke-width="3" marker-end="url(#arrow-accent)"/>
+  <text x="320" y="463" text-anchor="middle" font-size="13" font-weight="bold" paint-order="stroke" stroke="#ffffff" stroke-width="4" stroke-linejoin="round" fill="#4949FF">orchestrates</text>
+
+  <!-- Glance -> Compute Nodes -->
+  <path d="M145,355 L145,500 L180,500 L180,580" fill="none" stroke="#4949FF" stroke-width="3" marker-end="url(#arrow-accent)"/>
+  <text x="105" y="493" text-anchor="middle" font-size="13" font-weight="bold" paint-order="stroke" stroke="#ffffff" stroke-width="4" stroke-linejoin="round" fill="#4949FF">provides images</text>
+
+  <!-- Physical Infrastructure -> Grafana -->
+  <line x1="700" y1="540" x2="700" y2="480" stroke="#8e44ad" stroke-width="3" stroke-dasharray="7 4" marker-end="url(#arrow-purple)"/>
+  <text x="735" y="515" text-anchor="middle" font-size="13" font-weight="bold" paint-order="stroke" stroke="#ffffff" stroke-width="4" stroke-linejoin="round" fill="#8e44ad">metrics &amp; logs</text>
+</svg>

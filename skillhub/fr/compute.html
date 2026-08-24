@@ -29,12 +29,46 @@
       <h1>Compute</h1>
       <p class="lesson-meta">Difficulté : <strong>Intermédiaire</strong> · Durée estimée : <strong>25 min</strong></p>
 
-      <p>
-        Le service de Compute Nova gère les instances de machines virtuelles. Dans cette
-        leçon, vous allez lancer des instances, les redimensionner et créer des snapshots.
-      </p>
+      <figure>
+        <img src="../assets/images/first-step-trail-compute.png"
+              alt="Parcours d'apprentissage"
+              loading="lazy">
+      </figure>
 
-      <h2>1. Paire de clés SSH — Générer et enregistrer</h2>
+
+      <ul>
+        <li>Dans la leçon précédente, nous avons créé le réseau nécessaire à un serveur pour communiquer.</li>
+        <li>Nous allons maintenant déployer un serveur grace au service compute Nova.</li>
+      </ul>
+
+      <figure>
+        <img src="../assets/images/opcp-architecture-nova.svg"
+             alt="Diagramme d'architecture OPCP avec Nova mis en évidence en bleu et tous les autres composants grisés, montrant le rôle de Nova dans l'orchestration des nœuds de calcul."
+             loading="lazy">
+        <figcaption>La place de Nova dans l'architecture OPCP : c'est le service qui lance, redimensionne et sauvegarde vos instances sur les nœuds de calcul.</figcaption>
+      </figure>
+
+      <h2>1. Assigner un nœud à votre projet</h2>
+      <p>
+        Avant de pouvoir déployer une instance, un <strong>admin</strong> doit assigner un nœud baremetal au projet que vous avez créé dans la leçon <a href="user-management.html">Gestion des utilisateurs</a>. Nova ne peut planifier des instances que sur des nœuds appartenant à votre projet.
+      </p>
+      <p class="warning-box">
+        Vous <strong>devez</strong> être administrateur pour effectuer ce qui suit.
+      </p>
+      <p>
+        Listez les nœuds disponibles et notez le <code>&lt;node-id&gt;</code> que vous souhaitez utiliser :
+      </p>
+      <pre><code class="language-bash">openstack baremetal node list</code></pre>
+      <p>
+        Transférez ensuite la propriété de ce nœud à votre projet (<code>${OS_PROJECT_ID}</code> a été défini dans la leçon précédente) :
+      </p>
+      <pre><code class="language-bash">openstack baremetal node set &lt;node-id&gt; --owner ${OS_PROJECT_ID}</code></pre>
+      <p>
+        Vérifiez que le nœud appartient maintenant à votre projet :
+      </p>
+      <pre><code class="language-bash">openstack baremetal node show &lt;node-id&gt; -f value -c owner</code></pre>
+
+      <h2>2. Paire de clés SSH — Générer et enregistrer</h2>
       <p>
         Pour vous connecter à votre instance via SSH, vous avez besoin d'une
         paire de clés. La clé publique est injectée dans l'instance au
@@ -63,11 +97,16 @@ openstack keypair create \
 # Vérifier que la keypair est enregistrée
 openstack keypair show ${STUDENT_ID}-keypair</code></pre>
 
-      <h2>2. Exercice 1 — Lancer une instance</h2>
+      <h2>3. Lancer une instance</h2>
       <p>
         Utilisez le CLI <code>openstack</code> pour lancer une instance avec un flavor,
         une image et votre paire de clés SSH. Nommez-la <code>${STUDENT_ID}-compute-instance</code>.
       </p>
+      <p>
+      <div class="info-box">
+        Utilisez l'utilisateur créé dans le lab "User Management" lab, qui à le rôle "member".
+      </div>
+    </p>
       <p>
         Par défaut, OpenStack sélectionne un hôte en fonction du <strong>flavor</strong> choisi et des <strong>règles du scheduler</strong>, ce qui ne garantit pas que le nœud que vous venez de configurer sera utilisé.
       </p>
@@ -110,136 +149,24 @@ IP=$(openstack server show ${STUDENT_ID}-compute-instance -f value -c addresses 
 # Se connecter avec votre clé privée
 ssh -i ~/.ssh/${STUDENT_ID}-key ubuntu@$IP</code></pre>
 
-    <h3>Configuration du système d'exploitation LACP</h3>
       <p>
-        Après avoir configuré votre nœud dans OpenStack et déployé un système d'exploitation, il reste à configurer le réseau afin de bénéficier du réseau <strong>bonding</strong>, qui permet d'agréger plusieurs interfaces réseau pour plus de performance et de redondance.
+        Si vous avez configuré un nœud multi-NIC avant le déploiement, vous pouvez maintenant agréger ses interfaces au niveau OS pour plus de bande passante et de redondance — voir l'annexe optionnelle <a href="lacp.html">Configuration LACP</a>.
       </p>
 
-      <h4>Vérifier la configuration du bonding</h4>
       <p>
-        Sur certaines images (comme <strong>Debian 12</strong> ou <strong>Ubuntu 22.04</strong>), la configuration du <strong>bonding</strong> est automatiquement détectée et configurée.
+        Si vous avez configuré le RAID logiciel sur ce nœud avant le déploiement, consultez l'annexe optionnelle <a href="software-raid.html">RAID Logiciel</a> pour vérifier la configuration RAID depuis l'instance.
       </p>
-      <p>
-        Cependant, d'autres distributions peuvent nécessiter un ajustement manuel.
-      </p>
-      
-      <h5>1. Vérifier les bonds actifs</h5>
-      
-      <pre><code class="language-bash">ls /proc/net/bonding/
-bond0</code></pre>
-      
-      <h5>2. Vérifier les interfaces membres</h5>
-      
-      <pre><code class="language-bash">cat /proc/net/bonding/bond0 | grep Interface
-Slave Interface: ens22f1np1
-Slave Interface: ens22f0np0
-Slave Interface: ens21f1np1
-Slave Interface: ens21f0np0</code></pre>
-      
-      <h5>3. Vérifier la politique de hachage (<code>Transmit Hash Policy</code>)</h5>
-      
-      <pre><code class="language-bash">cat /proc/net/bonding/* | grep Trans
-Transmit Hash Policy: layer2 (0)</code></pre>
-      
-      <div class="alert alert-warning">
-        <strong>Avertissement :</strong> Pour exploiter toute la bande passante, configurez la politique <code>layer3+4</code> (par défaut, certains OS utilisent <code>layer2</code>, moins performante).
-        <br><br>
-        Plus de détails : <a href="https://help.ubuntu.com/community/UbuntuBonding?utm_source=chatgpt.com" target="_blank">Documentation Ubuntu Bonding</a>
-      </div>
-
-      <h4>Modifier la configuration</h4>
-      
-      <h5>1. Changement à chaud (non persistant)</h5>
-      <p>
-        Si vous souhaitez tester votre configuration manuellement, vous pouvez utiliser la commande suivante :
-      </p>
-      
-      <pre><code class="language-bash">sudo ip link set bond0 type bond xmit_hash_policy layer3+4</code></pre>
-      
-      <p>
-        Attention, cette configuration sera réinitialisée si votre machine redémarre.
-      </p>
-      
-      <h5>2. Changement persistant (exemple via Netplan et cloud-init)</h5>
-      <p>
-        Créez votre fichier de configuration (ex. <code>/etc/cloud/cloud.cfg.d/99-custom-network.cfg</code>) pour y inclure :
-      </p>
-      
-      <pre><code class="language-yaml">network:
-  version: 2
-  ethernets:
-    ens21f0np0: {}
-    ens21f1np1: {}
-    ens22f0np0: {}
-    ens22f1np1: {}
-  bonds:
-    bond0:
-      dhcp4: true
-      interfaces:
-        - ens21f0np0
-        - ens21f1np1
-        - ens22f0np0
-        - ens22f1np1
-      macaddress: 00:00:00:20:00:23
-      parameters:
-        mode: 802.3ad
-        transmit-hash-policy: layer3+4
-        lacp-rate: fast
-        mii-monitor-interval: 100</code></pre>
-      
-      <p>
-        Puis appliquez la configuration en rédémarrant l'instance.
-      </p>
-
-      <h4>Tester la bande passante avec <code>iperf3</code></h4>
-      <p>
-        Pour tester correctement LACP, vous devez disposer de <strong>2 nœuds</strong> dans le <strong>même réseau</strong>, tous deux configurés avec LACP.
-      </p>
-      
-      <h5>Serveur Iperf3 (nœud 1)</h5>
-      
-      <pre><code class="language-bash">iperf3 -s</code></pre>
-      
-      <h5>Client Iperf3 (nœud 2)</h5>
-      <p>
-        Utilisez <code>-P</code> pour générer plusieurs flux parallèles, afin d’atteindre la bande passante maximale.
-      </p>
-      
-      <pre><code class="language-bash">iperf3 -c &lt;ip-du-nœud&gt; -P 64</code></pre>
-      
-      <p><strong>Exemple de résultat</strong></p>
-      
-      <pre><code>[SUM] 0.0000-10.0121 sec   110 GBytes  94.0 Gbits/sec</code></pre>
-      
-      <p>
-        Avec un lien 4×25 Gbps, vous devriez atteindre environ <strong>100 Gbps</strong>.
-        Il peux être nécessaire d'ajuster certains paramètres système pour exploiter pleinement cette capacité.
-      </p>  
-
-      <h3>Vérifier la configuration RAID après déploiement</h3>
-      <p>Une fois l'instance déployée, vous pouvez vérifier la configuration RAID depuis l'instance :</p>
-
-      <p><strong>Vérifier les dispositifs RAID :</strong></p>
-      <pre><code class="language-bash">cat /proc/mdstat</code></pre>
-
-      <p><strong>Exemple de sortie :</strong></p>
-      <pre><code>
-Personalities : [raid1] [raid10] [linear] [multipath] [raid0] [raid6] [raid5] [raid4]
-md0 : active raid1 sda[0] sdb[1]
-      500G 0 blocks super 1.2 [2/2] [UU]
-
-unused devices: &lt;none&gt;
-</code></pre>
 
       <h2>Résumé</h2>
       <ul>
+        <li>Transférez la propriété d'un nœud baremetal à votre projet avec <code>openstack baremetal node set --owner</code> avant de déployer.</li>
         <li>Générez une paire de clés SSH avec <code>ssh-keygen</code> et enregistrez-la avec <code>openstack keypair create</code>.</li>
         <li>Utilisez <code>--key-name</code> lors de la création d'une instance pour injecter la clé publique.</li>
         <li>Utilisez les commandes <code>openstack server</code> pour lancer des instances.</li>
         <li>Les flavors définissent le <strong>CPU, la RAM et le disque</strong> alloués à une instance.</li>
         <li>Les erreurs de flavor ou d'image manquants sont signalées avec des <strong>messages clairs</strong> par le CLI.</li>
-        <li>Configurer et vérifier LACP</li>
-        <li>Vérifier l'état du RAID logiciel</li>
+        <li>Voir l'annexe <a href="lacp.html">Configuration LACP</a> pour agréger des interfaces réseau et gagner en bande passante et en redondance.</li>
+        <li>Voir l'annexe <a href="software-raid.html">RAID Logiciel</a> pour configurer et vérifier l'état du RAID logiciel.</li>
       </ul>
 
       <button class="mark-complete-btn" type="button" aria-label="Marquer cette leçon comme terminée">

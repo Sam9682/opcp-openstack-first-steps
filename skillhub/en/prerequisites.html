@@ -35,6 +35,34 @@
         verify it is correctly installed.
       </p>
 
+      <h2>Minimum requirements</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Component</th>
+            <th>Minimum version</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Python</td>
+            <td><code>3.9</code></td>
+          </tr>
+          <tr>
+            <td>OpenStack CLI</td>
+            <td><code>10.0.0</code></td>
+          </tr>
+          <tr>
+            <td>macOS</td>
+            <td>Tahoe 26.5.2</td>
+          </tr>
+          <tr>
+            <td>Ubuntu</td>
+            <td>24 LTS</td>
+          </tr>
+        </tbody>
+      </table>
+
       <h2>1. Bash environment</h2>
       <p>
         All exercises require a Bash environment. You can use:
@@ -72,26 +100,7 @@ source .venv/bin/activate
 # Verify the presence of Ironic commands (baremetal). It should offers to use "baremetal" sub-commands
 openstack baremetal</code></pre>
 
-      <h2>3. shai CLI (optional — AI terminal assistant)</h2>
-      <p>
-        <a href="https://github.com/ovh/shai" target="_blank" rel="noopener">shai</a>
-        is an interactive coding agent that lives in your terminal. It can help
-        you write code, fix bugs, and answer questions while working through the
-        labs.
-      </p>
-      <pre><code class="language-bash"># Check if shai is installed
-shai --version</code></pre>
-      <p>If shai is not installed, run the following command:</p>
-      <pre><code class="language-bash"># Install the latest stable release
-curl -fsSL https://raw.githubusercontent.com/ovh/shai/main/install.sh | sh</code></pre>
-      <p>
-        The binary will be installed in <code>$HOME/.local/bin</code>. Make sure
-        this directory is in your <code>PATH</code>:
-      </p>
-      <pre><code class="language-bash"># Add to your PATH if needed
-export PATH="$HOME/.local/bin:$PATH"</code></pre>
-
-      <h2>4. Basic terminal knowledge</h2>
+      <h2>3. Basic terminal knowledge</h2>
       <p>
         You should be comfortable running commands in a terminal (bash, zsh, or
         PowerShell). All exercises are launched from the command line.

@@ -46,6 +46,13 @@
         <li>Les bonnes pratiques pour la gestion du RAID logiciel</li>
       </ul>
 
+      <figure>
+        <img src="../assets/images/opcp-architecture-ironic.svg"
+             alt="Diagramme d'architecture OPCP avec Ironic mis en évidence en bleu et tous les autres composants grisés, montrant le rôle d'Ironic en tant que service OpenStack de provisionnement baremetal."
+             loading="lazy">
+        <figcaption>La place d'Ironic dans l'architecture OPCP : c'est le service OpenStack qui provisionne et gère le nœud baremetal sur lequel le RAID logiciel est configuré.</figcaption>
+      </figure>
+
       <div class="alert alert-warning">
         <p><strong>Important :</strong> La configuration du RAID logiciel doit être effectuée <strong>avant</strong> le déploiement d'une instance sur le nœud.
         Une fois une instance déployée, la modification de la configuration RAID nécessite la suppression de l'instance et la reconfiguration du nœud.
@@ -83,6 +90,7 @@
 
       <p><strong>Vérifier les propriétés hardware du nœud :</strong></p>
       <pre><code class="language-bash">openstack baremetal node show &lt;node-id&gt;</code></pre>
+      <p>Les paramètres <code>raid_interface, target_raid_config</code> devraient être affichés.</p>
 
       <h3>2. Activer le mode maintenance</h3>
       <p>Avant toute modification de configuration, placez le nœud en <strong>mode maintenance</strong> :</p>
@@ -124,6 +132,7 @@
 
       <p>Si la sortie est <code>null</code> ou différente de <code>"agent"</code>, activez l'interface agent pour le RAID :</p>
       <pre><code class="language-bash">openstack baremetal node set &lt;node-id&gt; --raid-interface=agent</code></pre>
+      <p>Cela activera l'Ironic Python Agent.</p>
 
       <h4>4.2. Créer le fichier de configuration RAID</h4>
       <p>Créez un fichier JSON contenant la configuration RAID souhaitée. Voici un exemple pour créer un RAID 1 (mirroring) avec deux disques :</p>
@@ -142,8 +151,18 @@
 }
 EOF</code></pre>
 
-      <div class="alert alert-info">
-        <p>Le paramètre <code>"size": "&lt;1000"</code> dans <code>physical_disks</code> permet de sélectionner automatiquement des disques de moins de 1000 Go. Vous pouvez ajuster cette valeur selon la taille de vos disques ou utiliser d'autres critères de sélection.</p>
+      <div class="info-box">
+        <p>
+          Le paramètre <code>"size": "&lt;1000"</code> dans <code>physical_disks</code> permet de sélectionner automatiquement des disques de moins de 1000 Go.
+          Vous pouvez ajuster cette valeur selon la taille de vos disques ou utiliser d'autres critères de sélection.
+        </p>
+        <p>
+          Vous pouvez consulter la taille des disques disponibles sur votre nœud avec cette commande :
+        </p>
+        <pre><code class="language-bash">openstack baremetal node inventory save &lt;node-id&gt; | jq '.inventory.disks'</code></pre>
+        <p>
+          Dans l'exemple de configuration ci-dessus, si des tailles dépassent 1000 Go, ces disques ne seront pas sélectionnés pour la configuration RAID.
+        </p>
       </div>
 
       <h4>4.3. Appliquer la configuration RAID</h4>

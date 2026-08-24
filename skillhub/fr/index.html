@@ -32,7 +32,8 @@
         Bienvenue sur <strong>SkillHub</strong>, le compagnon de formation pratique du
         projet <em>opcp-openstack-first-steps</em>. Ce parcours vous guide à travers
         les fondamentaux d'OpenStack — de votre premier appel API authentifié à la
-        création d'instances, de réseaux, de volumes et à la configuration de bonds LACP.
+        création d'instances, en passant par les concepts fondamentaux, la gestion des
+        utilisateurs, les réseaux, le RAID logiciel, jusqu'à la configuration de bonds LACP.
       </p>
 
       <figure>
@@ -42,42 +43,47 @@
         <figcaption>Vue d'ensemble Dashboard OPCP Core</figcaption>
       </figure>
 
+      <h2>Contexte</h2>
+      <p>
+        Vous disposez d'une toute nouvelle plateforme OPCP, opérationnelle.
+        Vous allez créer votre première instance en créant votre propre projet, en assignant un nœud baremetal, en créant un réseau,
+        en configurant le RAID logiciel (mdadm), le LACP, puis en déployant une instance à partir d'une image et d'un flavor.
+      </p>
+
+      <figure>
+        <img src="../assets/images/first-step-trail.png"
+              alt="Parcours d'apprentissage"
+              loading="lazy">
+      </figure>
+
       <h2>Ce que vous apprendrez</h2>
       <p>À la fin de ce parcours de formation, vous maîtriserez :</p>
       <ul>
         <li><strong>Les concepts fondamentaux d'OpenStack</strong> — projets, utilisateurs, services et endpoints</li>
         <li><strong>La gestion des utilisateurs</strong> — créer des utilisateurs dans Keycloak et attribuer les rôles</li>
-        <li><strong>L'authentification</strong> — s'authentifier contre Keycloak/Keystone</li>
+        <li><strong>L'authentification</strong> — s'authentifier avec Keycloak/Keystone</li>
         <li><strong>Le réseau</strong> — créer des réseaux, sous-réseaux et routeurs avec Neutron</li>
-        <li><strong>RAID Logiciel</strong> — configurer des arrays RAID logiciels avec mdadm</li>
         <li><strong>Le Compute</strong> — lancer et gérer des instances avec Nova</li>
-        <li><strong>La configuration LACP</strong> — agréger plusieurs interfaces réseau pour la bande passante et la redondance</li>
+      </ul>
+
+      <h2>Sujets optionnels</h2>
+      <p>Une fois le parcours principal terminé, les leçons en annexe ci-dessous vous permettent d'aller plus loin :</p>
+      <ul>
+        <li><strong><a href="appendix-trunk-setup.html">Configuration des ports Trunk Neutron</a></strong> — configurer des ports trunk pour un réseau avancé</li>
+        <li><strong><a href="software-raid.html">RAID Logiciel</a></strong> — configurer des arrays RAID logiciels avec mdadm</li>
+        <li><strong><a href="lacp.html">Configuration LACP</a></strong> — agréger plusieurs interfaces réseau pour la bande passante et la redondance</li>
       </ul>
 
       <h2>Prérequis</h2>
       <ul>
-        <li>Un projet OVHcloud Public Cloud avec accès API</li>
         <li>Familiarité de base avec un terminal / ligne de commande</li>
-        <li>Python 3.9+ installé</li>
-  
+        <li>Consultez la leçon <a href="prerequisites.html">Prérequis</a> pour la liste complète des exigences logicielles et les instructions d'installation</li>
       </ul>
-
-      <h2>Démarrage rapide — Validez votre configuration</h2>
-      <p>Exécutez ces commandes pour confirmer que votre environnement est prêt :</p>
-
-      <pre><code class="language-bash"># Vérifier que le CLI OpenStack est installé
-openstack --version
-
-# Vérifier que vos identifiants sont configurés
-env | grep OS_
-
-# Tester l'authentification en émettant un token
-openstack token issue</code></pre>
 
       <h2>Définir votre identifiant étudiant</h2>
       <p>
         Tout au long des labs, chaque ressource que vous créez (instances,
-        réseaux, volumes, etc.) est préfixée par un <code>STUDENT_ID</code>.
+        réseaux, etc.) est préfixée par un <code>STUDENT_ID</code>.
         Cela permet d'identifier facilement vos ressources et de les nettoyer
         après la formation.
       </p>

@@ -29,13 +29,46 @@
       <h1>Compute</h1>
       <p class="lesson-meta">Difficulty: <strong>Intermediate</strong> · Estimated time: <strong>25 min</strong></p>
 
-      <p>
-        The Nova compute service manages virtual machine instances. In this lesson
-        you will launch instances, resize them to different flavors, and create
-        snapshots for backup and recovery.
-      </p>
+      <figure>
+        <img src="../assets/images/first-step-trail-compute.png"
+              alt="Learning trail"
+              loading="lazy">
+      </figure>
 
-      <h2>1. SSH Key Pair — Generate and Register</h2>
+
+      <ul>
+        <li>In the previous lesson, we created the networking infrastructure for the servers to communicate.</li>
+        <li>We will now deploy a compute server with the Nova ervice.</li>
+      </ul>
+
+      <figure>
+        <img src="../assets/images/opcp-architecture-nova.svg"
+             alt="OPCP architecture diagram with Nova highlighted in blue and every other component grayed out, showing Nova's role orchestrating Compute Nodes."
+             loading="lazy">
+        <figcaption>Where Nova sits in the OPCP architecture: it's the service that launches, resizes, and snapshots your instances on the Compute Nodes.</figcaption>
+      </figure>
+
+      <h2>1. Move a Node into Your Project</h2>
+      <p>
+        Before you can deploy an instance, an <strong>admin</strong> needs to assign a baremetal node to the project you created in the <a href="user-management.html">User Management</a> lesson. Nova can only schedule instances onto nodes that belong to your project.
+      </p>
+      <p class="warning-box">
+        You <strong>must</strong> be administrator to do the next
+      </p>
+      <p>
+        List the available nodes and note the <code>&lt;node-id&gt;</code> you want to use:
+      </p>
+      <pre><code class="language-bash">openstack baremetal node list</code></pre>
+      <p>
+        Then transfer ownership of that node to your project (<code>${OS_PROJECT_ID}</code> was set in the previous lesson):
+      </p>
+      <pre><code class="language-bash">openstack baremetal node set &lt;node-id&gt; --owner ${OS_PROJECT_ID}</code></pre>
+      <p>
+        Verify the node now belongs to your project:
+      </p>
+      <pre><code class="language-bash">openstack baremetal node show &lt;node-id&gt; -f value -c owner</code></pre>
+
+      <h2>2. SSH Key Pair — Generate and Register</h2>
       <p>
         To connect to your instance via SSH, you need a key pair. The public
         key is injected into the instance at boot time, and you use the
@@ -63,11 +96,16 @@ openstack keypair create \
 # Verify the keypair was registered
 openstack keypair show ${STUDENT_ID}-keypair</code></pre>
 
-      <h2>2. Exercise 1 — Launch an Instance</h2>
+      <h2>3. Launch an Instance</h2>
       <p>
         Use the <code>openstack</code> CLI to launch an instance with a specified
         flavor, image, and your SSH key pair. Name it <code>${STUDENT_ID}-compute-instance</code>.
       </p>
+      <p>
+      <div class="info-box">
+        Switch to the user you created in the "User Management" lab, that has the "member" role.
+      </div>
+    </p>
       <p>
         By default, OpenStack selects a host based on the chosen <strong>flavor</strong> and <strong>scheduler rules</strong>, which does not guarantee that the node you just configured will be used.
       </p>
@@ -110,136 +148,23 @@ IP=$(openstack server show ${STUDENT_ID}-compute-instance -f value -c addresses 
 # Connect using your private key
 ssh -i ~/.ssh/${STUDENT_ID}-key ubuntu@$IP</code></pre>
 
-      <h3> Verify RAID Configuration After Deployment</h3>
-      <p>Once the instance is deployed, you can verify the RAID configuration from the instance:</p>
-
-      <p><strong>Check RAID devices:</strong></p>
-      <pre><code class="language-bash">cat /proc/mdstat</code></pre>
-
-      <p><strong>Example output:</strong></p>
-      <pre><code>
-Personalities : [raid1] [raid10] [linear] [multipath] [raid0] [raid6] [raid5] [raid4]
-md0 : active raid1 sda[0] sdb[1]
-      500G 0 blocks super 1.2 [2/2] [UU]
-
-unused devices: &lt;none&gt;
-</code></pre>
-
-    <h3>LACP Operating System Configuration</h3>
       <p>
-        After configuring your node in OpenStack and deploying an operating system, you still need to configure the network to benefit from the <strong>bonding</strong> network, which allows aggregating multiple network interfaces for better performance and redundancy.
-      </p>
-
-      <h4>Check Bonding Configuration</h4>
-      <p>
-        On some images (such as <strong>Debian 12</strong> or <strong>Ubuntu 22.04</strong>), the <strong>bonding</strong> configuration is automatically detected and configured.
+        If you configured a multi-NIC node before deploying, you can now bond its interfaces at the OS level for extra bandwidth and redundancy — see the optional <a href="lacp.html">LACP Configuration</a> appendix.
       </p>
       <p>
-        However, other distributions may require manual adjustment.
-      </p>
-      
-      <h5>1. Check Active Bonds</h5>
-      
-      <pre><code class="language-bash">ls /proc/net/bonding/
-bond0</code></pre>
-      
-      <h5>2. Check Member Interfaces</h5>
-      
-      <pre><code class="language-bash">cat /proc/net/bonding/bond0 | grep Interface
-Slave Interface: ens22f1np1
-Slave Interface: ens22f0np0
-Slave Interface: ens21f1np1
-Slave Interface: ens21f0np0</code></pre>
-      
-      <h5>3. Check Transmission Hash Policy</h5>
-      
-      <pre><code class="language-bash">cat /proc/net/bonding/* | grep Trans
-Transmit Hash Policy: layer2 (0)</code></pre>
-      
-      <div class="alert alert-warning">
-        <strong>Warning:</strong> To exploit full bandwidth, configure the policy to <code>layer3+4</code> (by default, some OS use <code>layer2</code>, less performant).
-        <br><br>
-        More details: <a href="https://help.ubuntu.com/community/UbuntuBonding?utm_source=chatgpt.com" target="_blank">Ubuntu Bonding Documentation</a>
-      </div>
-
-      <h4>Modify Configuration</h4>
-      
-      <h5>1. Hot Change (Non-persistent)</h5>
-      <p>
-        If you want to manually test your configuration, you can use the following command:
-      </p>
-      
-      <pre><code class="language-bash">sudo ip link set bond0 type bond xmit_hash_policy layer3+4</code></pre>
-      
-      <p>
-        Note: This configuration will be reset if your machine restarts.
-      </p>
-      
-      <h5>2. Persistent Change (Example via Netplan and cloud-init)</h5>
-      <p>
-        Create your configuration file (e.g. <code>/etc/cloud/cloud.cfg.d/99-custom-network.cfg</code>) to include:
-      </p>
-      
-      <pre><code class="language-yaml">network:
-  version: 2
-  ethernets:
-    ens21f0np0: {}
-    ens21f1np1: {}
-    ens22f0np0: {}
-    ens22f1np1: {}
-  bonds:
-    bond0:
-      dhcp4: true
-      interfaces:
-        - ens21f0np0
-        - ens21f1np1
-        - ens22f0np0
-        - ens22f1np1
-      macaddress: 00:00:00:20:00:23
-      parameters:
-        mode: 802.3ad
-        transmit-hash-policy: layer3+4
-        lacp-rate: fast
-        mii-monitor-interval: 100</code></pre>
-      
-      <p>
-        Then apply the configuration by rebooting the instance.
-      </p>
-
-      <h4>Test Bandwidth with iperf3</h4>
-      <p>
-        To properly test LACP, you need to have <strong>2 nodes</strong> in the <strong>same network</strong>, both configured with LACP.
-      </p>
-      
-      <h5>iperf3 Server (Node 1)</h5>
-      
-      <pre><code class="language-bash">iperf3 -s</code></pre>
-      
-      <h5>iperf3 Client (Node 2)</h5>
-      <p>
-        Use <code>-P</code> to generate multiple parallel streams to reach maximum bandwidth.
-      </p>
-      
-      <pre><code class="language-bash">iperf3 -c &lt;node-ip&gt; -P 64</code></pre>
-      
-      <p><strong>Example result</strong></p>
-      
-      <pre><code>[SUM] 0.0000-10.0121 sec   110 GBytes  94.0 Gbits/sec</code></pre>
-      
-      <p>
-        With a 4×25 Gbps link, you should reach approximately <strong>100 Gbps</strong>.
-        It may be necessary to adjust some system parameters to fully exploit this capacity.
+        If you configured software RAID on this node before deploying, see the optional <a href="software-raid.html">Software RAID</a> appendix to verify the RAID configuration from the instance.
       </p>
 
       <h2>Summary</h2>
       <ul>
+        <li>Transfer ownership of a baremetal node to your project with <code>openstack baremetal node set --owner</code> before deploying.</li>
         <li>Generate an SSH key pair with <code>ssh-keygen</code> and register it with <code>openstack keypair create</code>.</li>
         <li>Use <code>--key-name</code> when creating an instance to inject the public key.</li>
         <li>Use <code>openstack server</code> commands to launch instances.</li>
         <li>Flavors define the <strong>CPU, RAM, and disk</strong> allocated to an instance.</li>
         <li>Missing flavor or image errors are reported with <strong>clear messages</strong> by the CLI.</li>
-        <li>Configure and verify LACP</li>
-        <li>Verify software RAID state</li>
+        <li>See the <a href="lacp.html">LACP Configuration</a> appendix to bond network interfaces for extra bandwidth and redundancy.</li>
+        <li>See the <a href="software-raid.html">Software RAID</a> appendix to configure and verify software RAID state.</li>
       </ul>
 
       <button class="mark-complete-btn" type="button" aria-label="Mark this lesson as complete">

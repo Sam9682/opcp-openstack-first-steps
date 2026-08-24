@@ -68,23 +68,7 @@
         <li><strong>Supprimer les projets</strong> (Keystone) — notez que les utilisateurs doivent être supprimés en premier.</li>
       </ol>
 
-      <h2>3. Nettoyage automatisé</h2>
-      <p>
-        Le framework de lab fournit un script de nettoyage qui supprime toutes
-        les ressources correspondant au préfixe <code>${STUDENT_ID}-*</code> dans
-        le bon ordre de dépendances :
-      </p>
-
-      <pre><code class="language-bash"># Nettoyer toutes les ressources de votre session
-python3 -m labs.scripts.cleanup_lab --student-id votre-student-id</code></pre>
-
-      <p>
-        Le script utilise une approche best-effort : si une ressource ne peut
-        pas être supprimée, l'erreur est journalisée et le script continue avec
-        les ressources restantes.
-      </p>
-
-      <h2>4. Nettoyage manuel avec le CLI</h2>
+      <h2>3. Nettoyage manuel avec le CLI</h2>
       <p>
         Vous pouvez aussi nettoyer les ressources manuellement avec le CLI
         <code>openstack</code>. Suivez l'ordre de suppression ci-dessus :
@@ -108,7 +92,7 @@ openstack network delete ${STUDENT_ID}-net
 openstack user delete ${STUDENT_ID}-user
 openstack project delete ${STUDENT_ID}-project</code></pre>
 
-      <h2>5. Vérifier le nettoyage</h2>
+      <h2>4. Vérifier le nettoyage</h2>
       <p>
         Après le nettoyage, vérifiez qu'il ne reste aucune ressource en les
         listant avec le CLI OpenStack :

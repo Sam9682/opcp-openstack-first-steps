@@ -67,8 +67,54 @@
         Glance sert de service d'images dans OpenStack, stockant et récupérant les images de machines virtuelles. Il supporte divers formats d'images et fournit une gestion des métadonnées pour les images. Les utilisateurs peuvent télécharger, télécharger et gérer les images utilisées pour créer des instances.
       </p>
 
+      <h2>Services Complémentaires à OpenStack</h2>
+      <p>OPCP s'appuie également sur des outils supplémentaires, en complément d'OpenStack, qui assurent la fédération d'identité, l'automatisation réseau, le déploiement et l'observabilité de la plateforme.</p>
+
+      <h3>Keycloak - Fournisseur d'Identité</h3>
+      <p>
+        Keycloak agit comme le fournisseur d'identité (Identity Provider) de la plateforme, fédéré avec Keystone afin de centraliser l'authentification sur l'ensemble des couches d'OPCP.
+      </p>
+
+      <h3>NOG - Orchestration Réseau</h3>
+      <p>
+        NOG est un module propriétaire d'OVHcloud qui automatise la configuration réseau. Chaque fois que Neutron crée un réseau, NOG génère la configuration de switch correspondante et la pousse vers l'infrastructure physique, gardant ainsi le réseau physique synchronisé avec la configuration virtuelle d'OpenStack.
+      </p>
+
+      <h3>Cloudstore - Service de Déploiement</h3>
+      <p>
+        Cloudstore, également développé par OVHcloud, simplifie le déploiement des systèmes d'exploitation, des hyperviseurs et des services cloud sur les serveurs d'OPCP.
+      </p>
+
+      <h3>Netbox - Documentation de l'Infrastructure</h3>
+      <p>
+        Netbox est un outil open-source de DCIM/IPAM utilisé pour documenter l'infrastructure physique et logique — baies, serveurs, interfaces réseau, allocations IP et VLAN — servant de source unique de vérité pour l'inventaire du datacenter.
+      </p>
+
+      <h3>Grafana - Supervision & Observabilité</h3>
+      <p>
+        Grafana fournit les tableaux de bord permettant de visualiser les métriques et les journaux collectés sur la plateforme, donnant aux opérateurs une vue unifiée de l'état du calcul, du réseau et du stockage.
+      </p>
+
       <h2>Concepts Clés</h2>
-      
+
+      <h3>Domaines, Projets, Utilisateurs, Groupes & Rôles</h3>
+      <p>
+        Keystone organise le contrôle d'accès autour d'un petit ensemble de concepts liés entre eux. Un <strong>domaine</strong> est le conteneur de plus haut niveau : il regroupe un ensemble de projets, d'utilisateurs et de groupes gérés ensemble, et isole complètement les identités d'un domaine par rapport à un autre. Un <strong>projet</strong> (parfois appelé tenant) est l'endroit où résident réellement les ressources telles que les instances, les réseaux et les volumes. Un <strong>utilisateur</strong> est une personne ou un compte de service capable de s'authentifier, et les utilisateurs peuvent être rassemblés en <strong>groupes</strong> afin d'accorder l'accès à plusieurs personnes à la fois plutôt qu'une par une. Un <strong>rôle</strong> tel que admin, member ou reader définit ce qu'un utilisateur ou un groupe est autorisé à faire, et une attribution de rôle relie toujours un utilisateur ou un groupe à une portée précise — soit un seul projet, soit le domaine entier.
+      </p>
+      <figure>
+        <img src="../assets/images/opcp-identity-concepts-fr.svg"
+             alt="Diagramme d'un domaine OpenStack contenant deux projets (Production, Staging) et deux groupes (Admins, Developers) ainsi qu'un utilisateur autonome service-account. Les attributions de rôle en vert relient le groupe Admins aux deux projets avec le rôle admin, le groupe Developers au projet Staging avec le rôle member, et le service-account au projet Production avec le rôle reader. Une flèche bleue en pointillés montre que le groupe Admins détient également un rôle admin à portée du domaine, qui s'applique à l'ensemble du domaine."
+             loading="lazy">
+        <figcaption>Modèle d'identité OpenStack : comment domaines, projets, utilisateurs, groupes et attributions de rôle sont liés entre eux.</figcaption>
+      </figure>
+      <p><strong>Ce qu'est concrètement une attribution de rôle :</strong></p>
+      <ul>
+        <li>Une attribution de rôle combine toujours trois éléments : un utilisateur ou un groupe, un rôle (par ex. admin, member, reader), et une portée.</li>
+        <li>Portée projet : le rôle n'accorde des permissions qu'à l'intérieur de ce projet (le cas le plus courant, représenté en vert dans le diagramme ci-dessus).</li>
+        <li>Portée domaine : le rôle s'applique à tous les projets du domaine, et permet aussi de gérer les utilisateurs et les groupes du domaine.</li>
+        <li>Les groupes permettent à un opérateur d'accorder ou de révoquer l'accès pour de nombreux utilisateurs en une seule action, plutôt que d'attribuer les rôles utilisateur par utilisateur.</li>
+      </ul>
+
       <h3>Projets (Tenants)</h3>
       <p>
         Les projets sont des unités organisationnelles dans OpenStack où les ressources telles que les instances, les réseaux et les volumes sont regroupées. Chaque projet dispose de son propre ensemble d'utilisateurs et d'autorisations, permettant l'isolement et la gestion des ressources.
@@ -85,14 +131,28 @@
       </p>
 
       <h2>Comment Ils Fonctionnent Ensemble</h2>
+      <figure>
+        <img src="../assets/images/opcp-architecture.svg"
+             alt="Diagramme d'architecture OPCP montrant le noyau OpenStack (Keystone, Nova, Neutron, Glance) au sein du contrôleur OPCP, fédéré avec Keycloak, avec NOG et Cloudstore automatisant l'infrastructure physique (nœuds de calcul et switches réseau), Netbox documentant cette infrastructure, et Grafana supervisant l'ensemble de la plateforme."
+             loading="lazy">
+        <figcaption>Architecture OPCP : noyau OpenStack, Keycloak, NOG, Cloudstore, Netbox et Grafana.</figcaption>
+      </figure>
       <p>
         Ces services fonctionnent ensemble pour fournir une plateforme de calcul cloud complète. Par exemple, lors de la création d'une nouvelle instance :
       </p>
       <ol>
-        <li>Keystone authentifie l'utilisateur Keycloak et lui fournit un jeton</li>
-        <li>Neutron crée la connectivité réseau nécessaire</li>
+        <li>Keycloak authentifie l'utilisateur et fédère avec Keystone pour fournir un jeton</li>
+        <li>Neutron crée la connectivité réseau nécessaire, et NOG pousse la configuration de switch correspondante vers l'infrastructure physique</li>
         <li>Nova lance la machine virtuelle avec les ressources spécifiées</li>
         <li>Glance fournit l'image de base pour l'instance</li>
+      </ol>
+      <p>
+        Au-delà de ce cheminement de requête, d'autres services maintiennent la plateforme opérationnelle :
+      </p>
+      <ol>
+        <li>Cloudstore a déployé les systèmes d'exploitation et les hyperviseurs qui hébergent ces instances</li>
+        <li>Netbox documente l'infrastructure physique et réseau sous-jacente</li>
+        <li>Grafana surveille en continu l'état du calcul, du réseau et du stockage</li>
       </ol>
 
       <h2>Résumé</h2>
@@ -101,6 +161,17 @@
         <li>Nova gère les machines virtuelles, Neutron gère le réseau, Keycloak et Keystone gère l'identité, et Glance gère les images</li>
         <li>Les ressources sont organisées en projets pour l'isolement et la gestion</li>
         <li>Tous les services communiquent via des API standard accessibles via des endpoints</li>
+      </ul>
+
+      <h2>Étape suivante</h2>
+      <p>
+        Après avoir couvert les concepts clé, 
+        nous allons maintenant voir les fonctionnalités basiques d'OPCPC :
+      </p>
+      <ul>
+        <li>L'authentification (création d'un utilisateur et d'un client).</li>
+        <li>La création de réseaux.</li>
+        <li>Le déploiement d'un serveur.</li>
       </ul>
 
       <button class="mark-complete-btn" type="button" aria-label="Marquer cette leçon comme terminée">

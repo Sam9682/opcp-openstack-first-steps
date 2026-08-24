@@ -36,11 +36,25 @@
         using the Neutron API through the lab framework.
       </p>
 
+      <figure>
+        <img src="../assets/images/opcp-architecture-ironic.svg"
+             alt="OPCP architecture diagram with Ironic highlighted in blue and every other component grayed out, showing Ironic's role as the OpenStack bare metal provisioning service."
+             loading="lazy">
+        <figcaption>Where Ironic sits in the OPCP architecture: it's the OpenStack service that provisions and manages the baremetal node that LACP is configured on.</figcaption>
+      </figure>
+
       <h2>Objective</h2>
       <p>
         LACP configuration must be applied to the node before deploying an instance,
         so that network interfaces are properly aggregated. This guide explains how to configure a node (physical server) in OPCP to enable LACP (Link Aggregation Control Protocol)
       </p>
+
+      <figure>
+        <img src="../assets/images/opcp-lacp-portgroup.svg"
+             alt="Illustration of a baremetal port group encapsulating four physical ports (NICs), two cabled to switch A and two to switch B, aggregated into a single LACP bond attached to the instance."
+             loading="lazy">
+        <figcaption>A port group is a container for physical ports: it encapsulates the NICs you bond together and exposes them as one aggregated logical link (LACP bond) to the instance.</figcaption>
+      </figure>
 
       <h2>Warnings</h2>
         <ul>
@@ -140,7 +154,7 @@
         Use the <code>--mode 802.3ad</code> parameter to enable LACP.
       </p>
       <p>
-        The <code>--address &lt;MAC&gt;</code> parameter <strong>must be equal to the MAC address of the PXE port</strong> if it is used. Otherwise, you can omit the parameter or set the MAC address from one of the physical interfaces you will use.
+        The <code>--address &lt;MAC&gt;</code> parameter <strong>must NOT be equal to the MAC address of the PXE port</strong> if it is used. Otherwise, you can omit the parameter or set the MAC address from one of the physical interfaces you will use.
       </p>
       <p>
         You can list all ports with <code>openstack baremetal port list --node &lt;node-id&gt; --long</code> and check if PXE is used or not.
@@ -202,13 +216,27 @@ openstack baremetal port set --port-group d082c2ab-5960-44e3-920d-3d6dfb6811e9 4
 openstack baremetal port set --port-group d082c2ab-5960-44e3-920d-3d6dfb6811e9 422eece6-dcfa-40cd-975d-ba8bb11c774e
 openstack baremetal port set --port-group d082c2ab-5960-44e3-920d-3d6dfb6811e9 34073903-92ad-47d1-a751-15aa96991415</code></pre>
 
-      <h4>8. Disable Maintenance Mode</h4>
+      <h4>6. Disable Maintenance Mode</h4>
       <p>
         Once the configuration is complete, disable maintenance mode:
       </p>
-      
       <pre><code class="language-bash">openstack baremetal node maintenance unset `&lt;node-id&gt;`</code></pre>
 
+
+      <h4>7. Create instance</h3>
+      <p>Once RAID is configured, you can deploy the node on the server :</p>
+      <pre><code class="language-bash">openstack server create \
+  --image &lt;image-name&gt; \
+  --flavor &lt;flavor-id&gt; \
+  --key-name &lt;keypair-name&gt; \
+  --nic net-id=&lt;network-id&gt; \
+  --availability-zone "nova::&lt;node-id&gt;" \
+  &lt;instance-name&gt;</code></pre>
+
+      <div class="alert alert-tip">
+        <p>To make sure your instance is deployed on the node configured with RAID, use availability-zone <code>nova::&lt;node-id&gt;</code>.</p>
+      </div>
+      
       <h3>Summary of Steps</h3>
       
       <table>
@@ -222,46 +250,147 @@ openstack baremetal port set --port-group d082c2ab-5960-44e3-920d-3d6dfb6811e9 3
         <tbody>
           <tr>
             <td>1</td>
-            <td>List nodes</td>
-            <td><code>openstack baremetal node list</code></td>
-          </tr>
-          <tr>
-            <td>2</td>
             <td>Transfer ownership</td>
             <td><code>openstack baremetal node set &lt;node-id&gt; --owner &lt;tenant-id&gt;</code></td>
           </tr>
           <tr>
-            <td>3</td>
+            <td>2</td>
             <td>List ports</td>
             <td><code>openstack baremetal port list --node &lt;node-id&gt;</code></td>
           </tr>
           <tr>
-            <td>4</td>
+            <td>3</td>
             <td>Enable maintenance mode</td>
             <td><code>openstack baremetal node maintenance set &lt;node-id&gt;</code></td>
           </tr>
           <tr>
-            <td>5</td>
+            <td>4</td>
             <td>Create LACP group</td>
             <td><code>openstack baremetal port group create --node &lt;node-id&gt; --name &lt;port-group-name&gt; --mode 802.3ad</code></td>
           </tr>
           <tr>
-            <td>6</td>
+            <td>5</td>
             <td>Associate ports</td>
             <td><code>openstack baremetal port set --port-group &lt;port-group-id&gt; &lt;port-id&gt;</code></td>
           </tr>
           <tr>
-            <td>7</td>
+            <td>6</td>
             <td>Disable maintenance mode</td>
             <td><code>openstack baremetal node maintenance unset &lt;node-id&gt;</code></td>
           </tr>
           <tr>
-            <td>8</td>
+            <td>7</td>
             <td>Create instance</td>
             <td><code>openstack server create --image &lt;image-name&gt; --nic net-id=&lt;network-1&gt; --flavor &lt;flavor-id&gt; --key-name &lt;keypair-name&gt; --availability-zone "nova::&lt;node-id&gt;" &lt;instance-name&gt;</code></td>
           </tr>
         </tbody>
       </table>
+
+      <h3>OS-Level Bonding Configuration</h3>
+      <p>
+        After configuring your node in OpenStack and deploying an operating system, you still need to configure the network to benefit from the <strong>bonding</strong> network, which allows aggregating multiple network interfaces for better performance and redundancy.
+      </p>
+
+      <h4>Check Bonding Configuration</h4>
+      <p>
+        On some images (such as <strong>Debian 12</strong> or <strong>Ubuntu 22.04</strong>), the <strong>bonding</strong> configuration is automatically detected and configured.
+      </p>
+      <p>
+        However, other distributions may require manual adjustment.
+      </p>
+
+      <h5>1. Check Active Bonds</h5>
+
+      <pre><code class="language-bash">ls /proc/net/bonding/
+bond0</code></pre>
+
+      <h5>2. Check Member Interfaces</h5>
+
+      <pre><code class="language-bash">cat /proc/net/bonding/bond0 | grep Interface
+Slave Interface: ens22f1np1
+Slave Interface: ens22f0np0
+Slave Interface: ens21f1np1
+Slave Interface: ens21f0np0</code></pre>
+
+      <h5>3. Check Transmission Hash Policy</h5>
+
+      <pre><code class="language-bash">cat /proc/net/bonding/* | grep Trans
+Transmit Hash Policy: layer2 (0)</code></pre>
+
+      <div class="alert alert-warning">
+        <strong>Warning:</strong> To exploit full bandwidth, configure the policy to <code>layer3+4</code> (by default, some OS use <code>layer2</code>, less performant).
+        <br><br>
+        More details: <a href="https://help.ubuntu.com/community/UbuntuBonding?utm_source=chatgpt.com" target="_blank">Ubuntu Bonding Documentation</a>
+      </div>
+
+      <h4>Modify Configuration</h4>
+
+      <h5>1. Hot Change (Non-persistent)</h5>
+      <p>
+        If you want to manually test your configuration, you can use the following command:
+      </p>
+
+      <pre><code class="language-bash">sudo ip link set bond0 type bond xmit_hash_policy layer3+4</code></pre>
+
+      <p>
+        Note: This configuration will be reset if your machine restarts.
+      </p>
+
+      <h5>2. Persistent Change (Example via Netplan and cloud-init)</h5>
+      <p>
+        Create your configuration file (e.g. <code>/etc/cloud/cloud.cfg.d/99-custom-network.cfg</code>) to include:
+      </p>
+
+      <pre><code class="language-yaml">network:
+  version: 2
+  ethernets:
+    ens21f0np0: {}
+    ens21f1np1: {}
+    ens22f0np0: {}
+    ens22f1np1: {}
+  bonds:
+    bond0:
+      dhcp4: true
+      interfaces:
+        - ens21f0np0
+        - ens21f1np1
+        - ens22f0np0
+        - ens22f1np1
+      macaddress: 00:00:00:20:00:23
+      parameters:
+        mode: 802.3ad
+        transmit-hash-policy: layer3+4
+        lacp-rate: fast
+        mii-monitor-interval: 100</code></pre>
+
+      <p>
+        Then apply the configuration by rebooting the instance.
+      </p>
+
+      <h4>Test Bandwidth with iperf3</h4>
+      <p>
+        To properly test LACP, you need to have <strong>2 nodes</strong> in the <strong>same network</strong>, both configured with LACP.
+      </p>
+
+      <h5>iperf3 Server (Node 1)</h5>
+
+      <pre><code class="language-bash">iperf3 -s</code></pre>
+
+      <h5>iperf3 Client (Node 2)</h5>
+      <p>
+        Use <code>-P</code> to generate multiple parallel streams to reach maximum bandwidth.
+      </p>
+
+      <pre><code class="language-bash">iperf3 -c &lt;node-ip&gt; -P 64</code></pre>
+
+      <p><strong>Example result</strong></p>
+
+      <pre><code>[SUM] 0.0000-10.0121 sec   110 GBytes  94.0 Gbits/sec</code></pre>
+
+      <p>
+        With a 4×25 Gbps link, you should reach approximately <strong>100 Gbps</strong>.
+        It may be necessary to adjust some system parameters to fully exploit this capacity.
+      </p>
 
       <h2>Conclusion</h2>
       <p>

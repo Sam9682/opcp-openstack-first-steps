@@ -35,6 +35,34 @@
         comment vérifier qu'elle est correctement installée.
       </p>
 
+      <h2>Prérequis minimaux</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Composant</th>
+            <th>Version minimale</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Python</td>
+            <td><code>3.9</code></td>
+          </tr>
+          <tr>
+            <td>OpenStack CLI</td>
+            <td><code>10.0.0</code></td>
+          </tr>
+          <tr>
+            <td>macOS</td>
+            <td>Tahoe 26.5.2</td>
+          </tr>
+          <tr>
+            <td>Ubuntu</td>
+            <td>24 LTS</td>
+          </tr>
+        </tbody>
+      </table>
+
       <h2>1. Environnement Bash</h2>
       <p>
         Tous les exercices nécessitent un environnement Bash. Vous pouvez utiliser :
@@ -72,26 +100,7 @@ source .venv/bin/activate
 # Vérifiez la présence des commandes Ironic (baremetal). La commande doit vous proposer des sous-commandes "baremetal"
 openstack baremetal</code></pre>
 
-      <h2>3. shai CLI (optionnel — assistant IA en terminal)</h2>
-      <p>
-        <a href="https://github.com/ovh/shai" target="_blank" rel="noopener">shai</a>
-        est un agent de programmation interactif qui vit dans votre terminal.
-        Il peut vous aider à écrire du code, corriger des bugs et répondre à
-        vos questions pendant les labs.
-      </p>
-      <pre><code class="language-bash"># Vérifier si shai est installé
-shai --version</code></pre>
-      <p>Si shai n'est pas installé, lancez la commande suivante :</p>
-      <pre><code class="language-bash"># Installer la dernière version stable
-curl -fsSL https://raw.githubusercontent.com/ovh/shai/main/install.sh | sh</code></pre>
-      <p>
-        Le binaire sera installé dans <code>$HOME/.local/bin</code>. Assurez-vous
-        que ce répertoire est dans votre <code>PATH</code> :
-      </p>
-      <pre><code class="language-bash"># Ajouter à votre PATH si nécessaire
-export PATH="$HOME/.local/bin:$PATH"</code></pre>
-
-      <h2>4. Connaissances de base du terminal</h2>
+      <h2>3. Connaissances de base du terminal</h2>
       <p>
         Vous devez être à l'aise avec l'exécution de commandes dans un terminal
         (bash, zsh ou PowerShell). Tous les exercices se lancent en ligne de

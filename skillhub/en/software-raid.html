@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SkillHub — Software RAID Configuration</title>
+  <title>SkillHub — Appendix - Software RAID Configuration</title>
   <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body>
@@ -26,7 +26,7 @@
     <main class="main-content" role="main">
       <div class="breadcrumbs" aria-label="Breadcrumb navigation"></div>
 
-      <h1>Software RAID Configuration</h1>
+      <h1>Appendix - Software RAID Configuration</h1>
       <p class="lesson-meta">Difficulty: <strong>Advanced</strong> · Estimated time: <strong>25 min</strong></p>
 
       <p>
@@ -45,6 +45,13 @@
         <li>Verifying the RAID configuration</li>
         <li>Best practices for managing software RAID</li>
       </ul>
+
+      <figure>
+        <img src="../assets/images/opcp-architecture-ironic.svg"
+             alt="OPCP architecture diagram with Ironic highlighted in blue and every other component grayed out, showing Ironic's role as the OpenStack bare metal provisioning service."
+             loading="lazy">
+        <figcaption>Where Ironic sits in the OPCP architecture: it's the OpenStack service that provisions and manages the baremetal node that software RAID is configured on.</figcaption>
+      </figure>
 
       <div class="alert alert-warning">
         <p><strong>Important:</strong> Software RAID configuration must be performed <strong>before</strong> deploying an instance on the node.
@@ -72,6 +79,7 @@
 
       <p><strong>Check hardware properties of the node:</strong></p>
       <pre><code class="language-bash">openstack baremetal node show &lt;node-id&gt;</code></pre>
+      <p>There should be paramters <code>raid_interface, target_raid_config</code> displayed.</p>
 
       <h3>2. Enable Maintenance Mode</h3>
       <p>Before any configuration modification, place the node in <strong>maintenance mode</strong>:</p>
@@ -113,6 +121,7 @@
 
       <p>If the output is <code>null</code> or different from <code>"agent"</code>, activate the agent interface for RAID:</p>
       <pre><code class="language-bash">openstack baremetal node set &lt;node-id&gt; --raid-interface=agent</code></pre>
+      <p>This will activate the Ironic Python Agent</p>
 
       <h4>4.2. Create RAID Configuration File</h4>
       <p>Create a JSON file containing the desired RAID configuration. Here's an example to create a RAID 1 (mirroring) with two disks:</p>
@@ -131,8 +140,18 @@
 }
 EOF</code></pre>
 
-      <div class="alert alert-info">
-        <p>The parameter <code>"size": "&lt;1000"</code> in <code>physical_disks</code> allows you to automatically select disks smaller than 1000 GB. You can adjust this value according to the size of your disks or use other selection criteria.</p>
+      <div class="info-box">
+        <p>
+          The parameter <code>"size": "&lt;1000"</code> in <code>physical_disks</code> allows you to automatically select disks smaller than 1000 GB. 
+          You can adjust this value according to the size of your disks or use other selection criteria.
+        </p>
+        <p>
+          You can view the size of the disks available on your node with this command :
+        </p>
+        <pre><code class="language-bash">openstack baremetal node inventory save &lt;node-id&gt; | jq '.inventory.disks'</code></pre>
+        <p>
+          In the above configuration example, if there are sizes above 1000 GB, those disks won't be selected for the RAID setup.
+        </p>
       </div>
 
       <h4>4.3. Apply RAID Configuration</h4>
@@ -146,6 +165,34 @@ EOF</code></pre>
       <h3>5. Disable Maintenance Mode</h3>
       <p>Once the RAID configuration is complete, disable maintenance mode:</p>
       <pre><code class="language-bash">openstack baremetal node maintenance unset &lt;node-id&gt;</code></pre>
+
+      <h3>6. Deploy the server</h3>
+           <p>Once RAID is configured, you can deploy the node on the server :</p>
+      <pre><code class="language-bash">openstack server create \
+  --image &lt;image-name&gt; \
+  --flavor &lt;flavor-id&gt; \
+  --key-name &lt;keypair-name&gt; \
+  --nic net-id=&lt;network-id&gt; \
+  --availability-zone "nova::&lt;node-id&gt;" \
+  &lt;instance-name&gt;</code></pre>
+
+      <div class="alert alert-tip">
+        <p>To make sure your instance is deployed on the node configured with RAID, use availability-zone <code>nova::&lt;node-id&gt;</code>.</p>
+      </div>
+      <h3>7. Verify RAID Configuration After Deployment</h3>
+      <p>Once the instance is deployed, you can verify the RAID configuration from the instance:</p>
+
+      <p><strong>Check RAID devices:</strong></p>
+      <pre><code class="language-bash">cat /proc/mdstat</code></pre>
+
+      <p><strong>Example output:</strong></p>
+      <pre><code>
+Personalities : [raid1] [raid10] [linear] [multipath] [raid0] [raid6] [raid5] [raid4]
+md0 : active raid1 sda[0] sdb[1]
+      500G 0 blocks super 1.2 [2/2] [UU]
+
+unused devices: &lt;none&gt;
+</code></pre>
 
       <h2>Summary of Main Commands</h2>
       <table>

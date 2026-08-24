@@ -442,6 +442,34 @@ pre code {
   border: 0;
 }
 
+/* --- Warning Box --- */
+.warning-box {
+  background: rgba(243,156,18,0.1);
+  border-left: 3px solid var(--color-warning);
+  border-radius: var(--radius);
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+}
+
+.warning-box strong {
+  color: #a86a0c;
+}
+
+/* --- Info Box --- */
+.info-box {
+  background: rgba(73,73,255,0.1);
+  border-left: 3px solid var(--color-primary);
+  border-radius: var(--radius);
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+}
+
+.info-box strong {
+  color: var(--color-primary);
+}
+
 /* --- Tables --- */
 .main-content table {
   width: 100%;

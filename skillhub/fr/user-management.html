@@ -29,16 +29,51 @@
       <h1>Gestion des utilisateurs</h1>
       <p class="lesson-meta">Difficulté : <strong>Débutant</strong> · Durée estimée : <strong>20 min</strong></p>
 
+      <figure>
+        <img src="../assets/images/first-step-trail-user.png"
+              alt="Parcours d'apprentissage"
+              loading="lazy">
+      </figure>
+
+
       <p>
         Avant de vous authentifier auprès d'OpenStack, vous avez besoin d'un
         compte utilisateur. OPCP Core s'appuie sur <strong>Keycloak</strong>
-        comme fournisseur d'identité. Cette leçon vous guide dans la création
-        d'utilisateurs et l'attribution des rôles et attributs de projet
-        appropriés.
+        comme fournisseur d'identité, qui fédère avec Keystone pour émettre
+        des tokens OpenStack à portée de projet. Cette leçon vous guide dans
+        la configuration complète : passage en revue des rôles intégrés,
+        configuration du client OIDC qui relie Keycloak à Keystone, création
+        d'un projet OpenStack, création d'un utilisateur et attribution du
+        rôle et des attributs de projet appropriés, puis vérification de
+        l'authentification de cet utilisateur. À la fin de cette leçon, vous
+        serez capable de :
       </p>
 
+      <ul>
+        <li>Identifier les quatre rôles intégrés — Master Admin, IT Admin, Opérateur DC et Reader — et ce que chacun accorde.</li>
+        <li>Configurer le client Keycloak (scopes, mapper d'attribut de groupe et mapper d'audience) utilisé par Keystone pour la fédération.</li>
+        <li>Créer un nouveau projet OpenStack (tenant) pour délimiter les ressources d'un utilisateur.</li>
+        <li>Créer un utilisateur dans Keycloak et définir ses identifiants initiaux.</li>
+        <li>Configurer le rôle et les attributs de projet de l'utilisateur afin qu'ils soient correctement associés à OpenStack.</li>
+        <li>Créer les variables d'environnement et s'authentifier avec le CLI Openstack.</li>
+      </ul>
+
+      <figure>
+        <img src="../assets/images/opcp-architecture-keycloak.svg"
+             alt="Diagramme d'architecture OPCP avec Keycloak mis en évidence en rouge et tous les autres composants grisés, montrant la fédération de Keycloak avec Keystone au sein du contrôleur OPCP."
+             loading="lazy">
+        <figcaption>La place de Keycloak dans l'architecture OPCP : il fédère avec Keystone pour fournir l'identité à l'ensemble de la plateforme.</figcaption>
+      </figure>
+
+      <figure>
+        <img src="../assets/images/opcp-auth-flow.svg"
+             alt="Diagramme de séquence du flux d'authentification entre l'Utilisateur, Keycloak et Keystone. L'utilisateur s'authentifie auprès de Keycloak avec un nom d'utilisateur / mot de passe ou un token. Keycloak convertit en interne l'attribut project en portée de projet et attribution de rôles OpenStack, puis transmet la demande d'authentification à Keystone via OIDC. Keystone confirme que l'utilisateur est authentifié et renvoie l'attribut project via le mapper de groupe. Keycloak émet alors un token à portée définie, lié au projet et aux rôles mappés, à destination de l'utilisateur."
+             loading="lazy">
+        <figcaption>Flux d'authentification : comment une demande de connexion voyage de l'utilisateur vers Keycloak puis Keystone, avant de revenir sous forme de token OpenStack à portée définie.</figcaption>
+      </figure>
+
       <h2>1. Connexion à Keycloak</h2>
-      <p>Pour ce lab, vous devriez avoir reçu un compte admin sur la plateforme Demo OPCP. Rendez-vous sur <strong>https://admin.keycloak.&lt;FQDN&gt;</strong> pour vous authentifier.</p>
+      <p>Pour ce lab, vous devriez avoir reçu un compte admin sur la plateforme Demo OPCP. Rendez-vous sur <strong>https://admin.keycloak.&lt;FQDN&gt;</strong> pour vous authentifier. Vous pouvez trouver vitre FQDN dans le fichier <code>welcome.md</code></p>
       <h2>2. Rôles intégrés</h2>
       <p>
         Après la toute première installation d'OPCP, un compte super-admin
@@ -54,15 +89,53 @@
         <li><strong>Rôle Master Admin</strong> — le super-admin pré-configuré livré avec OPCP.</li>
         <li><strong>IT Admin</strong> — administre les projets OpenStack et gère les ressources pour les utilisateurs finaux.</li>
         <li><strong>Opérateur DC</strong> — opère la couche d'infrastructure du data-center.</li>
+        <li><strong>Reader</strong> — visibilité en lecture seule, avec un accès en lecture partiel sur les ressources OpenStack.</li>
       </ul>
-
-      <h2>3.1. Créer un nouveau client</h2>
       <p>
-        Connectez-vous à votre instance Keycloak (https://admin.keycloak.FQDN) et sélectionnez le realm dans lequel les utilisateurs OpenStack sont définis.
+        Chacun de ces rôles OPCP (définis dans Keycloak) est associé à un ensemble de rôles OpenStack une fois que le token atteint Keystone :
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Rôle OPCP (Keycloak)</th>
+            <th>Rôles OpenStack</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Rôle Master Admin</td>
+            <td><code>reader</code>, <code>member</code>, <code>admin</code></td>
+          </tr>
+          <tr>
+            <td>IT Admin</td>
+            <td><code>reader</code>, <code>member</code>, <code>admin</code></td>
+          </tr>
+          <tr>
+            <td>Opérateur DC</td>
+            <td>Aucun</td>
+          </tr>
+          <tr>
+            <td>Reader</td>
+            <td><code>reader</code> (partiel)</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="info-box">
+        <strong>Autres ressources de la plateforme :</strong> le tableau ci-dessus ne couvre que les rôles OpenStack. OPCP gère également les droits d'accès pour d'autres ressources telles que Grafana, Netbox et Prometheus — celles-ci sont détaillées dans la documentation officielle <a href="https://docs.ovhcloud.com/fr/guides/hosted-private-cloud/opcp/iam-rights-management" target="_blank">Gestion des droits IAM</a>.
+      </div>
+
+      <h2>3. Configuration du Client</h2>
+      <h3>3.1. Créer un nouveau client</h3>
+      <p>
+        Les clients sont utilisés par des applications ou services (à l'opposé des utilisateurs) pour interragir avec Keycloack pour l'authentification et les autorisations.
+        Nous allons créer un client pour le CLI <code>openstack</code>.
+      </p>
+      <p>
+        Connectez-vous à votre instance Keycloak (https://admin.keycloak.FQDN) et sélectionnez le <i>realm</i> dans lequel les utilisateurs OpenStack sont définis (choisissez <i>master</i> par défaut).
         Créez un nouveau client. Allez dans la section <strong>Clients</strong> et cliquez sur <strong>Create a client</strong>. Entrez un <em>Client ID</em> au format ${STUDENT-ID}-cli, par exemple : jdoe-cli. Le type de client doit être <em>OpenID Connect</em>. Cliquez sur <strong>Next</strong>.
       </p>
 
-      <h2>3.2. Activer l'authentification client</h2>
+      <h3>3.2. Activer l'authentification client</h3>
       <p>
         Activez l'Authentification Client (mettre sur ON).
         <br>
@@ -71,34 +144,77 @@
         Cliquez sur Next, puis sur Save.
       </p>
 
-      <h2>3.3. Configurer les scopes (Client Scopes)</h2>
+      <h3>3.3. Configurer les scopes (Client Scopes)</h3>
       <p>
-        Ouvrez l'onglet <em>Client Scopes</em>. Sélectionnez le scope nommé : [your-client-id]-dedicated. Cliquez sur <strong>Configure a new mapper</strong>.
+        Les scopes contiennent les infromations (nommées <i>claims</i>) inclues dans les tokens, 
+        telles que des roles, des user attributes ou des données spécifiques (e-mail, organisation, etc.).
+        Le serveur, lorsqu'il reçoit le token, utilise les claims pour identifier le client.  
+      </p>
+      <p>
+        Dans le client qui vous venez de créer, ouvrez l'onglet <em>Client Scopes</em> (et non la page "Client Scopes" dans la colonne de gauche). Sélectionnez le scope nommé : [your-client-id]-dedicated. Cliquez sur <strong>Configure a new mapper</strong>.
       </p>
 
-      <h2>3.4. Ajouter un mapper d'attribut de groupe d'utilisateurs</h2>
+      <h3>3.4. Ajouter un mapper d'attribut de groupe d'utilisateurs</h3>
       <p>
-        Choisissez le type de mapper <em>Aggregate User/Group Attribute (as JSON String)</em>. Configurez les champs suivants :
+        Choisissez le type de mapper <em>Aggregate User/Group Attribute (as JSON String)</em> dans l'option "By Configuration". 
+        Configurez les champs suivants :
       </p>
       <table>
         <thead>
           <tr>
-            <th>Champ</th>
-            <th>Valeur</th>
+            <th>Field</th>
+            <th>Value</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td>Nom</td>
+            <td>Name</td>
             <td><code>projects</code></td>
           </tr>
           <tr>
-            <td>Attribut utilisateur</td>
+            <td>Attribute Name</td>
             <td><code>project</code></td>
           </tr>
           <tr>
-            <td>Nom de l'élément du jeton</td>
+            <td>Token Claim Name</td>
             <td><code>projects</code></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="warning-box">
+        <strong>Avertissement :</strong> la valeur du champ <em>Attribute Name</em> est <code>project</code>, sans "s". Les valeurs des autres champs utilisent <code>projects</code>, avec un "s".
+      </div>
+      <p>
+        Cliquez sur Save.
+      </p>
+
+      <h3>3.5. Ajouter un mapper d'audience</h3>
+      <div class="warning-box">
+        <strong>Avertissement :</strong> depuis la version 3.0.5 d'OPCP, vous devez ajouter un mapper d'audience au client afin que les tokens émis incluent l'audience <code>keystone</code>.
+      </div>
+      <p>
+        Depuis l'onglet <em>Client Scopes</em>, sélectionnez à nouveau le scope <code>[your-client-id]-dedicated</code>, puis cliquez sur <strong>Configure a new mapper</strong> et choisissez le type de mapper <em>Audience</em>.
+        Configurez les champs suivants :
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Field</th>
+            <th>Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Name</td>
+            <td><code>keystone-audience</code></td>
+          </tr>
+          <tr>
+            <td>Included Client Audience</td>
+            <td><code>keystone</code></td>
+          </tr>
+          <tr>
+            <td>Included Custom Audience</td>
+            <td><em>(laisser vide)</em></td>
           </tr>
         </tbody>
       </table>
@@ -106,21 +222,53 @@
         Cliquez sur Save.
       </p>
 
-      <h2>3.5. Récupérer les identifiants du client</h2>
+      <h3>3.6. Récupérer les identifiants du client</h3>
       <p>
         Allez dans l'onglet <strong>Credentials</strong> du client que vous venez de créer. Copiez et stockez en toute sécurité le <em>Client Secret</em> — il sera nécessaire lors de la configuration de l'interface en ligne de commande OpenStack.
       </p>
 
-      <h2>3.6. Récupérer l'ID du projet admin depuis OpenStack Horizon</h2>
+      <h3>3.7. Récupérer l'ID du projet admin depuis OpenStack Horizon</h3>
       <p>
         Dans un nouvel onglet de navigateur, allez sur <code>https://admin.dashboard.&lt;votre-FQDN&gt;</code> puis Horizon - Project > API access > View Credentials et copiez-collez l'ID du projet. Stockez-le pour les étapes suivantes.
       </p>
-      <h2>3.7. Configurer vos variables d'environnement</h2>
+      <h3>3.8. Configurer vos variables d'environnement</h3>
       <p>
-        Exécutez le script <code>bash env_setup.sh</code>, entrez les informations collectées lors des étapes précédentes. Un nouveau fichier *-openrc.sh est généré commençant par votre ID de projet. Exécutez la commande suivante pour ajouter les nouvelles variables d'environnement. Vous devez exécuter cette commande à chaque fois que vous démarrez une nouvelle session de terminal.<pre><code class="language-bash">source &lt;id-projet&gt;-openrc.sh</code></pre>
+        Adaptez manuellement les informations suivantes et copiez-les dans un fichier openrc.sh. <strong>Modifiez les informations entre &lt;&gt;.</strong>
       </p>
+      <pre><code class="language-bash">export OS_INTERFACE=public
+export OS_IDENTITY_API_VERSION=3
+export OS_AUTH_URL=https://keystone.&lt;votre-FQDN&gt;
+export OS_AUTH_TYPE=v3oidcpassword
+export OS_PROTOCOL=openid
+export OS_IDENTITY_PROVIDER=keycloak-admin
+export OS_CLIENT_ID=&lt;votre-client-id&gt;
+export OS_CLIENT_SECRET=&lt;votre-client-secret&gt;
+export OS_DISCOVERY_ENDPOINT=https://admin.keycloak.&lt;votre-FQDN&gt;/realms/master/.well-known/openid-configuration
+export OS_USERNAME=&lt;votre-nom-d-utilsateur&gt;
+export OS_PASSWORD=&lt;votre-mot-de-passe-utilisateur&gt;
+export OS_PROJECT_ID=&lt;votre-id-projet&gt;
+export OS_CACERT=&lt;chemin-vers-le-certificat-si-necessaire&gt;
+export http_proxy=&lt;url-proxy-si-necessaire&gt;
+export https_proxy=&lt;url-proxy-si-necessaire&gt;</code></pre>
+      <p>Source le fichier openrc.sh pour charger les variables d'environnement (le répertoire courant du terminal doit être celui où se trouve le fichier)</p>
+      <pre><code>source openrc.sh</code></pre>
+      <div class="warning-box">
+        <strong>Avertissement :</strong> sous Windows, il est recommandé de créer et modifier le fichier <code>openrc.sh</code> avec un éditeur Linux (par exemple <code>vim</code> ou <code>nano</code>) plutôt qu'avec un éditeur Windows, car les éditeurs Windows peuvent provoquer des problèmes d'encodage. Il est également possible de copier/coller le contenu manuellement.
+      </div>
       <p>Récupérez un token pour vérifier que vous pouvez vous authentifier avec :</p>
       <pre><code class="language-bash">openstack token issue</code></pre>
+      <p>Vous devriez obtenir une sortie similaire à celle-ci :</p>
+
+      <pre><code>+------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Field      | Value                                                                                                                                                       |
++------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| expires    | 2026-07-25T09:40:11+0000                                                                                                                                    |
+| id         | gAAAAABqYzL7uMDBs-3MELisYzVuAd0nJl7LTf7CfHSVnuI0uCLCfbEQlW397Bv7QGbXCj7MEHYE-pMoIbelLVH8wDNKoqNX7P0A5hAlXDWTpVH4jbbhm5RPsbVN4UdyYYVQLgB6htvTUsqRsBgJstnCFDu |
+|            | Ukp6r6I-Aur8e4LE0Dx1jO8gx_b00OUtC6oKoJ0V38CRPgaamrOpNd8XgzlM4xYmz_rPGKh1y79GRj-BVWk-ZCkNfGmOoTuCFpy72GhBvYLAGcmbHIS8_Nc8bvMUwaupkWa-KAA                     |
+| project_id | eedac8d5b9cf4a299072d2c0b53f7e03                                                                                                                            |
+| user_id    | 5295362f1b476d281ea191857949eca58536044c4644120bc5e54c68edcd1bbe                                                                                            |
++------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------+</code></pre>
+      <p>Pas besoin de copier quoi que ce soit de ce qui s'affiche, l'objectif était de vérifier que l'authentification a réussi.</p>
       <h2>4. Créer un nouveau projet</h2>
       <p>
         Avant de créer des utilisateurs, vous devrez peut-être créer des projets OpenStack (également appelés tenants). Les projets sont des unités organisationnelles dans OpenStack où les ressources telles que les instances, réseaux et volumes sont regroupées.
@@ -192,12 +340,29 @@ openstack project create --description "Mon nouveau projet pour les tests" --ena
         <figcaption>Console d'administration Keycloak — Écran des identifiants utilisateur</figcaption>
       </figure>
 
+      <h3>Configuration du rôle</h3>
+      <p>
+        Nous utiliserons le rôle <strong>IT Admin</strong> pour ce workshop: 
+        ouvrez l'onglet <strong>Role Mapping</strong> tab et cliquez
+        sur <strong>Assign Role -> Client Role</strong>. Choissisez <code>it_admin</code>.
+      </p>
+
+      <figure>
+        <img src="../assets/images/keycloak-user-role.png"
+              alt="Keycloak administration console — User role mapping screen"
+              loading="lazy">
+        <figcaption>Keycloak administration console — User role mapping screen</figcaption>
+      </figure>
+
       <h2>6. Configurer les attributs de l'utilisateur</h2>
       <p>
         Lorsque vous devez créer un IT Admin — quelqu'un qui administre les
         projets OpenStack et gère les ressources pour les utilisateurs
         finaux — vous devez ajouter un attribut de projet à l'utilisateur.
       </p>
+      <div class="info-box">
+        <strong>À quoi sert cet attribut :</strong> c'est la source de données du mapper d'attribut <code>project</code> que vous avez configuré précédemment (étape 3.4). Lorsque l'utilisateur s'authentifie, ce mapper lit cette paire clé-valeur sur l'utilisateur et l'intègre au token sous forme de claim ; Keystone lit ensuite ce claim et accorde à l'utilisateur le(s) rôle(s) spécifié(s) sur le projet spécifié. Autrement dit, c'est ici que vous indiquez à Keycloak <em>quel</em> projet OpenStack et quel rôle doivent être associés à un utilisateur donné — c'est le passage de relais « 3. Utilisateur authentifié » → « 4. Convertir les attributs en ressources OpenStack » illustré dans le diagramme de flux d'authentification en haut de cette page.
+      </div>
       <p>
         Ouvrez l'onglet <strong>Attributes</strong> de l'utilisateur et
         ajoutez une paire clé-valeur :
@@ -218,9 +383,9 @@ openstack project create --description "Mon nouveau projet pour les tests" --ena
 
       <p>Adaptez les valeurs à votre configuration :</p>
       <ul>
-        <li><strong>domain → name</strong> — le domaine OpenStack (ex. <code>keycloak-admin</code>).</li>
-        <li><strong>name</strong> — le nom du projet OpenStack (ex. <code>jdoe-project</code>).</li>
-        <li><strong>roles</strong> — les rôles OpenStack à accorder (ex. <code>admin</code>, <code>service</code>).</li>
+        <li><strong>domain → name</strong> — le domaine OpenStack (gardez <code>keycloak-admin</code> sauf si vous utilisez un autre domaine sur cotre contrôleur).</li>
+        <li><strong>name</strong> — le nom du projet OpenStack (ex. <code>jdoe-project</code>. Dans votre cas, utilisez <code>${STUDENT_ID}-project</code>).</li>
+        <li><strong>roles</strong> — les rôles OpenStack à accorder (gardez <code>member</code>).</li>
       </ul>
       
       <h2>7. Tester l'authentification de l'utilisateur avec le fichier openrc</h2>
@@ -238,10 +403,12 @@ openstack project create --description "Mon nouveau projet pour les tests" --ena
       <h2>Résumé</h2>
       <ul>
         <li>OPCP est livré avec des realms, rôles et groupes Keycloak pré-configurés.</li>
-        <li>Trois rôles intégrés : <strong>Rôle Master Admin</strong>, <strong>IT Admin</strong>, et <strong>Opérateur DC</strong>.</li>
+        <li>Quatre rôles intégrés : <strong>Rôle Master Admin</strong>, <strong>IT Admin</strong>, <strong>Opérateur DC</strong>, et <strong>Reader</strong>.</li>
         <li>Les mots de passe sont définis dans l'onglet <strong>Credentials</strong> ; activez <strong>Temporary</strong> pour forcer une réinitialisation à la première connexion.</li>
         <li>Les IT Admins reçoivent un attribut <code>project</code> sur le domaine <code>keycloak-admin</code> avec les rôles <code>member</code>.</li>
       </ul>
+
+      <p>Dans l'étape suivante, nous allons voi comment créer un réseau</p>
 
       <button class="mark-complete-btn" type="button" aria-label="Marquer cette leçon comme terminée">
         ✓ Marquer comme terminé

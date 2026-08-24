@@ -49,12 +49,12 @@
       if (isActive) { classes += ' active'; }
       if (isCompleted) { classes += ' completed'; }
       var title = locale === 'fr' ? lesson.titleFR : lesson.titleEN;
-      var badgeClass = 'badge badge-' + lesson.difficulty;
-      var badge = '<span class="' + badgeClass + '">' + lesson.difficulty + '</span>';
+      var badge = lesson.difficulty ? '<span class="badge badge-' + lesson.difficulty + '">' + lesson.difficulty + '</span>' : '';
+      var ariaLabel = lesson.difficulty ? title + ' — ' + lesson.difficulty : title;
       var href = lesson.slug + '.html';
       html += '<li class="' + classes + '" data-lesson-id="' + lesson.id + '">';
-      html += '<a href="' + href + '" aria-label="' + title + ' — ' + lesson.difficulty + '">';
-      html += '<span class="nav-title">' + title + '</span> ' + badge;
+      html += '<a href="' + href + '" aria-label="' + ariaLabel + '">';
+      html += '<span class="nav-title">' + title + '</span>' + (badge ? ' ' + badge : '');
       html += '</a></li>';
     }
 

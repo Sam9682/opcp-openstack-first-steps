@@ -67,8 +67,54 @@
         Glance serves as the image service in OpenStack, storing and retrieving virtual machine images. It supports various image formats and provides metadata management for images. Users can upload, download, and manage images that are used to create instances.
       </p>
 
+      <h2>Supporting Services Beyond OpenStack</h2>
+      <p>OPCP also relies on additional tools, alongside OpenStack, that provide identity federation, network automation, deployment, and observability across the platform.</p>
+
+      <h3>Keycloak - Identity Provider</h3>
+      <p>
+        Keycloak acts as the platform's Identity Provider, federating with Keystone so that authentication is centralized across every layer of OPCP.
+      </p>
+
+      <h3>NOG - Network Orchestration</h3>
+      <p>
+        NOG is an OVHcloud proprietary module that automates network configuration. Whenever Neutron creates a network, NOG generates the corresponding switch configuration and pushes it to the physical infrastructure, keeping the underlying network fabric in sync with OpenStack.
+      </p>
+
+      <h3>Cloudstore - Deployment Service</h3>
+      <p>
+        Cloudstore, also developed by OVHcloud, simplifies the deployment of operating systems, hypervisors, and cloud services across OPCP's servers.
+      </p>
+
+      <h3>Netbox - Infrastructure Documentation</h3>
+      <p>
+        Netbox is an open-source DCIM/IPAM tool used to document the physical and logical infrastructure — racks, servers, network interfaces, IP allocations, and VLAN assignments — acting as the single source of truth for the datacenter inventory.
+      </p>
+
+      <h3>Grafana - Monitoring & Observability</h3>
+      <p>
+        Grafana provides the dashboards used to visualize metrics and logs collected across the platform, giving operators a unified view of compute, network, and storage health.
+      </p>
+
       <h2>Key Concepts</h2>
-      
+
+      <h3>Domains, Projects, Users, Groups & Roles</h3>
+      <p>
+        Keystone organizes access control around a small set of related concepts. A <strong>domain</strong> is the highest-level container: it groups a set of projects, users, and groups that are managed together, and keeps identities in one domain fully isolated from another. A <strong>project</strong> (sometimes called a tenant) is where resources such as instances, networks, and volumes actually live. A <strong>user</strong> is a person or a service account that can authenticate, and users can be gathered into <strong>groups</strong> so that access can be granted to many people at once instead of one by one. A <strong>role</strong> such as admin, member, or reader defines what a user or group is allowed to do, and a role assignment always ties a user or group to a specific scope — either a single project or the entire domain.
+      </p>
+      <figure>
+        <img src="../assets/images/opcp-identity-concepts.svg"
+             alt="Diagram of an OpenStack domain containing two projects (Production, Staging) and two groups (Admins, Developers) plus a standalone service-account user. Role assignments in green link the Admins group to both projects with the admin role, the Developers group to the Staging project with the member role, and the service account to the Production project with the reader role. A dashed blue arrow shows the Admins group also holding a domain-scoped admin role that applies across the whole domain."
+             loading="lazy">
+        <figcaption>OpenStack identity model: how domains, projects, users, groups, and role assignments relate to each other.</figcaption>
+      </figure>
+      <p><strong>What a role assignment actually is:</strong></p>
+      <ul>
+        <li>A role assignment always combines three things: a user or a group, a role (e.g. admin, member, reader), and a scope.</li>
+        <li>Project-scoped: the role only grants permissions inside that one project (the most common case, shown in green in the diagram above).</li>
+        <li>Domain-scoped: the role applies to every project in the domain, and can also manage the domain's users and groups.</li>
+        <li>Groups let an operator grant or revoke access for many users in one action instead of assigning roles user by user.</li>
+      </ul>
+
       <h3>Projects (Tenants)</h3>
       <p>
         Projects are organizational units in OpenStack where resources such as instances, networks, and volumes are grouped. Each project has its own set of users and permissions, allowing for resource isolation and management.
@@ -85,14 +131,28 @@
       </p>
 
       <h2>How They Work Together</h2>
+      <figure>
+        <img src="../assets/images/opcp-architecture.svg"
+             alt="OPCP architecture diagram showing OpenStack Core (Keystone, Nova, Neutron, Glance) inside the OPCP Controller, federated with Keycloak, with NOG and Cloudstore automating the Physical Infrastructure (Compute Nodes and Network Switches), Netbox documenting that infrastructure, and Grafana monitoring the whole platform."
+             loading="lazy">
+        <figcaption>OPCP architecture: OpenStack Core, Keycloak, NOG, Cloudstore, Netbox, and Grafana.</figcaption>
+      </figure>
       <p>
         These services work together to provide a complete cloud computing platform. For example, when creating a new instance:
       </p>
       <ol>
-        <li>Keystone authenticates the user and provides a token</li>
-        <li>Neutron creates the necessary network connectivity</li>
+        <li>Keycloak authenticates the user and federates with Keystone to provide a token</li>
+        <li>Neutron creates the necessary network connectivity, and NOG pushes the corresponding switch configuration to the physical infrastructure</li>
         <li>Nova launches the virtual machine with the specified resources</li>
         <li>Glance provides the base image for the instance</li>
+      </ol>
+      <p>
+        Beyond this request path, other services keep the platform running:
+      </p>
+      <ol>
+        <li>Cloudstore deployed the operating systems and hypervisors that host these instances</li>
+        <li>Netbox documents the underlying physical and network infrastructure</li>
+        <li>Grafana continuously monitors the health of compute, network, and storage resources</li>
       </ol>
 
       <h2>Summary</h2>
@@ -101,6 +161,17 @@
         <li>Nova manages virtual machines, Neutron handles networking, Keycloak and Keystone handles identity, and Glance manages images</li>
         <li>Resources are organized into projects for isolation and management</li>
         <li>All services communicate through standardized APIs accessible via endpoints</li>
+      </ul>
+
+      <h2>Next</h2>
+      <p>
+        Now that we have an overview of the core concepts, 
+        we will go over the basic OPCP features:
+      </p>
+      <ul>
+        <li>Authentication (creating a user and a client).</li>
+        <li>Creating networks.</li>
+        <li>Deploying a server.</li>
       </ul>
 
       <button class="mark-complete-btn" type="button" aria-label="Mark this lesson as complete">

@@ -56,31 +56,13 @@
       prerequisites: ['user-management']
     },
     {
-      id: 'storage',
-      slug: 'software-raid',
-      titleEN: 'Software RAID',
-      titleFR: 'RAID Logiciel',
-      difficulty: 'advanced',
-      estimatedMinutes: 25,
-      prerequisites: ['network']
-    },
-    {
-      id: 'lacp',
-      slug: 'lacp',
-      titleEN: 'LACP Configuration',
-      titleFR: 'Configuration LACP',
-      difficulty: 'advanced',
-      estimatedMinutes: 30,
-      prerequisites: ['network']
-    },
-    {
       id: 'compute',
       slug: 'compute',
       titleEN: 'Compute',
       titleFR: 'Compute',
       difficulty: 'intermediate',
       estimatedMinutes: 25,
-      prerequisites: ['storage']
+      prerequisites: ['network']
     },
     {
       id: 'summary',
@@ -111,12 +93,47 @@
     },
     {
       id: 'first-steps',
-      slug: 'appendix-A',
+      slug: 'appendix',
       titleEN: 'Appendix A - Accessing OpenStack',
       titleFR: 'Annexe A - Accès à OpenStack',
       difficulty: 'beginner',
       estimatedMinutes: 20,
       prerequisites: ['core-concepts']
+    },
+    {
+      id: 'trunk-setup',
+      slug: 'appendix-trunk-setup',
+      titleEN: 'Appendix - Setup Neutron Trunk',
+      titleFR: 'Annexe - Configuration des ports Trunk Neutron',
+      difficulty: 'advanced',
+      estimatedMinutes: 30,
+      prerequisites: ['network']
+    },
+    {
+      id: 'storage',
+      slug: 'software-raid',
+      titleEN: 'Appendix - Software RAID',
+      titleFR: 'Annexe - RAID Logiciel',
+      difficulty: 'advanced',
+      estimatedMinutes: 25,
+      prerequisites: ['network']
+    },
+    {
+      id: 'lacp',
+      slug: 'lacp',
+      titleEN: 'Appendix - LACP Configuration',
+      titleFR: 'Annexe - Configuration LACP',
+      difficulty: 'advanced',
+      estimatedMinutes: 30,
+      prerequisites: ['network']
+    },
+    {
+      id: 'glossary',
+      slug: 'glossary',
+      titleEN: 'Glossary',
+      titleFR: 'Glossaire',
+      estimatedMinutes: 10,
+      prerequisites: []
     }
   ];
 

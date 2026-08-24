@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkillHub — Glossary</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <style>
+    .glossary-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin: 1.5rem 0;
+    }
+    .glossary-nav a {
+      display: inline-block;
+      padding: 0.25rem 0.6rem;
+      border: 1px solid var(--color-border, #ccc);
+      border-radius: 4px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      text-decoration: none;
+    }
+    .glossary-nav a:hover {
+      background: var(--color-accent, #0064d2);
+      color: #fff;
+      border-color: var(--color-accent, #0064d2);
+    }
+    .glossary-section {
+      margin-top: 2rem;
+    }
+    .glossary-section h2 {
+      font-size: 1.5rem;
+      border-bottom: 2px solid var(--color-border, #ccc);
+      padding-bottom: 0.25rem;
+      margin-bottom: 1rem;
+    }
+    .glossary-term {
+      margin-bottom: 1.25rem;
+    }
+    .glossary-term dt {
+      font-weight: 700;
+      font-size: 1rem;
+    }
+    .glossary-term dt .term-tag {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.1rem 0.4rem;
+      border-radius: 3px;
+      margin-left: 0.5rem;
+      vertical-align: middle;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .tag-openstack {
+      background: #e8f0fe;
+      color: #1a56db;
+      border: 1px solid #c3d5fc;
+    }
+    .tag-opcp {
+      background: #fce8e8;
+      color: #c0392b;
+      border: 1px solid #f5c6c6;
+    }
+    .tag-networking {
+      background: #e8fce8;
+      color: #1a7a1a;
+      border: 1px solid #b6e8b6;
+    }
+    .glossary-term dd {
+      margin: 0.3rem 0 0 1.2rem;
+      color: var(--color-text-secondary, #444);
+      line-height: 1.6;
+    }
+    .glossary-term dd a {
+      font-size: 0.85rem;
+      opacity: 0.8;
+    }
+    .back-to-top {
+      display: inline-block;
+      margin-top: 0.5rem;
+      font-size: 0.8rem;
+      text-decoration: none;
+      opacity: 0.6;
+    }
+    .back-to-top:hover { opacity: 1; }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+      font-size: 0.85rem;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header" role="banner">
+    <div class="logo"><a href="index.html" aria-label="SkillHub home">SkillHub</a></div>
+    <div class="header-right">
+      <div class="lang-toggle" aria-label="Language selector"></div>
+      <div class="progress-bar-container" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Learning progress">
+        <div class="progress-bar-fill"></div>
+      </div>
+      <span class="progress-text">0% complete</span>
+      <button class="hamburger-btn" aria-label="Toggle navigation menu" aria-expanded="false">☰</button>
+    </div>
+  </header>
+  <div class="sidebar-overlay" aria-hidden="true"></div>
+  <div class="site-wrapper">
+    <aside class="sidebar" role="navigation" aria-label="Lesson navigation">
+      <nav id="sidebar-nav"></nav>
+    </aside>
+    <main class="main-content" role="main">
+      <div class="breadcrumbs" aria-label="Breadcrumb navigation"></div>
+
+      <h1 id="top">Glossary</h1>
+      <p>
+        Key terms used throughout this training, drawn from the
+        <a href="https://docs.openstack.org/glossary/common/glossary.html" target="_blank" rel="noopener">OpenStack Glossary</a>
+        and the
+        <a href="https://docs.ovhcloud.com/en/guides/hosted-private-cloud/opcp/overview" target="_blank" rel="noopener">OPCP documentation</a>.
+      </p>
+
+      <div class="legend" aria-label="Tag legend">
+        <span class="legend-item"><span class="term-tag tag-openstack">OpenStack</span> OpenStack core concept</span>
+        <span class="legend-item"><span class="term-tag tag-opcp">OPCP</span> Specific to OVHcloud OPCP</span>
+        <span class="legend-item"><span class="term-tag tag-networking">Networking</span> Networking / protocol</span>
+      </div>
+
+      <nav class="glossary-nav" aria-label="Jump to letter">
+        <a href="#A">A</a>
+        <a href="#B">B</a>
+        <a href="#C">C</a>
+        <a href="#D">D</a>
+        <a href="#E">E</a>
+        <a href="#F">F</a>
+        <a href="#G">G</a>
+        <a href="#H">H</a>
+        <a href="#I">I</a>
+        <a href="#K">K</a>
+        <a href="#L">L</a>
+        <a href="#M">M</a>
+        <a href="#N">N</a>
+        <a href="#O">O</a>
+        <a href="#P">P</a>
+        <a href="#Q">Q</a>
+        <a href="#R">R</a>
+        <a href="#S">S</a>
+        <a href="#T">T</a>
+        <a href="#U">U</a>
+        <a href="#V">V</a>
+        <a href="#Y">Y</a>
+      </nav>
+
+      <!-- ═══════════════════════════════════════ A ═══════════════════════════════════════ -->
+      <section class="glossary-section" id="A">
+        <h2>A</h2>
+        <dl>
+
+          <div class="glossary-term">
+            <dt>
+              Agent Interface
+              <span class="term-tag tag-openstack">OpenStack</span>
+            </dt>
+            <dd>
+              An Ironic interface mode in which the Ironic Python Agent (IPA) running on the node performs in-band operations — such as cleaning, RAID configuration, and image writing — directly on the hardware. Setting <code>raid_interface</code> to <code>agent</code> enables software RAID to be configured before the OS is deployed.
+            </dd>
+          </div>
+
+          <div class="glossary-term">
+            <dt>
+              Allocation Pool
+              <span class="term-tag tag-openstack">OpenStack</span>
+            </dt>
+            <dd>
+              The range of IP addresses within a Neutron subnet that the DHCP agent may assign to ports. Defined as a <code>start</code> and <code>end</code> address when creating a subnet; addresses outside the pool can be used for static assignments without risking conflicts with DHCP.
+            </dd>
+          </div>
+
+          <div class="glossary-term">
+            <dt>
+              API — Application Programming Interface
+            </dt>
+            <dd>
+              A set of defined rules and protocols that allows software applications to communicate with each other over a network. OpenStack services expose REST APIs — clients send HTTP requests with JSON payloads to manage resources such as instances, networks, and volumes. All CLI commands are wrappers around these underlying API calls.
+            </dd>
+          </div>
+
+          <div class="glossary-term">
+            <dt>
+              Application Credential
+              <span class="term-tag tag-openstack">OpenStack</span>
+            </dt>
+            <dd>
+              An authentication mechanism that lets an application authenticate with Keystone without exposing the user's password. Application credentials carry a subset of the user's roles and can be revoked independently, making them suitable for automated scripts and CI/CD pipelines.
+            </dd>
+          </div>
+
+          <div class="glossary-term">
+            <dt>
+              Availability Zone (AZ)
+              <span class="term-tag tag-openstack">OpenStack</span>
+            </dt>
+            <dd>
+              A logical subdivision of cloud compute, storage, and networking resources within a region. Availability Zones allow workloads to be separated across failure domains for higher resilience.
+            </dd>
+          </div>
+
+        </dl>
+        <a class="back-to-top" href="#top">↑ Back to top</a>
+      </section>
+
+      <!-- ═══════════════════════════════════════ B ═══════════════════════════════════════ -->
+      <section class="glossary-section" id="B">
+        <h2>B</h2>
+        <dl>
+
+          <div class="glossary-term">
+            <dt>
+              Bare-Metal Server
+              <span class="term-tag tag-openstack">OpenStack</span>
+            </dt>
+            <dd>
+              A physical server with no hypervisor layer — the operating system runs directly on the hardware. In OPCP, bare-metal servers are managed by Ironic and support the same OpenStack lifecycle operations (provision, undeploy, maintenance) as virtual machines, while delivering full hardware performance.
+            </dd>
+          </div>
+
+          <div class="glossary-term">
+            <dt>
+              Block Storage
+              <span class="term-tag tag-openstack">OpenStack</span>
+            </dt>
+            <dd>
+              The OpenStack service (code-named <strong>Cinder</strong>) that provides on-demand, persistent block-level storage volumes. Volumes can be attached to instances, snapshotted, and resized independently of the instance lifecycle.
+            </dd>
+          </div>
+
+        </dl>
+        <a class="back-to-top" href="#top">↑ Back to top</a>
+      </section>
+
+      <!-- ═══════════════════════════════════════ C ═══════════════════════════════════════ -->
+      <section class="glossary-section" id="C">
+        <h2>C</h2>
+        <dl>
+
+          <div class="glossary-term">
+            <dt>
+              CI/CD — Continuous Integration / Continuous Delivery
+            </dt>
+            <dd>
+              A software development practice in which code changes are automatically built, tested, and deployed through a pipeline. Application credentials are commonly used in CI/CD pipelines to authenticate automation scripts against OpenStack without embedding a user's password.
+            </dd>
+          </div>
+
+          <div class="glossary-term">
+            <dt>
+              CIDR — Classless Inter-Domain Routing
+              <span class="term-tag tag-networking">Networking</span>
+            </dt>
+            <dd>
+              A compact notation for specifying IP address ranges that combines a base address with a prefix length (e.g., <code>192.168.1.0/24</code> represents 256 addresses). Used throughout OpenStack networking to define subnets and security group rules.
+            </dd>
+          </div>
+
+          <div class="glossary-term">
+            <dt>
+              Cinder
+              <span class="term-tag tag-openstack">OpenStack</span>
+            </dt>
+            <dd>
+              The code name for the OpenStack Block Storage service. Cinder manages the lifecycle of block storage volumes: creation, attachment to instances, snapshotting, and deletion. See also <strong>Block Storage</strong>.
+            </dd>
+          </div>
+
+          <div class="glossary-term">
+            <dt>
+              cloud-init
+              <span class="term-tag tag-openstack">OpenStack</span>
+            </dt>
+            <dd>
+              A widely-used package that performs initial configuration of a cloud instance at first boot. It can set hostnames, inject SSH keys, run scripts, install packages, and configure network interfaces using data provided by the cloud metadata service.
+            </dd>
+          </div>
+
+
+          <div class="glossary-term">
+            <dt>
+              Control Plane
+              <span class="term-tag tag-opcp">OPCP</span>
+            </dt>
+            <dd>
+              The architectural layer responsible for managing and orchestrating the infrastructure. In OPCP, the control plane hosts the OpenStack services (Keystone, Nova, Neutron, Glance, Cinder, Ironic) that process API requests and coordinate resource lifecycle operations across compute nodes.
+            </dd>
+          </div>
+
+          <div class="glossary-term">
+            <dt>
+              Controller
+              <span class="term-tag tag-opcp">OPCP</span>
+            </dt>
+            <dd>
+              A dedicated server that runs control-plane services in an OPCP deployment. See <strong>OPCP Controller</strong>.
+            </dd>
+          </div>
+
+        </dl>
+        <a class="back-to-top" href="#top">↑ Back to top</a>
+      </section>
+
+      <!-- ═══════════════════════════════════════ D ═══════════════════════════════════════ -->
+      <section class="glossary-section" id="D">
+        <h2>D</h2>
+        <dl>
+
+          <div class="glossary-term">
+            <dt>
+              Dashboard
+              <span class="term-tag tag-opcp">OPCP</span>
+            </dt>
+            <dd>
+              A web interface giving operators access to OPCP operating tools. The dashboard provides a graphical view of the infrastructure including compute nodes, networks, monitoring, and service health. The term may refer to the OpenStack Horizon interface or to Grafana dashboards for metrics and logs.
+            </dd>
+          </div>
+
+          <div class="glossary-term">
+            <dt>
+              DHCP — Dynamic Host Configuration Protocol
+              <span class="term-tag tag-networking">Networking</span>
+            </dt>
+            <dd>
+              A network protocol that automatically assigns IP addresses, gateways, and DNS servers to devices joining a network. In OpenStack, the Neutron DHCP agent manages address allocation for virtual networks.
+            </dd>
+          </div>
+
+          <div class="glossary-term">
+            <dt>
+              Domain
+              <span class="term-tag tag-openstack">OpenStack</span>
+            </dt>
+            <dd>
+              An Identity API v3 entity representing a high-level administrative boundary that groups projects, users, and groups. In OPCP, each customer organisation lives in its own Keystone domain, federated through Keycloak.
+            </dd>
+          </div>
+
+        </dl>
+        <a class="back-to-top" href="#top">↑ Back to top</a>
+      </section>
+
+      <!-- ═══════════════════════════════════════ E ═══════════════════════════════════════ -->
+      <section class="glossary-section" id="E">
+        <h2>E</h2>
+        <dl>
+
+          <div class="glossary-term">
+            <dt>
+              Endpoint
+              <span class="term-tag tag-openstack">OpenStack</span>
+            </dt>
+            <dd>
+              A URL exposed by an OpenStack service through which clients interact with that service's API. Endpoints are listed in the Keystone service catalog after successful authentication and are typed as <em>public</em>, <em>internal</em>, or <em>admin</em>.
+            </dd>
+          </div>
+
+        </dl>
+        <a class="back-to-top" href="#top">↑ Back to top</a>
+      </section>
+
+      <!-- ═══════════════════════════════════════ F ═══════════════════════════════════════ -->
+      <section class="glossary-section" id="F">
+        <h2>F</h2>
+        <dl>
+
+          <div class="glossary-term">
+            <dt>
+              Flavor
+              <span class="term-tag tag-openstack">OpenStack</span>
+            </dt>
+            <dd>
+              A named hardware profile that defines the vCPU count, RAM, and root disk size available to a virtual machine instance. Flavors are selected at instance launch time and determine the compute resources allocated by Nova.
+            </dd>
+          </div>
+
+          <div class="glossary-term">
+            <dt>
+              Floating IP Address
+              <span class="term-tag tag-openstack">OpenStack</span>
+            </dt>
+            <dd>
+              A publicly routable IP address that can be dynamically associated with a running instance. Unlike fixed IPs (assigned by DHCP on the private network), floating IPs are drawn from a provider address pool and can be reassigned between instances.
+            </dd>
+          </div>
+
+        </dl>
+        <a class="back-to-top" href="#top">↑ Back to top</a>
+      </section>
+
+      <!-- ═══════════════════════════════════════ G ═══════════════════════════════════════ -->
+      <section class="glossary-section" id="G">
+        <h2>G</h2>
+        <dl>
+
+          <div class="glossary-term">
+            <dt>
+              Glance
+              <span class="term-tag tag-openstack">OpenStack</span>
+            </dt>
+            <dd>
+              The code name for the OpenStack Image service. Glance stores and retrieves virtual machine images and their metadata. It supports multiple disk formats (QCOW2, RAW, VMDK…) and provides the base images used when Nova creates new instances.
+            </dd>
+          </div>
+
+
+          <div class="glossary-term">
+            <dt>
+              Grafana
+              <span class="term-tag tag-opcp">OPCP</span>
+            </dt>
+            <dd>
+              An open-source platform for data visualization and analytics, widely used for infrastructure monitoring. In OPCP, Grafana displays metrics collected by Prometheus and logs aggregated by Loki, providing dashboards for compute, network, and storage observability.
+            </dd>
+          </div>
+
+        </dl>
+        <a class="back-to-top" href="#top">↑ Back to top</a>
+      </section>
+
+      <!-- ═══════════════════════════════════════ H ═══════════════════════════════════════ -->
+      <section class="glossary-section" id="H">
+        <h2>H</h2>
+        <dl>
+
+          <div class="glossary-term">
+            <dt>
+              Heat
+              <span class="term-tag tag-openstack">OpenStack</span>
+            </dt>
+            <dd>
+              The code name for the OpenStack Orchestration service. Heat uses declarative templates (Heat Orchestration Templates, HOT) to provision and manage stacks of OpenStack resources as a single unit, enabling infrastructure-as-code workflows.
+            </dd>
+          </div>
+
+          <div class="glossary-term">
+            <dt>
+              Horizon
+              <span class="term-tag tag-openstack">OpenStack</span>
+            </dt>
+            <dd>
+              The code name for the OpenStack Dashboard. Horizon provides a web-based user interface to manage OpenStack resources including instances, networks, volumes, and images without using the CLI.
+            </dd>
+          </div>
+
+        </dl>
+        <a class="back-to-top" href="#top">↑ Back to top</a>
+      </section>
+
+      <!-- ═══════════════════════════════════════ I ═══════════════════════════════════════ -->
+      <section class="glossary-section" id="I">
+        <h2>I</h2>
+        <dl>
+
+          <div class="glossary-term">
+            <dt>
+              Identity Provider (IdP)
+              <span class="term-tag tag-openstack">OpenStack</span>
+            </dt>
+            <dd>
+              A trusted external service that authenticates users and provides identity assertions to OpenStack Keystone. In OPCP, Keycloak acts as the Identity Provider; Keystone federates with it via OpenID Connect.
+            </dd>
+          </div>
+
+          <div class="glossary-term">
+            <dt>
+              Instance
+              <span class="term-tag tag-openstack">OpenStack</span>
+            </dt>
+            <dd>
+              A running virtual machine managed by Nova. An instance is created from a Glance image using a chosen flavor, placed on a compute host by the Nova scheduler, and connected to one or more Neutron networks.
+            </dd>
+          </div>
+
+          <div class="glossary-term">
+            <dt>
+              Introspection
+              <span class="term-tag tag-openstack">OpenStack</span>
+            </dt>
+            <dd>
+              The process by which Ironic discovers and records the hardware properties of a bare-metal node. During introspection, the node is booted into a temporary ramdisk (the Ironic Python Agent) which collects data such as CPU count, RAM, disk devices, and NIC MAC addresses and reports them back to Ironic. This information populates the node's properties and is used by Nova's scheduler to match nodes to requested flavors.
+            </dd>
+          </div>
+
+          <div class="glossary-term">
+            <dt>
+              Ironic
+              <span class="term-tag tag-openstack">OpenStack</span>
+            </dt>
+            <dd>
+              The code name for the OpenStack Bare Metal service. Ironic provisions and manages physical (bare-metal) servers using the same API as Nova, allowing cloud-style lifecycle management of physical hardware.
+            </dd>
+          </div>
+
+        </dl>
+        <a class="back-to-top" href="#top">↑ Back to top</a>
+      </section>
+
+      <!-- ═══════════════════════════════════════ K ═══════════════════════════════════════ -->
+      <section class="glossary-section" id="K">
+        <h2>K</h2>
+        <dl>
+
+          <div class="glossary-term">
+            <dt>
+              Keystone
+              <span class="term-tag tag-openstack">OpenStack</span>
+            </dt>
+            <dd>
+              The code name for the OpenStack Identity service. Keystone handles authentication, authorization, and service discovery for all other OpenStack services. It manages users, projects, roles, domains, and the service catalog.
+            </dd>
+          </div>
+
+          <div class="glossary-term">
+            <dt>
+              Keycloak
+              <span class="term-tag tag-opcp">OPCP</span>
+            </dt>
+            <dd>
+              An open-source Identity and Access Management platform used in OPCP as the Identity Provider for Layer 1. Keycloak manages users, roles, and realms, and federates with OpenStack Keystone via OpenID Connect. Both Keystone and Keycloak run inside the OPCP Controller.
+            </dd>
+          </div>
+
+          <div class="glossary-term">
+            <dt>
+              KVM — Kernel-Based Virtual Machine
+              <span class="term-tag tag-openstack">OpenStack</span>
+            </dt>
+            <dd>
+              A Linux kernel module that turns the kernel into a hypervisor. KVM is the default hypervisor used by Nova to create and manage virtual machine instances in most OpenStack deployments.
+            </dd>
+          </div>
+
+        </dl>
+        <a class="back-to-top" href="#top">↑ Back to top</a>
+      </section>
+
+      <!-- ═══════════════════════════════════════ L ═══════════════════════════════════════ -->
+      <section class="glossary-section" id="L">
+        <h2>L</h2>
+        <dl>
+
+          <div class="glossary-term">
+            <dt>
+              LACP — Link Aggregation Control Protocol
+              <span class="term-tag tag-networking">Networking</span>
+            </dt>
+            <dd>
+              An IEEE 802.3ad protocol that negotiates the bundling of multiple physical network interfaces into a single logical channel (bond). LACP increases available bandwidth and provides link-level redundancy. In OPCP, LACP bonds are configured on bare-metal nodes via Netplan and Ironic port groups.
+            </dd>
+          </div>
+
+          <div class="glossary-term">
+            <dt>
+              Loki
+              <span class="term-tag tag-opcp">OPCP</span>
+            </dt>
+            <dd>
+              An open-source log aggregation system developed by Grafana Labs. Loki stores and indexes log streams using labels rather than full-text indexing, making it efficient for querying logs from distributed systems. In OPCP, Loki collects logs from compute nodes and OpenStack services, queryable through Grafana.
+            </dd>
+          </div>
+
+          <div class="glossary-term">
+            <dt>
+              LVM — Logical Volume Manager
+              <span class="term-tag tag-openstack">OpenStack</span>
+            </dt>
+            <dd>
+              A Linux storage abstraction layer that pools physical disks into volume groups from which logical volumes of arbitrary sizes can be created, resized, and snapshotted. In OPCP, LVM is used by some base images (e.g., <code>Debian 12 LVM OPCP</code>) as the root filesystem layout.
+            </dd>
+          </div>
+
+        </dl>
+        <a class="back-to-top" href="#top">↑ Back to top</a>
+      </section>
+
+      <!-- ═══════════════════════════════════════ M ═══════════════════════════════════════ -->
+      <section class="glossary-section" id="M">
+        <h2>M</h2>
+        <dl>
+
+          <div class="glossary-term">
+            <dt>
+              Maintenance Mode
+              <span class="term-tag tag-openstack">OpenStack</span>
+            </dt>
+            <dd>
+              An Ironic node state that temporarily prevents a bare-metal node from being provisioned or scheduled. Nodes in maintenance mode are excluded from all automated operations, allowing administrators to perform configuration changes (such as setting up RAID or LACP) without risk of interruption.
+            </dd>
+          </div>
+
+          <div class="glossary-term">
+            <dt>
+              mdadm
+            </dt>
+            <dd>
+              The standard Linux utility for creating, managing, and monitoring software RAID arrays (Multiple Device Administrator). mdadm manages MD (Multiple Device) kernel devices and supports RAID levels 0, 1, 4, 5, 6, and 10. In OPCP bare-metal labs, mdadm is used to configure RAID arrays before deploying the OS.
+            </dd>
+          </div>
+
+
+          <div class="glossary-term">
+            <dt>
+              Monitoring
+            </dt>
+            <dd>
+              The process of continuously observing system metrics, logs, and events to track performance, detect issues, and ensure reliability. In OPCP, monitoring is typically implemented with a Prometheus + Grafana + Loki stack that covers compute node health, OpenStack service state, and infrastructure-level alerting.
+            </dd>
+          </div>
+
+        </dl>
+        <a class="back-to-top" href="#top">↑ Back to top</a>
+      </section>
+
+      <!-- ═══════════════════════════════════════ N ═══════════════════════════════════════ -->
+      <section class="glossary-section" id="N">
+        <h2>N</h2>
+        <dl>
+
+          <div class="glossary-term">
+            <dt>
+              NAT — Network Address Translation
+              <span class="term-tag tag-networking">Networking</span>
+            </dt>
+            <dd>
+              The process of rewriting source or destination IP addresses in packet headers as they pass through a router. In OpenStack, NAT is used by the Neutron L3 agent to give instances on private networks access to the public Internet via floating IPs.
+            </dd>
+          </div>
+
+          <div class="glossary-term">
+            <dt>
+              Netbox
+              <span class="term-tag tag-opcp">OPCP</span>
+            </dt>
+            <dd>
+              An open-source datacenter infrastructure management (DCIM) and IP address management (IPAM) tool. In OPCP deployments, Netbox is used to document physical and logical infrastructure — racks, servers, network interfaces, IP allocations, and VLAN assignments — providing a single source of truth for the datacenter inventory.
+            </dd>
+          </div>
+
+          <div class="glossary-term">
+            <dt>
+              Netplan
+              <span class="term-tag tag-networking">Networking</span>
+            </dt>
+            <dd>
+              A YAML-based network configuration utility for Linux (default on Ubuntu 18.04+). Netplan generates backend configuration for systemd-networkd or NetworkManager. In OPCP labs, Netplan files are written to configure bonding and VLAN interfaces on bare-metal instances.
+            </dd>
+          </div>
+
+          <div class="glossary-term">
+            <dt>
+              Neutron
+              <span class="term-tag tag-openstack">OpenStack</span>
+            </dt>
+            <dd>
+              The code name for the OpenStack Networking service. Neutron provides virtual networks, subnets, routers, ports, security groups, floating IPs, and trunk ports as API-managed resources.
+            </dd>
+          </div>
+
+          <div class="glossary-term">
+            <dt>
+              Nova
+              <span class="term-tag tag-openstack">OpenStack</span>
+            </dt>
+            <dd>
+              The code name for the OpenStack Compute service. Nova schedules, provisions, and manages the full lifecycle of virtual machine instances, interacting with hypervisors (KVM, Xen, VMware…), Neutron for networking, Cinder for volumes, and Glance for images.
+            </dd>
+          </div>
+
+        </dl>
+        <a class="back-to-top" href="#top">↑ Back to top</a>
+      </section>
+
+      <!-- ═══════════════════════════════════════ O ═══════════════════════════════════════ -->
+      <section class="glossary-section" id="O">
+        <h2>O</h2>
+        <dl>
+
+          <div class="glossary-term">
+            <dt>
+              OpenID Connect (OIDC)
+              <span class="term-tag tag-networking">Networking</span>
+            </dt>
+            <dd>
+              An identity layer built on top of OAuth 2.0 that lets a client verify a user's identity based on authentication performed by an Authorization Server. In OPCP, Keystone federates with Keycloak via OIDC: Keycloak issues tokens that Keystone validates to grant OpenStack access, so users authenticate once through Keycloak and receive OpenStack tokens without a separate Keystone password.
+            </dd>
+          </div>
+
+          <div class="glossary-term">
+            <dt>
+              OpenStack
+              <span class="term-tag tag-openstack">OpenStack</span>
+            </dt>
+            <dd>
+              An open-source cloud computing platform that provides Infrastructure-as-a-Service (IaaS). OpenStack orchestrates pools of compute, storage, and networking resources across a datacenter, managed through REST APIs and a web dashboard. OPCP is built on OpenStack and exposes its core services — Nova, Neutron, Glance, Cinder, Keystone, and Ironic.
+            </dd>
+          </div>
+
+          <div class="glossary-term">
+            <dt>
+              OPCP — On Prem Cloud Platform
+              <span class="term-tag tag-opcp">OPCP</span>
+            </dt>
+            <dd>
+              OVHcloud's on-premises OpenStack-based private cloud platform. OPCP provides a managed OpenStack environment deployed in the customer's data centre, with OVHcloud operating the control plane (OPCP Controller). It includes Keystone, Keycloak, Nova, Neutron, Glance, Cinder, and Ironic services.
+            </dd>
+          </div>
+
+          <div class="glossary-term">
+            <dt>
+              OPCP Controller
+              <span class="term-tag tag-opcp">OPCP</span>
+            </dt>
+            <dd>
+              The dedicated management node in an OPCP deployment that hosts the OpenStack control-plane services, including Keystone and Keycloak. Customers interact with OPCP through the APIs exposed by the OPCP Controller.
+            </dd>
+          </div>
+
+        </dl>
+        <a class="back-to-top" href="#top">↑ Back to top</a>
+      </section>
+
+      <!-- ═══════════════════════════════════════ P ═══════════════════════════════════════ -->
+      <section class="glossary-section" id="P">
+        <h2>P</h2>
+        <dl>
+
+          <div class="glossary-term">
+            <dt>
+              Pod
+              <span class="term-tag tag-opcp">OPCP</span>
+            </dt>
+            <dd>
+              A logical infrastructure unit grouping the Control Plane and Compute resources in an OPCP deployment. A pod typically contains the OPCP Controller alongside the bare-metal compute nodes it manages.
+            </dd>
+          </div>
+
+          <div class="glossary-term">
+            <dt>
+              Port
+              <span class="term-tag tag-openstack">OpenStack</span>
+            </dt>
+            <dd>
+              A virtual network interface representing a connection point between an instance (or router) and a Neutron network. Each port has a MAC address, one or more fixed IP addresses, and can have security groups attached.
+            </dd>
+          </div>
+
+          <div class="glossary-term">
+            <dt>
+              Port Group
+              <span class="term-tag tag-openstack">OpenStack</span>
+            </dt>
+            <dd>
+              An Ironic resource that groups multiple physical ports on a bare-metal node for link aggregation. A port group maps to a bonded network interface on the server and is required to configure LACP bonds through the Ironic API. Each port group can specify the bonding mode and LACP parameters.
+            </dd>
+          </div>
+
+          <div class="glossary-term">
+            <dt>
+              Project
+              <span class="term-tag tag-openstack">OpenStack</span>
+            </dt>
+            <dd>
+              The fundamental unit of resource ownership and isolation in OpenStack. All instances, networks, volumes, and images belong to a project. Users are granted access to a project through role assignments. Formerly called <em>tenant</em>.
+            </dd>
+          </div>
+
+          <div class="glossary-term">
+            <dt>
+              Prometheus
+              <span class="term-tag tag-opcp">OPCP</span>
+            </dt>
+            <dd>
+              An open-source time-series database and monitoring system. Prometheus scrapes metrics from instrumented targets at regular intervals, stores them with timestamps, and supports a powerful query language (PromQL) for analysis and alerting. In OPCP, Prometheus collects metrics from compute nodes and OpenStack services, visualised through Grafana.
+            </dd>
+          </div>
+
+          <div class="glossary-term">
+            <dt>
+              Provider Network
+              <span class="term-tag tag-openstack">OpenStack</span>
+            </dt>
+            <dd>
+              A Neutron network that maps directly to an existing physical network infrastructure (identified by a physical network name and a VLAN segment ID). Provider networks are typically used to give instances direct access to external or infrastructure networks without going through a virtual router.
+            </dd>
+          </div>
+
+
+          <div class="glossary-term">
+            <dt>
+              Proxy
+              <span class="term-tag tag-networking">Networking</span>
+            </dt>
+            <dd>
+              An intermediary service that intercepts and forwards requests between clients and backend services. Proxies can provide load balancing, SSL termination, caching, and access control. In OPCP, proxy components route API traffic to the appropriate OpenStack service endpoints on the control plane.
+            </dd>
+          </div>
+
+        </dl>
+        <a class="back-to-top" href="#top">↑ Back to top</a>
+      </section>
+
+      <!-- ═══════════════════════════════════════ Q ═══════════════════════════════════════ -->
+      <section class="glossary-section" id="Q">
+        <h2>Q</h2>
+        <dl>
+
+          <div class="glossary-term">
+            <dt>
+              Quota
+              <span class="term-tag tag-openstack">OpenStack</span>
+            </dt>
+            <dd>
+              Per-project resource limits enforced by OpenStack services. Nova quotas cap the number of instances, vCPUs, and RAM. Neutron quotas cap networks, ports, and routers. Cinder quotas cap volumes and their total size.
+            </dd>
+          </div>
+
+        </dl>
+        <a class="back-to-top" href="#top">↑ Back to top</a>
+      </section>
+
+      <!-- ═══════════════════════════════════════ R ═══════════════════════════════════════ -->
+      <section class="glossary-section" id="R">
+        <h2>R</h2>
+        <dl>
+
+          <div class="glossary-term">
+            <dt>
+              Realm
+              <span class="term-tag tag-opcp">OPCP</span>
+            </dt>
+            <dd>
+              An administrative boundary in Keycloak that groups users, roles, clients, and identity federation settings. Each OPCP customer organisation is assigned its own Keycloak realm, isolated from all other tenants. A realm corresponds to a Keystone domain in the federation mapping.
+            </dd>
+          </div>
+
+          <div class="glossary-term">
+            <dt>
+              RBAC — Role-Based Access Control
+              <span class="term-tag tag-openstack">OpenStack</span>
+            </dt>
+            <dd>
+              An access control model in which permissions are attached to roles (e.g., <em>admin</em>, <em>member</em>, <em>reader</em>) and users or groups are assigned those roles on a per-project or per-domain basis. OpenStack enforces RBAC through Keystone policy rules.
+            </dd>
+          </div>
+
+          <div class="glossary-term">
+            <dt>
+              Region
+              <span class="term-tag tag-openstack">OpenStack</span>
+            </dt>
+            <dd>
+              A geographically or logically distinct OpenStack deployment that has its own set of API endpoints registered in the Keystone service catalog. Multiple regions share the same Keystone but have independent compute, storage, and networking resources.
+            </dd>
+          </div>
+
+          <div class="glossary-term">
+            <dt>
+              Role
+              <span class="term-tag tag-openstack">OpenStack</span>
+            </dt>
+            <dd>
+              A named set of permissions assigned to a user or group within a project or domain. Common built-in roles are <em>admin</em>, <em>member</em>, and <em>reader</em>. In OPCP, additional roles such as <em>DC Operator</em>, <em>IT Admin</em>, and <em>Master Admin</em> control access to infrastructure-level operations.
+            </dd>
+          </div>
+
+          <div class="glossary-term">
+            <dt>
+              Router
+              <span class="term-tag tag-openstack">OpenStack</span>
+            </dt>
+            <dd>
+              A virtual Layer-3 forwarding device managed by Neutron that connects subnets together and provides a gateway between private tenant networks and the external network. Routers can also perform source NAT for outbound traffic and host floating IP mappings.
+            </dd>
+          </div>
+
+        </dl>
+        <a class="back-to-top" href="#top">↑ Back to top</a>
+      </section>
+
+      <!-- ═══════════════════════════════════════ S ═══════════════════════════════════════ -->
+      <section class="glossary-section" id="S">
+        <h2>S</h2>
+        <dl>
+
+          <div class="glossary-term">
+            <dt>
+              Service Catalog
+              <span class="term-tag tag-openstack">OpenStack</span>
+            </dt>
+            <dd>
+              A list of all available OpenStack services and their endpoints returned by Keystone as part of the authentication response. The service catalog tells clients where to send API requests for each service (Nova, Neutron, Glance, Cinder, Ironic…) in each region. OpenStack CLI tools and SDKs parse the catalog automatically.
+            </dd>
+          </div>
+
+          <div class="glossary-term">
+            <dt>
+              Security Group
+              <span class="term-tag tag-openstack">OpenStack</span>
+            </dt>
+            <dd>
+              A set of IP filter rules applied at the virtual port level that controls inbound and outbound traffic for instances. Security groups act as a stateful firewall; rules specify protocol, port range, and source/destination CIDR or security group.
+            </dd>
+          </div>
+
+          <div class="glossary-term">
+            <dt>
+              Snapshot
+              <span class="term-tag tag-openstack">OpenStack</span>
+            </dt>
+            <dd>
+              A point-in-time copy of a volume or instance disk. Volume snapshots are managed by Cinder and can be used to create new volumes. Instance snapshots are stored in Glance and can serve as base images for new instances.
+            </dd>
+          </div>
+
+          <div class="glossary-term">
+            <dt>
+              SSH — Secure Shell
+              <span class="term-tag tag-networking">Networking</span>
+            </dt>
+            <dd>
+              A cryptographic network protocol for secure remote login and command execution. In OpenStack, SSH key pairs (injected via cloud-init or Nova) are the standard method for accessing instances. The private key stays on the client; the public key is stored in Nova and placed in the instance's <code>authorized_keys</code>.
+            </dd>
+          </div>
+
+          <div class="glossary-term">
+            <dt>
+              Subnet
+              <span class="term-tag tag-openstack">OpenStack</span>
+            </dt>
+            <dd>
+              A block of IP addresses (defined by a CIDR) within a Neutron network, along with configuration like the gateway IP, DHCP range, and DNS servers. Ports attached to a network are assigned IP addresses from the subnets defined on that network.
+            </dd>
+          </div>
+
+        </dl>
+        <a class="back-to-top" href="#top">↑ Back to top</a>
+      </section>
+
+      <!-- ═══════════════════════════════════════ T ═══════════════════════════════════════ -->
+      <section class="glossary-section" id="T">
+        <h2>T</h2>
+        <dl>
+
+          <div class="glossary-term">
+            <dt>
+              Tenant
+              <span class="term-tag tag-openstack">OpenStack</span>
+            </dt>
+            <dd>
+              The former name for what is now called a <strong>Project</strong> in OpenStack. The term is still found in older documentation and some API responses. See <a href="#P">Project</a>.
+            </dd>
+          </div>
+
+          <div class="glossary-term">
+            <dt>
+              Token
+              <span class="term-tag tag-openstack">OpenStack</span>
+            </dt>
+            <dd>
+              A time-limited string issued by Keystone after successful authentication. All subsequent API calls to OpenStack services include the token in the <code>X-Auth-Token</code> HTTP header to prove the caller's identity and authorised roles.
+            </dd>
+          </div>
+
+          <div class="glossary-term">
+            <dt>
+              Trunk
+              <span class="term-tag tag-openstack">OpenStack</span>
+            </dt>
+            <dd>
+              A Neutron feature that allows a single virtual port (the <em>parent port</em>) to carry traffic for multiple networks simultaneously using VLAN tags. Sub-ports are associated with specific VLANs. Trunks are used in OPCP to attach bare-metal instances to multiple networks via a single bond interface.
+            </dd>
+          </div>
+
+        </dl>
+        <a class="back-to-top" href="#top">↑ Back to top</a>
+      </section>
+
+      <!-- ═══════════════════════════════════════ U ═══════════════════════════════════════ -->
+      <section class="glossary-section" id="U">
+        <h2>U</h2>
+        <dl>
+
+          <div class="glossary-term">
+            <dt>
+              UUID — Universally Unique Identifier
+              <span class="term-tag tag-openstack">OpenStack</span>
+            </dt>
+            <dd>
+              A 128-bit identifier formatted as eight groups of hexadecimal digits separated by hyphens (e.g., <code>550e8400-e29b-41d4-a716-446655440000</code>). OpenStack uses UUIDs to uniquely identify resources such as instances, networks, volumes, and images across the entire deployment.
+            </dd>
+          </div>
+
+        </dl>
+        <a class="back-to-top" href="#top">↑ Back to top</a>
+      </section>
+
+      <!-- ═══════════════════════════════════════ V ═══════════════════════════════════════ -->
+      <section class="glossary-section" id="V">
+        <h2>V</h2>
+        <dl>
+
+          <div class="glossary-term">
+            <dt>
+              Virtual Machine (VM)
+              <span class="term-tag tag-openstack">OpenStack</span>
+            </dt>
+            <dd>
+              A software emulation of a physical computer that runs an operating system and applications in an isolated environment on a host hypervisor. In OpenStack, VMs are created and managed by Nova and are referred to as <em>instances</em>.
+            </dd>
+          </div>
+
+          <div class="glossary-term">
+            <dt>
+              VLAN — Virtual Local Area Network
+              <span class="term-tag tag-networking">Networking</span>
+            </dt>
+            <dd>
+              A Layer-2 network isolation mechanism that uses a 12-bit tag (802.1Q) in Ethernet frames to logically segment a physical network into multiple independent broadcast domains. In OpenStack, VLANs are used by Neutron provider networks and trunk sub-ports to map virtual networks to physical infrastructure.
+            </dd>
+          </div>
+
+          <div class="glossary-term">
+            <dt>
+              Volume
+              <span class="term-tag tag-openstack">OpenStack</span>
+            </dt>
+            <dd>
+              A persistent block storage resource managed by Cinder. Volumes can be created, attached to instances as additional disks, detached, snapshotted, and resized independently of the instance lifecycle. Data on a volume persists after the instance is deleted.
+            </dd>
+          </div>
+
+        </dl>
+        <a class="back-to-top" href="#top">↑ Back to top</a>
+      </section>
+
+      <!-- ═══════════════════════════════════════ Y ═══════════════════════════════════════ -->
+      <section class="glossary-section" id="Y">
+        <h2>Y</h2>
+        <dl>
+
+          <div class="glossary-term">
+            <dt>
+              YAML — YAML Ain't Markup Language
+            </dt>
+            <dd>
+              A human-readable data serialisation format that uses indentation to express structure. In this course, YAML is used for Netplan network configurations, cloud-init user-data scripts, and OpenStack Heat templates. YAML is whitespace-sensitive: indentation must be consistent (spaces only, no tabs).
+            </dd>
+          </div>
+
+        </dl>
+        <a class="back-to-top" href="#top">↑ Back to top</a>
+      </section>
+
+      <hr>
+      <p>
+        <strong>Sources:</strong>
+        <a href="https://docs.openstack.org/glossary/common/glossary.html" target="_blank" rel="noopener">OpenStack Glossary</a> ·
+        <a href="https://docs.ovhcloud.com/en/guides/hosted-private-cloud/opcp/overview" target="_blank" rel="noopener">OVHcloud OPCP Documentation</a>
+      </p>
+
+      <div class="prev-next-nav" aria-label="Lesson navigation"></div>
+    </main>
+  </div>
+  <footer class="site-footer" role="contentinfo">
+    <a href="https://github.com/opcp-openstack-first-steps" aria-label="Project on GitHub">GitHub</a> ·
+    <a href="../../LICENSE" aria-label="Project license">License</a> ·
+    SkillHub Training — OVHcloud
+  </footer>
+  <script src="../assets/js/lessons.js"></script>
+  <script src="../assets/js/i18n.js"></script>
+  <script src="../assets/js/navigation.js"></script>
+  <script src="../assets/js/code-highlight.js"></script>
+  <script src="../assets/js/main.js"></script>
+</body>
+</html>
