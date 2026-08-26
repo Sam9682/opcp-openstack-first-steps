@@ -112,14 +112,18 @@
           </tr>
           <tr>
             <td>Opérateur DC</td>
-            <td>Aucun</td>
+            <td><code>reader</code>*, <code>member</code>*, <code>admin</code>*</td>
           </tr>
           <tr>
             <td>Reader</td>
-            <td><code>reader</code> (partiel)</td>
+            <td><code>reader</code>*, <code>member</code>*, <code>admin</code>*</td>
           </tr>
         </tbody>
       </table>
+      <p>* Configuration requise (selon les attributs du projet)</p>
+      <div class="info-box">
+        Les rôles <code>reader</code> et <code>dc_operator</code> nécessitent que des attributs de projet soient configurés sur l'utilisateur ou son groupe dans Keycloak. Sans attribut de projet configuré, aucune ressource OpenStack n'est accessible. N'importe quel rôle OpenStack peut techniquement être attribué de cette manière, mais <code>member</code> est recommandé : le rôle <code>admin</code> n'est pas limité à un seul projet.
+      </div>
       <div class="info-box">
         <strong>Autres ressources de la plateforme :</strong> le tableau ci-dessus ne couvre que les rôles OpenStack. OPCP gère également les droits d'accès pour d'autres ressources telles que Grafana, Netbox et Prometheus — celles-ci sont détaillées dans la documentation officielle <a href="https://docs.ovhcloud.com/fr/guides/hosted-private-cloud/opcp/iam-rights-management" target="_blank">Gestion des droits IAM</a>.
       </div>
