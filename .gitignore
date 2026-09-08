@@ -47,3 +47,4 @@ running_skillhub/docker-compose.override.yml
 Specs/
 Specs/*
 
+skillhub/nohup.out

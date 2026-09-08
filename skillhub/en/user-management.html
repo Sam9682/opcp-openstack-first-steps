@@ -211,7 +211,7 @@
           </tr>
           <tr>
             <td>Included Client Audience</td>
-            <td><code>keystone</code></td>
+            <td><code>keystone-default</code></td>
           </tr>
           <tr>
             <td>Included Custom Audience</td>
@@ -342,7 +342,7 @@ openstack project create --description "My new project for testing" --enable ${S
       <p>
         For this workshop we will use an <strong>IT Admin</strong> role: 
         open the <strong>Role Mapping</strong> tab and
-        click <strong>Assign Role -> Client Role</strong>. Choose <code>it_admin</code>.
+        click <strong>Assign Role -> Realm Role</strong>. Choose <code>it_admin</code>.
       </p>
 
       <figure>
@@ -391,7 +391,7 @@ openstack project create --description "My new project for testing" --enable ${S
         <ul>
           <li>OS_USERNAME</li>
           <li>OS_PASSWORD</li>
-          <li>OS_PROJECT_ID</li>
+          <li>OS_PROJECT_ID (which you created in step 4)</li>
         </ul>
       </p>
       <p><code>openstack token issue</code> should work and <code>openstack baremetal node list</code> should return empty response.</p>

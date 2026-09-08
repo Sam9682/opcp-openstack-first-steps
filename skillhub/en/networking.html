@@ -56,9 +56,9 @@
 
       <figure>
         <img src="../assets/images/opcp-networking-tubes.svg"
-             alt="Illustration of the networking components as nested tubes: each network encapsulates its subnet, two VLAN-tagged sub-ports run as colored tubes inside the single physical interface represented by the trunk, the fictitious parent port sits outside the traffic path, and everything converges on the instance."
+             alt="Illustration of the networking components: each network encapsulates its subnet, and both networks connect to the instance through colored tubes."
              loading="lazy">
-        <figcaption>How it all fits together: each network encapsulates its subnet, and the trunk is really just one physical interface (or LACP bond) carrying both VLAN-tagged sub-ports as parallel tubes to the instance. The parent port is a formality — no real traffic flows through it.</figcaption>
+        <figcaption>How it all fits together: each network encapsulates its subnet, and the instance connects to both networks over separate colored tubes.</figcaption>
       </figure>
 
       <h2>Create a private network and subnet</h2>

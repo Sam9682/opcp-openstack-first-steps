@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1450 700" font-family="Arial, Helvetica, sans-serif">
+  <rect x="0" y="0" width="1450" height="700" fill="#ffffff"/>
+
+  <text x="725" y="34" text-anchor="middle" font-size="30" font-weight="bold" fill="#000E9C">Comment les composants réseau coexistent</text>
+
+  <!-- Legend -->
+  <g font-size="18" fill="#1a1a2e">
+    <rect x="40" y="54" width="24" height="18" rx="9" fill="#eafaf1" stroke="#27ae60" stroke-width="3"/>
+    <text x="72" y="68">Réseau</text>
+
+    <rect x="230" y="54" width="24" height="18" rx="9" fill="#e8eaff" stroke="#4949FF" stroke-width="3"/>
+    <text x="262" y="68">Sous-réseau</text>
+
+    <rect x="400" y="54" width="24" height="18" rx="9" fill="#f3e8ff" stroke="#8e44ad" stroke-width="3"/>
+    <text x="432" y="68">Trunk (une interface)</text>
+
+    <circle cx="50" cy="96" r="8" fill="#1a1a2e"/>
+    <text x="66" y="100">Port</text>
+
+    <line x1="170" y1="96" x2="210" y2="96" stroke="#f39c12" stroke-width="11" stroke-linecap="round"/>
+    <text x="222" y="100">Trafic VLAN (tube)</text>
+
+    <line x1="460" y1="96" x2="500" y2="96" stroke="#999999" stroke-width="3" stroke-dasharray="5 4"/>
+    <text x="512" y="100">Aucun trafic réel (pointillé)</text>
+  </g>
+
+  <!-- Network A: vlan301-net, encapsulating its subnet -->
+  <rect x="40" y="160" width="300" height="150" rx="75" fill="#eafaf1" stroke="#27ae60" stroke-width="5"/>
+  <text x="190" y="196" text-anchor="middle" font-size="22" font-weight="bold" fill="#1a1a2e">vlan301-net</text>
+  <rect x="80" y="216" width="220" height="64" rx="32" fill="#e8eaff" stroke="#4949FF" stroke-width="4"/>
+  <text x="190" y="242" text-anchor="middle" font-size="20" font-weight="bold" fill="#1a1a2e">301-subnet</text>
+  <text x="190" y="264" text-anchor="middle" font-size="15" fill="#555">192.168.31.0/24</text>
+
+  <!-- Network B: vlan302-net, encapsulating its subnet -->
+  <rect x="40" y="480" width="300" height="150" rx="75" fill="#eafaf1" stroke="#27ae60" stroke-width="5"/>
+  <text x="190" y="516" text-anchor="middle" font-size="22" font-weight="bold" fill="#1a1a2e">vlan302-net</text>
+  <rect x="80" y="536" width="220" height="64" rx="32" fill="#e8eaff" stroke="#4949FF" stroke-width="4"/>
+  <text x="190" y="562" text-anchor="middle" font-size="20" font-weight="bold" fill="#1a1a2e">302-subnet</text>
+  <text x="190" y="584" text-anchor="middle" font-size="15" fill="#555">192.168.32.0/24</text>
+
+  <!-- Connector tubes: sub-ports riding into the trunk (drawn first, so the port boxes sit on top) -->
+  <path d="M340,248 L610,248 L610,392 L650,392" fill="none" stroke="#f39c12" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M340,568 L610,568 L610,430 L650,430" fill="none" stroke="#16a085" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Sub-port 1: real Neutron port created on vlan301-net, attached to the trunk with segmentation-id 301 -->
+  <rect x="380" y="225" width="190" height="46" rx="10" fill="#fff4e0" stroke="#f39c12" stroke-width="3"/>
+  <text x="475" y="246" text-anchor="middle" font-size="20" font-weight="bold" fill="#1a1a2e">sub-port-1</text>
+  <text x="475" y="264" text-anchor="middle" font-size="13" fill="#8a5a0c">sur vlan301-net · vlan 301</text>
+  <circle cx="570" cy="248" r="8" fill="#1a1a2e"/>
+
+  <!-- Sub-port 2: real Neutron port created on vlan302-net, attached to the trunk with segmentation-id 302 -->
+  <rect x="380" y="545" width="190" height="46" rx="10" fill="#e6f5f1" stroke="#16a085" stroke-width="3"/>
+  <text x="475" y="566" text-anchor="middle" font-size="20" font-weight="bold" fill="#1a1a2e">sub-port-2</text>
+  <text x="475" y="584" text-anchor="middle" font-size="13" fill="#0f6652">sur vlan302-net · vlan 302</text>
+  <circle cx="570" cy="568" r="8" fill="#1a1a2e"/>
+
+  <!-- Trunk outer pipe — encapsulates the parent port and both VLAN tubes -->
+  <rect x="630" y="338" width="450" height="140" rx="70" fill="#f3e8ff" fill-opacity="0.6" stroke="#8e44ad" stroke-width="5"/>
+  <text x="855" y="362" text-anchor="middle" font-size="20" font-weight="bold" fill="#5b2c76">trunk — une interface / bond LACP</text>
+
+  <!-- VLAN tubes running inside the trunk -->
+  <rect x="650" y="376" width="410" height="32" rx="16" fill="#f39c12" fill-opacity="0.85" stroke="#c9770a" stroke-width="3"/>
+  <text x="666" y="398" font-size="15" font-weight="bold" fill="#ffffff">VLAN 301</text>
+
+  <rect x="650" y="414" width="410" height="32" rx="16" fill="#16a085" fill-opacity="0.85" stroke="#117a63" stroke-width="3"/>
+  <text x="666" y="436" font-size="15" font-weight="bold" fill="#ffffff">VLAN 302</text>
+
+  <!-- Parent port: formal attachment point of the trunk, no real traffic -->
+  <circle cx="855" cy="338" r="7" fill="#1a1a2e"/>
+  <path d="M855,322 L855,338" fill="none" stroke="#999999" stroke-width="3" stroke-dasharray="5 4"/>
+  <rect x="725" y="270" width="260" height="52" rx="10" fill="#f5f5f5" stroke="#999999" stroke-width="3" stroke-dasharray="5 4"/>
+  <text x="855" y="291" text-anchor="middle" font-size="15" font-weight="bold" fill="#666666">trunk-port (parent)</text>
+  <text x="855" y="308" text-anchor="middle" font-size="12" fill="#888888">sur trunk-net — fictif</text>
+
+  <!-- Trunk -> Instance -->
+  <path d="M1080,408 L1110,408" fill="none" stroke="#8e44ad" stroke-width="24" stroke-linecap="round"/>
+
+  <rect x="1110" y="338" width="300" height="140" rx="16" fill="#eef0fb" stroke="#000E9C" stroke-width="5"/>
+  <text x="1260" y="392" text-anchor="middle" font-size="18" font-weight="bold" fill="#1a1a2e">Instance bare-metal / VM</text>
+  <text x="1260" y="416" text-anchor="middle" font-size="13" fill="#555">NIC unique ou bond LACP</text>
+  <text x="1260" y="434" text-anchor="middle" font-size="12" fill="#555">transporte le trafic marqué VLAN 301 et 302</text>
+</svg>

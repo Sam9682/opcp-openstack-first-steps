@@ -55,10 +55,10 @@
       </p>
 
       <figure>
-        <img src="../assets/images/opcp-networking-tubes.svg"
-             alt="Illustration des composants réseau sous forme de tubes imbriqués : chaque réseau encapsule son sous-réseau, deux sous-ports marqués VLAN circulent comme des tubes colorés à l'intérieur de l'interface physique unique représentée par le trunk, le port parent fictif se trouve en dehors du chemin de trafic, et tout converge vers l'instance."
+        <img src="../assets/images/opcp-networking-tubes-fr.svg"
+             alt="Illustration des composants réseau : chaque réseau encapsule son sous-réseau, et les deux réseaux se connectent à l'instance via des tubes colorés."
              loading="lazy">
-        <figcaption>Comment tout s'assemble : chaque réseau encapsule son sous-réseau, et le trunk n'est en réalité qu'une seule interface physique (ou bond LACP) transportant les deux sous-ports marqués VLAN comme des tubes parallèles jusqu'à l'instance. Le port parent n'est qu'une formalité — aucun trafic réel n'y transite.</figcaption>
+        <figcaption>Comment tout s'assemble : chaque réseau encapsule son sous-réseau, et l'instance se connecte aux deux réseaux via des tubes colorés distincts.</figcaption>
       </figure>
 
       <h2>Créer un réseau privé et un sous-réseau</h2>

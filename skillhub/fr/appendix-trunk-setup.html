@@ -34,7 +34,7 @@
       </p>
 
       <figure>
-        <img src="../assets/images/opcp-networking-tubes.svg"
+        <img src="../assets/images/opcp-trunk-setup-tubes-fr.svg"
              alt="Illustration des composants réseau sous forme de tubes imbriqués : chaque réseau encapsule son sous-réseau, deux sous-ports marqués VLAN circulent comme des tubes colorés à l'intérieur de l'interface physique unique représentée par le trunk, le port parent fictif se trouve en dehors du chemin de trafic, et tout converge vers l'instance."
              loading="lazy">
         <figcaption>Comment tout s'assemble : chaque réseau encapsule son sous-réseau, et le trunk n'est en réalité qu'une seule interface physique (ou bond LACP) transportant les deux sous-ports marqués VLAN comme des tubes parallèles jusqu'à l'instance. Le port parent n'est qu'une formalité — aucun trafic réel n'y transite.</figcaption>
@@ -168,6 +168,25 @@ openstack port create --network ${STUDENT_ID}-vlan302-net ${STUDENT_ID}-sub-port
 | tags              | []                                                                                              |
 | updated_at        | 2026-06-25T10:02:44Z                                                                            |
 +-------------------+-------------------------------------------------------------------------------------------------+</code></pre>
+
+
+      <h4>7. Deployez une instance</h4>
+      <p>Utilisez l'option <code>"--port"</code> au lieu de <code>"--network"</code> pour le vlan access: </p>
+
+      <pre><code class="language-bash"># Launch a compute instance
+openstack server create \
+  --flavor scale-1 \ # template of instance to use
+  --image "Debian 12 LVM OPCP" \ # system image to deploy
+  --port ${STUDENT_ID}-trunk-port \ 
+  --availability-zone "nova::`&lt;node-id&gt;`" \ # select specific node, needed when you pre-configured a specific node
+  --key-name ${STUDENT_ID}-keypair \ # public SSH key to use
+  --user-data ./cloud-init.yaml \ # Cloud init file
+  ${STUDENT_ID}-compute-instance # Instance name
+
+# Vérifiez que l'instnce est active (attendre ~20 minutes)
+openstack server show ${STUDENT_ID}-compute-instance -f value -c status</code></pre>
+
+
 
       <h2>Résumé</h2>
       <ul>
