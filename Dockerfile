@@ -31,9 +31,10 @@ ENV FLASK_APP=app.py
 ENV FLASK_ENV=production
 ENV SECRET_KEY=change-this-in-production
 
-# Copy initialization script
-COPY ./scripts/init_website.sh /app/
-RUN chmod +x /app/init_website.sh
-
-# Start application
-CMD ["/bin/bash", "-c", "/app/init_website.sh && python3 app.py"]
+# Start the Flask application directly.
+# NOTE: scripts/init_website.sh is a HOST-level orchestration helper
+# (it checks for Docker and runs `docker compose up`). It must NOT run
+# inside the container — doing so caused the container to exit 1 on the
+# "Docker is not installed" prerequisite check and crash-loop, which in
+# turn made nginx's "app:5000" upstream unresolvable.
+CMD ["python3", "app.py"]
