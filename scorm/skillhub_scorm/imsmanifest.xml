@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest identifier="SKILLHUB_SCORM12" version="1.0"
+          xmlns="http://www.imsproject.org/xsd/imscp_rootv1p1p2"
+          xmlns:adlcp="http://www.adlnet.org/xsd/adlcp_rootv1p2"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://www.imsproject.org/xsd/imscp_rootv1p1p2 imscp_rootv1p1p2.xsd
+                              http://www.adlnet.org/xsd/adlcp_rootv1p2 adlcp_rootv1p2.xsd
+                              http://www.imsglobal.org/xsd/imsmd_rootv1p2p1 imsmd_rootv1p2p1.xsd">
+  <metadata>
+    <schema>ADL SCORM</schema>
+    <schemaversion>1.2</schemaversion>
+  </metadata>
+  <organizations default="ORG-SKILLHUB">
+    <organization identifier="ORG-SKILLHUB">
+      <title>Agentic AI OPCP Labs - SkillHub</title>
+      <item identifier="ITEM-SKILLHUB" identifierref="RES-SKILLHUB" isvisible="true">
+        <title>Agentic AI OPCP Labs - SkillHub</title>
+        <adlcp:masteryscore>100</adlcp:masteryscore>
+      </item>
+    </organization>
+  </organizations>
+  <resources>
+    <resource identifier="RES-SKILLHUB" type="webcontent"
+              adlcp:scormtype="sco" href="index.html">
+      <file href="index.html"/>
+      <file href="assets/css/style.css"/>
+      <file href="assets/images/.gitkeep"/>
+      <file href="assets/images/OPCP-core.png"/>
+      <file href="assets/images/OPCP_main_components.png"/>
+      <file href="assets/images/first-step-trail-compute.png"/>
+      <file href="assets/images/first-step-trail-network.png"/>
+      <file href="assets/images/first-step-trail-user.png"/>
+      <file href="assets/images/first-step-trail.png"/>
+      <file href="assets/images/keycloak-user-role.png"/>
+      <file href="assets/images/keycloak-users-app-credentials.png"/>
+      <file href="assets/images/keycloak-users-attributes.png"/>
+      <file href="assets/images/keycloak-users-clients.png"/>
+      <file href="assets/images/keycloak-users-credentials.png"/>
+      <file href="assets/images/keycloak-users-credentials3.png"/>
+      <file href="assets/images/keycloak-users-management.png"/>
+      <file href="assets/images/oldOPCP-core.png"/>
+      <file href="assets/images/opcp-architecture-ironic.svg"/>
+      <file href="assets/images/opcp-architecture-keycloak.svg"/>
+      <file href="assets/images/opcp-architecture-neutron.svg"/>
+      <file href="assets/images/opcp-architecture-nova.svg"/>
+      <file href="assets/images/opcp-architecture.svg"/>
+      <file href="assets/images/opcp-auth-flow.svg"/>
+      <file href="assets/images/opcp-identity-concepts-fr.svg"/>
+      <file href="assets/images/opcp-identity-concepts.svg"/>
+      <file href="assets/images/opcp-lacp-portgroup.svg"/>
+      <file href="assets/images/opcp-networking-tubes-fr.svg"/>
+      <file href="assets/images/opcp-networking-tubes.svg"/>
+      <file href="assets/images/opcp-trunk-setup-tubes-fr.svg"/>
+      <file href="assets/images/opcp-trunk-setup-tubes.svg"/>
+      <file href="assets/js/code-highlight.js"/>
+      <file href="assets/js/i18n.js"/>
+      <file href="assets/js/lessons.js"/>
+      <file href="assets/js/main.js"/>
+      <file href="assets/js/navigation.js"/>
+      <file href="en/appendix-trunk-setup.html"/>
+      <file href="en/appendix.html"/>
+      <file href="en/authentication.html"/>
+      <file href="en/cheat-sheet.html"/>
+      <file href="en/cleanup.html"/>
+      <file href="en/compute.html"/>
+      <file href="en/core-concepts.html"/>
+      <file href="en/glossary.html"/>
+      <file href="en/index.html"/>
+      <file href="en/lacp.html"/>
+      <file href="en/networking.html"/>
+      <file href="en/prerequisites.html"/>
+      <file href="en/software-raid.html"/>
+      <file href="en/summary.html"/>
+      <file href="en/user-management.html"/>
+      <file href="fr/appendix-trunk-setup.html"/>
+      <file href="fr/appendix.html"/>
+      <file href="fr/authentication.html"/>
+      <file href="fr/cheat-sheet.html"/>
+      <file href="fr/cleanup.html"/>
+      <file href="fr/compute.html"/>
+      <file href="fr/core-concepts.html"/>
+      <file href="fr/glossary.html"/>
+      <file href="fr/index.html"/>
+      <file href="fr/lacp.html"/>
+      <file href="fr/networking.html"/>
+      <file href="fr/prerequisites.html"/>
+      <file href="fr/software-raid.html"/>
+      <file href="fr/summary.html"/>
+      <file href="fr/user-management.html"/>
+      <file href="js/code-highlight.js"/>
+      <file href="js/i18n.js"/>
+      <file href="js/lessons.js"/>
+      <file href="js/main.js"/>
+      <file href="js/navigation.js"/>
+      <file href="js/progress.js"/>
+      <file href="js/scorm/api-discovery.js"/>
+      <file href="js/scorm/progress-bridge.js"/>
+      <file href="js/scorm/scorm-adapter.js"/>
+      <file href="js/scorm/scorm-api.js"/>
+      <file href="js/scorm/scorm-bootstrap.js"/>
+      <file href="js/self-assessment.js"/>
+    </resource>
+  </resources>
+</manifest>

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkillHub — Networking</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <header class="site-header" role="banner">
+    <div class="logo"><a href="index.html" aria-label="SkillHub home">SkillHub</a></div>
+    <div class="header-right">
+      <div class="lang-toggle" aria-label="Language selector"></div>
+      <div class="progress-bar-container" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Learning progress">
+        <div class="progress-bar-fill"></div>
+      </div>
+      <span class="progress-text">0% complete</span>
+      <button class="hamburger-btn" aria-label="Toggle navigation menu" aria-expanded="false">☰</button>
+    </div>
+  </header>
+  <div class="sidebar-overlay" aria-hidden="true"></div>
+  <div class="site-wrapper">
+    <aside class="sidebar" role="navigation" aria-label="Lesson navigation">
+      <nav id="sidebar-nav"></nav>
+    </aside>
+    <main class="main-content" role="main">
+      <div class="breadcrumbs" aria-label="Breadcrumb navigation"></div>
+
+      <h1>Networking</h1>
+      <p class="lesson-meta">Difficulty: <strong>Intermediate</strong> · Estimated time: <strong>20 min</strong></p>
+
+      <figure>
+        <img src="../assets/images/first-step-trail-network.png"
+              alt="Learning trail"
+              loading="lazy">
+      </figure>
+
+
+      <ul>
+        <li>In the previous lesson, you have learnt how to create users and clients to interract with Openstack.</li>
+        <li>In this lesson you will create networks, subnets, and routers with the Openstack CLI to connect your instances to the outside world or to each other.</li>
+        <li>OpenStack networking is handled by the Neutron service.</li>
+      </ul>
+
+      <figure>
+        <img src="../assets/images/opcp-architecture-neutron.svg"
+             alt="OPCP architecture diagram with Neutron highlighted in blue and every other component grayed out, showing Neutron's role inside OpenStack Core and its link to NOG for network creation."
+             loading="lazy">
+        <figcaption>Where Neutron sits in the OPCP architecture: it creates the network definitions that NOG then pushes down to the physical switches.</figcaption>
+      </figure>
+
+      <h2>Objective</h2>
+      <p>
+        We will now go through the steps to configure network on baremetal node using Openstack CLI client.
+      </p>
+
+      <figure>
+        <img src="../assets/images/opcp-networking-tubes.svg"
+             alt="Illustration of the networking components: each network encapsulates its subnet, and both networks connect to the instance through colored tubes."
+             loading="lazy">
+        <figcaption>How it all fits together: each network encapsulates its subnet, and the instance connects to both networks over separate colored tubes.</figcaption>
+      </figure>
+
+      <h2>Create a private network and subnet</h2>
+      <p>
+        Before deploying your instance, it is generally necessary to create a <strong>private network</strong> so that it is accessible within your local infrastructure.
+        If you already have a private network with a subnet on your project that you want to use, you can skip the creation step and directly list your networks to retrieve the name or ID of the network concerned.
+      </p>
+      <p class="warning-box">
+        You <strong>must</strong> be administrator to do the next
+      </p>
+
+      <h3>Step 1: Create the private network</h3>
+      
+
+      <pre><code class="language-bash">openstack network create ${STUDENT_ID}-net
+--provider-network-type vlan
+--provider-physical-network physnet1 # Static value in OPCP
+--provider-segment $VLAN_ID # Neutron segment-id</code></pre>
+      <p>Result looks like this : </p>
+
+        <pre><code class="language-bash"> +---------------------------+--------------------------------------+
+| Field                     | Value                                |
++---------------------------+--------------------------------------+
+| admin_state_up            | UP                                   |
+| availability_zone_hints   |                                      |
+| availability_zones        |                                      |
+| created_at                | 2026-07-31T14:04:47Z                 |
+| description               |                                      |
+| dns_domain                | None                                 |
+| id                        | 89174a66-72f2-482b-a6a7-6186c7f61364 |
+| ipv4_address_scope        | None                                 |
+| ipv6_address_scope        | None                                 |
+| is_default                | None                                 |
+| is_vlan_transparent       | None                                 |
+| mtu                       | 1500                                 |
+| name                      | jdoe-net                             |
+| port_security_enabled     | True                                 |
+| project_id                | eedac8d5b9cf4a299072d2c0b53f7e03     |
+| provider:network_type     | vlan                                 |
+| provider:physical_network | physnet1                             |
+| provider:segmentation_id  | 2056                                 |
+| qos_policy_id             | None                                 |
+| revision_number           | 1                                    |
+| router:external           | Internal                             |
+| segments                  | None                                 |
+| shared                    | False                                |
+| status                    | ACTIVE                               |
+| subnets                   |                                      |
+| tags                      |                                      |
+| tenant_id                 | eedac8d5b9cf4a299072d2c0b53f7e03     |
+| updated_at                | 2026-07-31T14:04:47Z                 |
++---------------------------+--------------------------------------+</code></pre>
+      <p>
+        By default, a network is only visible to the project that created it (as well as administrators).
+        We will share the network only with specific projects, you need to use OpenStack's <strong>Role-Based Access Control (RBAC)</strong> mechanism: <a href="https://docs.openstack.org/neutron/pike/admin/config-rbac.html" target="_blank">Neutron RBAC Documentation</a>.
+      </p>
+          
+      <pre><code class="language-bash">openstack network rbac create 
+        --target-project <em>target_project_id # must adapt</em>
+        --action access_as_shared # Fixed value
+        --type network <em>network_uuid # must adapt</em></code></pre>
+
+      <p>Example output :</p>
+      <pre><code class="language-bash">+-------------------+--------------------------------------+
+| Field             | Value                                |
++-------------------+--------------------------------------+
+| action            | access_as_shared                     |
+| id                | dde0c8dc-d35a-4408-98bf-be4149abd043 |
+| object_id         | 89174a66-72f2-482b-a6a7-6186c7f61364 |
+| object_type       | network                              |
+| project_id        | eedac8d5b9cf4a299072d2c0b53f7e03     |
+| target_project_id | ab59a41615be4d73ad90e51957995976     |
++-------------------+--------------------------------------+</code></pre>
+      
+      <p>
+        Once the network is created, you can list it using the command:
+      </p>
+      
+      <pre><code class="language-bash">openstack network list --name ${STUDENT_ID}-net</code></pre>
+      
+      <p>
+        If needed, you can list all networks by removing the <code>--name</code> argument.
+      </p>
+
+      <h3>Step 2: Create the subnet</h3>
+      <p>
+        By defat, the only element needed to create a subnet on your network is the CIDR you want to configure and the network you just created:
+      </p>
+      
+      <pre><code class="language-bash">openstack subnet create --network ${STUDENT_ID}-net --subnet-range 192.168.120.0/24 ${STUDENT_ID}-subnet</code></pre>
+      
+      <p>
+        This subnet can then be used to deploy an instance, allowing OpenStack to assign an IP address to it during installation.
+      </p>
+      <p><strong>INFO :</strong> At this point, any instance can be deployed by giving network name at creation : it will create a Neutron Standard port and attach it to given network. If you want to use multiple networks on a single port, follow Trunk instructions below.</p>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Neutron handles OpenStack networking</li>
+        <li>Create networks with <code>openstack network create</code></li>
+        <li>Specify segment ID for network if needed</code></li>
+        <li>Create subnets with <code>openstack subnet create</code></li>
+      </ul>
+
+      <p>In the next step, we will deploy a server.</p>
+
+      <button class="mark-complete-btn" type="button" aria-label="Mark this lesson as complete">
+        ✓ Mark as Complete
+      </button>
+      <div class="prev-next-nav" aria-label="Lesson navigation"></div>
+    </main>
+  </div>
+  <footer class="site-footer" role="contentinfo">
+    <a href="https://github.com/opcp-openstack-first-steps" aria-label="Project on GitHub">GitHub</a> ·
+    <a href="../../LICENSE" aria-label="Project license">License</a> ·
+    SkillHub Training — OVHcloud
+  </footer>
+  <script src="../assets/js/lessons.js"></script>
+  <script src="../assets/js/i18n.js"></script>
+  <script src="../assets/js/navigation.js"></script>
+  <script src="../assets/js/code-highlight.js"></script>
+  <script src="../assets/js/main.js"></script>
+    <script type="module" src="../js/scorm/scorm-bootstrap.js"></script>
+</body>
+</html>
