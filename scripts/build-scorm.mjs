@@ -35,8 +35,8 @@ const SCHEMA_FILES = [
   "ims_xml.xsd",
 ];
 
-/** Top-level course content copied from srcDir into the package (Req 1.2, 1.3, 1.4). */
-const CONTENT_ENTRIES = ["index.html", "en", "fr", "js", "assets"];
+/** Top-level course content copied from srcDir into the package (Req 1.3, 1.4). */
+const CONTENT_ENTRIES = ["index.html", "404.html", "en", "fr", "js", "assets"];
 
 /** Directories whose files are enumerated as manifest dependencies. */
 const DEPENDENCY_DIRS = ["en", "fr", "js", "assets"];
@@ -88,14 +88,32 @@ async function listFilesRelative(dir, baseDir) {
 }
 
 /**
- * Clean/create outDir, then copy index.html, en/, fr/, js/, assets/ from srcDir.
- * Idempotent: the output directory is removed first so stale files never linger.
- * (Req 1.1, 1.2, 1.3, 1.4)
+ * Delete the Output_Dir and recreate it as an empty directory so every build
+ * starts from a clean slate (idempotent output). (Req 1.1, 1.2)
+ *
+ * The removal is deliberately scoped to `outDir` itself (`./scorm/skillhub_scorm`).
+ * Because `fs.rm` only touches the path it is given, sibling paths under
+ * `./scorm/` — notably `./scorm/*.zip` and `./scorm/*.md` — are never affected.
+ * `force: true` makes a first-time run (no existing Output_Dir) a no-op rather
+ * than an error.
+ * @param {string} outDir  Absolute output package directory.
+ */
+async function clean(outDir) {
+  await fs.rm(outDir, { recursive: true, force: true });
+  await fs.mkdir(outDir, { recursive: true });
+}
+
+/**
+ * Copy the required course trees from srcDir into outDir:
+ * index.html, 404.html, en/, fr/, js/, assets/. (Req 1.3, 1.4)
+ *
+ * This step assumes outDir already exists (call `clean` first). If a required
+ * source path is missing it throws an error naming that path, so the build
+ * terminates with a non-zero exit code. (Req 1.5)
  * @param {string} srcDir  Absolute source course directory.
  * @param {string} outDir  Absolute output package directory.
  */
 async function copyCourseContent(srcDir, outDir) {
-  await fs.rm(outDir, { recursive: true, force: true });
   await fs.mkdir(outDir, { recursive: true });
 
   for (const entry of CONTENT_ENTRIES) {
@@ -414,7 +432,9 @@ export async function buildScormPackage({
   const resolvedLabName = labName || path.basename(absSrc);
   const meta = deriveLabMetadata(resolvedLabName);
 
-  // 1. Clean/create output + copy course content (index.html, en/, fr/, js/, assets/).
+  // 1. Clean/create output (scoped to the Output_Dir; siblings untouched), then
+  //    copy course content (index.html, 404.html, en/, fr/, js/, assets/).
+  await clean(absOut);
   await copyCourseContent(absSrc, absOut);
 
   // 2. Ensure the SCORM runtime (js/scorm/*) is present in the copied js/.
@@ -525,6 +545,7 @@ async function buildAllScormPackages({ repoRoot = REPO_ROOT } = {}) {
 
 // Expose internal steps for individual unit testing (Req: individually testable steps).
 export {
+  clean,
   copyCourseContent,
   injectRuntime,
   injectBootstrapScript,

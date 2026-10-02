@@ -52,11 +52,6 @@
       <file href="assets/images/opcp-networking-tubes.svg"/>
       <file href="assets/images/opcp-trunk-setup-tubes-fr.svg"/>
       <file href="assets/images/opcp-trunk-setup-tubes.svg"/>
-      <file href="assets/js/code-highlight.js"/>
-      <file href="assets/js/i18n.js"/>
-      <file href="assets/js/lessons.js"/>
-      <file href="assets/js/main.js"/>
-      <file href="assets/js/navigation.js"/>
       <file href="en/appendix-trunk-setup.html"/>
       <file href="en/appendix.html"/>
       <file href="en/authentication.html"/>
@@ -87,18 +82,12 @@
       <file href="fr/software-raid.html"/>
       <file href="fr/summary.html"/>
       <file href="fr/user-management.html"/>
-      <file href="js/code-highlight.js"/>
-      <file href="js/i18n.js"/>
-      <file href="js/lessons.js"/>
-      <file href="js/main.js"/>
-      <file href="js/navigation.js"/>
-      <file href="js/progress.js"/>
       <file href="js/scorm/api-discovery.js"/>
+      <file href="js/scorm/locale.js"/>
       <file href="js/scorm/progress-bridge.js"/>
       <file href="js/scorm/scorm-adapter.js"/>
       <file href="js/scorm/scorm-api.js"/>
       <file href="js/scorm/scorm-bootstrap.js"/>
-      <file href="js/self-assessment.js"/>
     </resource>
   </resources>
 </manifest>
