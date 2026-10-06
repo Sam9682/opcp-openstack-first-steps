@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkillHub — Introduction</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <header class="site-header" role="banner">
+    <div class="logo"><a href="index.html" aria-label="SkillHub home">SkillHub</a></div>
+    <div class="header-right">
+      <div class="lang-toggle" aria-label="Language selector"></div>
+      <div class="progress-bar-container" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Learning progress">
+        <div class="progress-bar-fill"></div>
+      </div>
+      <span class="progress-text">0% complete</span>
+      <button class="hamburger-btn" aria-label="Toggle navigation menu" aria-expanded="false">☰</button>
+    </div>
+  </header>
+  <div class="sidebar-overlay" aria-hidden="true"></div>
+  <div class="site-wrapper">
+    <aside class="sidebar" role="navigation" aria-label="Lesson navigation">
+      <nav id="sidebar-nav"></nav>
+    </aside>
+    <main class="main-content" role="main">
+      <div class="breadcrumbs" aria-label="Breadcrumb navigation"></div>
+
+      <h1>Introduction to OPCP Core OpenStack First Steps</h1>
+
+      <p>
+        Welcome to <strong>SkillHub</strong>, the hands-on training companion for the
+        <em>opcp-openstack-first-steps</em> project. This course walks you through
+        the fundamentals of OpenStack — from your first authenticated API call to
+        creating instances, core concepts, user management, networks, soft RAID, and LACP bond configurations.
+      </p>
+
+      <figure>
+        <figcaption><strong>OPCP Core Dashboard overview </strong></figcaption>
+        <img src="../assets/images/OPCP-core.png"
+              alt="OPCP Core overview"
+              loading="lazy">
+      </figure>
+
+      <h2>Context</h2>
+      <p>
+        You received your brand new OPCP platform, up and running. 
+        You will create your first instance by creating your own project, assigning baremetal node, creating a network, 
+        configuring Soft RAID (mdam), LACP and deploying an instance using image and flavor.
+      </p>
+
+      <figure>
+        <img src="../assets/images/first-step-trail.png"
+              alt="Learning trail"
+              loading="lazy">
+      </figure>
+
+      <h2>What You Will Learn</h2>
+      <p>By the end of this training path you will be comfortable with:</p>
+      <ul>
+        <li><strong>OpenStack core concepts</strong> — projects, users, services, and endpoints</li>
+        <li><strong>User Management</strong> — creating users in Keycloak and assigning roles</li>
+        <li><strong>Authentication</strong> — authenticating against Keycloak/Keystone</li>
+        <li><strong>Networking</strong> — creating networks, subnets, and routers with Neutron</li>
+        <li><strong>Compute</strong> — launching and managing instances with Nova</li>
+      </ul>
+
+      <h2>Optional Topics</h2>
+      <p>Once you have completed the core path, the appendix lessons below let you go further:</p>
+      <ul>
+        <li><strong><a href="appendix-trunk-setup.html">Neutron Trunk Setup</a></strong> — configuring trunk ports for advanced networking</li>
+        <li><strong><a href="software-raid.html">Software RAID</a></strong> — configuring software RAID arrays with mdadm</li>
+        <li><strong><a href="lacp.html">LACP Configuration</a></strong> — bonding multiple network interfaces for bandwidth and redundancy</li>
+      </ul>
+
+      <h2>Prerequisites</h2>
+      <ul>
+        <li>Basic familiarity with a terminal / command line</li>
+        <li>See the <a href="prerequisites.html">Prerequisites</a> lesson for the full list of software requirements and setup instructions</li>
+      </ul>
+
+      <h2>Set Your Student ID</h2>
+      <p>
+        Throughout the labs, every resource you create (instances, networks, etc.) is prefixed with a <code>STUDENT_ID</code>. This makes
+        it easy to identify your resources and clean them up after the training.
+      </p>
+      <p>
+        Define this variable in your terminal before starting any exercise:
+      </p>
+      <pre><code class="language-bash"># Set your student ID (replace with your own identifier)
+# Example for John Doe
+export STUDENT_ID=jdoe
+
+# Verify it is set
+echo $STUDENT_ID</code></pre>
+      <p>
+        All lab commands use <code>${STUDENT_ID}</code> as a naming prefix.
+        For example, an instance will be named
+        <code>${STUDENT_ID}-compute-instance</code>. At the end of the
+        training, the cleanup script uses this prefix to delete all your
+        resources in one go.
+      </p>
+
+      <button class="mark-complete-btn" type="button" aria-label="Mark this lesson as complete">
+        ✓ Mark as Complete
+      </button>
+      <div class="prev-next-nav" aria-label="Lesson navigation"></div>
+    </main>
+  </div>
+  <footer class="site-footer" role="contentinfo">
+    <a href="https://github.com/opcp-openstack-first-steps" aria-label="Project on GitHub">GitHub</a> ·
+    <a href="../../LICENSE" aria-label="Project license">License</a> ·
+    SkillHub Training — OVHcloud
+  </footer>
+  <script src="../assets/js/lessons.js"></script>
+  <script src="../assets/js/i18n.js"></script>
+  <script src="../assets/js/navigation.js"></script>
+  <script src="../assets/js/code-highlight.js"></script>
+  <script src="../assets/js/main.js"></script>
+    <script type="module" src="../js/scorm/scorm-bootstrap.js"></script>
+</body>
+</html>

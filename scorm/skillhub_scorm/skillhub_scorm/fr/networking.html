@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkillHub — Réseau</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <header class="site-header" role="banner">
+    <div class="logo"><a href="index.html" aria-label="Accueil SkillHub">SkillHub</a></div>
+    <div class="header-right">
+      <div class="lang-toggle" aria-label="Sélecteur de langue"></div>
+      <div class="progress-bar-container" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Progression de l'apprentissage">
+        <div class="progress-bar-fill"></div>
+      </div>
+      <span class="progress-text">0% terminé</span>
+      <button class="hamburger-btn" aria-label="Ouvrir le menu de navigation" aria-expanded="false">☰</button>
+    </div>
+  </header>
+  <div class="sidebar-overlay" aria-hidden="true"></div>
+  <div class="site-wrapper">
+    <aside class="sidebar" role="navigation" aria-label="Navigation des leçons">
+      <nav id="sidebar-nav"></nav>
+    </aside>
+    <main class="main-content" role="main">
+      <div class="breadcrumbs" aria-label="Fil d'Ariane"></div>
+
+      <h1>Réseau</h1>
+      <p class="lesson-meta">Difficulté : <strong>Intermédiaire</strong> · Durée estimée : <strong>20 min</strong></p>
+
+      <figure>
+        <img src="../assets/images/first-step-trail-network.png"
+              alt="Parcours d'apprentissage"
+              loading="lazy">
+      </figure>
+
+
+      <ul>
+        <li>Dans la leçon précédente, vous avez appris à créer des utilisateurs et des clients pour interagir avec OpenStack.</li>
+        <li>Dans cette leçon, vous allez créer des réseaux, des sous-réseaux et des routeurs avec le CLI OpenStack pour connecter vos instances au monde extérieur ou entre elles.</li>
+        <li>La gestion réseau d'OpenStack est assurée par le service Neutron.</li>
+      </ul>
+
+      <figure>
+        <img src="../assets/images/opcp-architecture-neutron.svg"
+             alt="Diagramme d'architecture OPCP avec Neutron mis en évidence en bleu et tous les autres composants grisés, montrant le rôle de Neutron au sein d'OpenStack Core et son lien avec NOG pour la création de réseaux."
+             loading="lazy">
+        <figcaption>La place de Neutron dans l'architecture OPCP : il crée les définitions réseau que NOG pousse ensuite vers les switches physiques.</figcaption>
+      </figure>
+
+      <h2>Objectif</h2>
+      <p>
+        Nous allons maintenant passer en revue les étapes pour configurer le réseau sur un nœud baremetal en utilisant le client CLI Openstack.
+      </p>
+
+      <figure>
+        <img src="../assets/images/opcp-networking-tubes-fr.svg"
+             alt="Illustration des composants réseau : chaque réseau encapsule son sous-réseau, et les deux réseaux se connectent à l'instance via des tubes colorés."
+             loading="lazy">
+        <figcaption>Comment tout s'assemble : chaque réseau encapsule son sous-réseau, et l'instance se connecte aux deux réseaux via des tubes colorés distincts.</figcaption>
+      </figure>
+
+      <h2>Créer un réseau privé et un sous-réseau</h2>
+
+      <h3>Étape 1 : Créer le réseau privé</h3>
+      <p>
+        Avant de déployer votre instance, il est généralement nécessaire de créer un <strong>réseau privé</strong> afin qu’il soit accessible au sein de votre infrastructure locale.
+        Si vous avez déjà un réseau privé avec un subnet sur votre projet que vous souhaitez utiliser, vous pouvez ignorer l'étape de création et directement lister vos réseaux pour récupérer le nom ou l'ID du réseau concerné.
+      </p>
+      
+      <pre><code class="language-bash">openstack network create ${STUDENT_ID}-net</code></pre>
+      
+      <p>
+        Par défaut, un réseau n’est visible que par le projet qui l’a créé (ainsi que par les utilisateurs administrateurs) et l'ID de segment est généré automatiquement.
+      </p>
+      
+      <p>
+        Si vous souhaitez créer un réseau <strong>partagé entre tous vos projets</strong>, vous pouvez utiliser le paramètre <code>--share</code>.
+      </p>
+      
+      <p>
+        Pour partager un réseau uniquement avec certains projets spécifiques, il est nécessaire d’utiliser le mécanisme <strong>Role-Based Access Control (RBAC)</strong> d’OpenStack : <a href="https://docs.openstack.org/neutron/pike/admin/config-rbac.html" target="_blank">Documentation RBAC Neutron</a>.
+      </p>
+      
+      <p>
+        <strong>(Rôle admin uniquement)</strong> Par ailleurs, si vous souhaitez créer le réseau privé dans un <strong>VLAN particulier</strong>, vous pouvez le préciser à l’aide des paramètres suivants :
+      </p>
+      
+      <pre><code class="language-bash">--provider-network-type vlan
+--provider-physical-network physnet1 # Valeur statique dans OPCP
+--provider-segment $VLAN_ID # Segment-id de Neutron</code></pre>
+
+      
+      <p>
+        Par exemple, si vous souhaitez créer un réseau privé partagé dans le VLAN 2050 nommé <code>${STUDENT_ID}-net</code> :
+      </p>
+      
+      <pre><code class="language-bash">openstack network create --share --provider-network-type vlan --provider-physical-network physnet1 --provider-segment 2050 ${STUDENT_ID}-NET</code></pre>
+      
+      <p>
+        Une fois le réseau créé, vous pouvez le lister via la commande :
+      </p>
+      
+      <pre><code class="language-bash">openstack network list --name ${STUDENT_ID}-net</code></pre>
+      
+      <p>
+        Si nécessaire, vous pouvez lister l'ensemble des réseaux en retirant l'argument <code>--name</code>.
+      </p>
+
+      <h3>Étape 2 : Créer le sous-réseau</h3>
+      <p>
+        Par défaut, le seul élément nécessaire pour créer un sous-réseau sur votre réseau est le CIDR que vous souhaitez configurer et le réseau que vous venez de créer :
+      </p>
+      
+      <pre><code class="language-bash">openstack subnet create --network ${STUDENT_ID}-net --subnet-range 192.168.120.0/24 ${STUDENT_ID}-subnet</code></pre>
+      
+      <p>
+        Si vous souhaitez cependant préciser un <em>allocation pool</em>, vous pouvez le spécifier via différents paramètres.
+        Par exemple, si vous souhaitez créer un sous réseau avec le CIDR 192.168.120.0/24 en allouant uniquement 50 adresses IP du CIDR et avec une gateway spécifique, vous pouvez utiliser la commande suivante :
+      </p>
+      
+      <pre><code class="language-bash">openstack subnet create --network ${STUDENT_ID}-net --subnet-range 192.168.120.0/24 --allocation-pool start=192.168.120.11,end=192.168.120.60 --gateway 192.168.120.8 ${STUDENT_ID}-subnet</code></pre>
+      
+      <p>
+        Ce sous-réseau pourra ensuite être utilisé pour déployer une instance, permettant ainsi à OpenStack d'attribuer une adresse IP à celle-ci lors de l'installation.
+      </p>
+
+      <p><strong>INFO :</strong> À ce stade, toute instance peut être déployée en donnant le nom du réseau à la création : cela créera un port Neutron standard et l'attache au réseau donné. Si vous voulez utiliser plusieurs réseaux sur un seul port, suivez les instructions de l'annexe <a href="appendix-trunk-setup.html">Configuration des ports Trunk sur un nœud</a>.</p>
+
+      <h2>Résumé</h2>
+      <ul>
+        <li>Neutron gère le réseau OpenStack</li>
+        <li>Créez des réseaux avec <code>openstack network create</code></li>
+        <li>Spécifiez l'ID de segment pour le réseau si nécessaire</code></li>
+        <li>Créez des sous-réseaux avec <code>openstack subnet create</code></li>
+      </ul>
+
+      <p>Nous allons créer deployer un serveur dans ll'étape suivante</p>
+
+      <button class="mark-complete-btn" type="button" aria-label="Marquer cette leçon comme terminée">
+        ✓ Marquer comme terminé
+      </button>
+      <div class="prev-next-nav" aria-label="Navigation entre les leçons"></div>
+    </main>
+  </div>
+  <footer class="site-footer" role="contentinfo">
+    <a href="https://github.com/opcp-openstack-first-steps" aria-label="Projet sur GitHub">GitHub</a> ·
+    <a href="../../LICENSE" aria-label="Licence du projet">Licence</a> ·
+    SkillHub Training — OVHcloud
+  </footer>
+  <script src="../assets/js/lessons.js"></script>
+  <script src="../assets/js/i18n.js"></script>
+  <script src="../assets/js/navigation.js"></script>
+  <script src="../assets/js/code-highlight.js"></script>
+  <script src="../assets/js/main.js"></script>
+    <script type="module" src="../js/scorm/scorm-bootstrap.js"></script>
+</body>
+</html>

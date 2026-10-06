@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkillHub — Annexe - Configuration LACP</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <header class="site-header" role="banner">
+    <div class="logo"><a href="index.html" aria-label="Accueil SkillHub">SkillHub</a></div>
+    <div class="header-right">
+      <div class="lang-toggle" aria-label="Sélecteur de langue"></div>
+      <div class="progress-bar-container" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Progression de l'apprentissage">
+        <div class="progress-bar-fill"></div>
+      </div>
+      <span class="progress-text">0% terminé</span>
+      <button class="hamburger-btn" aria-label="Ouvrir le menu de navigation" aria-expanded="false">☰</button>
+    </div>
+  </header>
+  <div class="sidebar-overlay" aria-hidden="true"></div>
+  <div class="site-wrapper">
+    <aside class="sidebar" role="navigation" aria-label="Navigation des leçons">
+      <nav id="sidebar-nav"></nav>
+    </aside>
+    <main class="main-content" role="main">
+      <div class="breadcrumbs" aria-label="Fil d'Ariane"></div>
+
+      <h1>Annexe - Configuration LACP</h1>
+      <p class="lesson-meta">Difficulté : <strong>Avancé</strong> · Durée estimée : <strong>30 min</strong></p>
+
+      <p>
+        Le protocole LACP (Link Aggregation Control Protocol) permet de regrouper
+        plusieurs interfaces réseau physiques en un seul lien logique, offrant une
+        bande passante accrue et de la redondance. Dans cette leçon, vous allez
+        configurer des bonds LACP sur OpenStack via l'API Neutron.
+      </p>
+
+      <figure>
+        <img src="../assets/images/opcp-architecture-ironic.svg"
+             alt="Diagramme d'architecture OPCP avec Ironic mis en évidence en bleu et tous les autres composants grisés, montrant le rôle d'Ironic en tant que service OpenStack de provisionnement baremetal."
+             loading="lazy">
+        <figcaption>La place d'Ironic dans l'architecture OPCP : c'est le service OpenStack qui provisionne et gère le nœud baremetal sur lequel LACP est configuré.</figcaption>
+      </figure>
+
+      <h2>Objectif</h2>
+      <p>
+        La configuration de LACP doit être appliquée sur le nœud avant de déployer une instance,
+        afin que les interfaces réseau soient correctement agrégées.
+      </p>
+      <p>
+        <strong>Ce guide explique comment configurer un nœud (serveur physique) dans OPCP pour activer LACP (Link Aggregation Control Protocol)</strong>.
+      </p>
+      <p>
+        Nous verrons également comment configurer le <strong>bonding</strong> (association logique de plusieurs interfaces réseau pour former une seule interface virtuelle) au niveau de votre instance, afin de tirer pleinement parti du <strong>LACP</strong>.
+      </p>
+
+      <figure>
+        <img src="../assets/images/opcp-lacp-portgroup.svg"
+             alt="Illustration d'un port group baremetal encapsulant quatre ports physiques (NIC), deux câblés vers le switch A et deux vers le switch B, agrégés en un seul lien LACP attaché à l'instance."
+             loading="lazy">
+        <figcaption>Un port group est un conteneur pour des ports physiques : il encapsule les NIC que vous agrégez et les expose comme un seul lien logique agrégé (bond LACP) à l'instance.</figcaption>
+      </figure>
+
+      <div class="alert alert-warning">
+        <strong>Avertissement :</strong> Un utilisateur standard ne peut pas configurer LACP lui-même.
+        Vous devez être <strong>admin</strong>, ou disposer de <strong>nœud disponible</strong> dans votre projet OpenStack.
+        <br><br>
+        Il est recommandé de configurer LACP <strong>avant</strong> le déploiement d’une instance.
+        Ce guide <strong>ne couvre pas</strong> la configuration d'un nœud déjà en production.
+      </div>
+
+      <h2>Pourquoi utiliser LACP ?</h2>
+      <p>
+        LACP peut être utilisé dans deux cas d'usage précis :
+      </p>
+      <ul>
+        <li><strong>Augmenter la capacité réseau :</strong> En agrégeant plusieurs cartes réseau, vous pourrez ajouter la bande passante de chaque carte réseau ajoutée à cet agrégat, pour les mêmes réseaux.</li>
+        <li><strong>Augmenter la résilience :</strong> Chaque serveur de OPCP bénéficie de 4 interfaces 25G. Chaque serveur est relié à deux switchs réseau (A&amp;B) pour assurer la résilience en cas de panne matérielle de l'un d'entre eux. LACP permet de créer des interfaces virtuelles résilientes en cas de panne matérielle en aggrégant deux cartes réseau reliées sur des switchs distincts.</li>
+      </ul>
+
+      <h2>Prérequis</h2>
+      <p>
+        Avant de commencer, assurez-vous de disposer des éléments suivants :
+      </p>
+      <ul>
+        <li>Disposer d'un service <a href="https://www.ovhcloud.com/fr/hosted-private-cloud/onprem-cloud-platform/" target="_blank">OPCP</a> actif.</li>
+        <li>Un accès <a href="/fr/guides/hosted-private-cloud/opcp/how-to-use-api-and-get-credentials.md" target="_blank">[OpenStack CLI configuré]</a> avec les droits nécessaires (clouds.yaml ou variables d’environnement).</li>
+        <li>Le rôle <strong>admin</strong> et/ou des nœuds transférés dans votre projet.</li>
+      </ul>
+      <p>
+        LACP est une configuration réseau spécifique, nécessitant des connaissances réseau et système avancées. Nous vous conseillons d'appliquer ce guide si vous connaissez déjà l'un ou plusieurs des concepts suivants : configuration de nœuds au sein de OpenStack Ironic, gestion des ports au sein de OpenStack Neutron, et la connaissance de la CLI OpenStack.
+      </p>
+
+      <h2>En pratique</h2>
+
+      <h3>Configuration du nœud</h3>
+
+      <h4>1. Lister les nœuds</h4>
+      <p>
+        La liste des nœuds disponibles dans votre projet peut être affichée avec la commande suivante :
+      </p>
+      
+      <pre><code class="language-bash">openstack baremetal node list</code></pre>
+      
+      <p><strong>Exemple de sortie :</strong></p>
+      
+      <pre><code>+--------------------------------------+----------------+--------------------------------------+-------------+--------------------+-------------+
+| UUID                                 | Name           | Instance UUID                        | Power State | Provisioning State | Maintenance |
++--------------------------------------+----------------+--------------------------------------+-------------+--------------------+-------------+
+| 88830859-5b16-4935-8f41-d381b754cbe5 | SERVER-1       | None                                 | power off   | available          | False       |
+| 726bb7e9-3b20-4a44-99d7-2af747983781 | SERVER-2       | None                                 | power off   | available          | False       |
+| af711edf-a579-491e-b474-3c03639ed99b | SERVER-3       | 83b7083b-bbdd-4327-941c-ee91197818c5 | None        | active             | True        |
++--------------------------------------+----------------+--------------------------------------+-------------+--------------------+-------------+</code></pre>
+      <p>Choisissez un nœud qui n'a pas d'« Instance UUID » (la valeur est None), « State de provisionning » est <strong>« available »</strong> et « Maintenance » est <strong>False</strong>.</p>
+
+      <h4>2. Transférer la propriété d’un nœud (admin uniquement)</h4>
+      <p>
+        Un admin peut transférer la propriété d’un nœud à un projet donné :
+      </p>
+      
+      <pre><code class="language-bash">openstack baremetal node set &lt;node-id&gt; --owner &lt;project-id&gt;</code></pre>
+
+      <h4>3. Lister les ports réseau</h4>
+      <p>
+        Chaque carte réseau physique, appelée Network Interface Card (NIC), d’un nœud est représentée dans OpenStack par un port.
+      </p>
+      <p>
+        Pour afficher la liste des ports associés à un nœud :
+      </p>
+      
+      <pre><code class="language-bash">openstack baremetal port list --node &lt;node-id&gt;</code></pre>
+      
+      <p><strong>Exemple de sortie :</strong></p>
+      
+      <pre><code>+--------------------------------------+-------------------+
+| UUID                                 | Address           |
++--------------------------------------+-------------------+
+| 068a06b2-ebf9-48c9-a3c3-94016ca5e3da | 85:32:f2:87:29:da |
+| 4937d704-7517-4525-86d1-abecb94a7ce9 | 85:32:f2:87:29:db |
+| 422eece6-dcfa-40cd-975d-ba8bb11c774e | 85:32:f2:89:66:f8 |
+| 34073903-92ad-47d1-a751-15aa96991415 | 85:32:f2:89:66:f9 |
++--------------------------------------+-------------------+</code></pre>
+      
+      <p>
+        Pour visualiser les détails d'un port, y compris les informations sur la connexion physique.
+        Cela est particulièrement utile si vous souhaitez configurer un <strong>bonding LACP 2x2</strong>,
+        en répartissant les NIC sur deux switches différents pour assurer une <strong>meilleure redondance et tolérance aux pannes</strong>.
+      </p>
+      
+      <pre><code class="language-bash">openstack baremetal port show &lt;port-id&gt;</code></pre>
+      
+      <p><strong>Exemple de sortie :</strong></p>
+      
+      <pre><code>+-----------------------+------------------------------------------------------------------------------------------------+
+| Field                 | Value                                                                                          |
++-----------------------+------------------------------------------------------------------------------------------------+
+| address               | 85:32:f2:89:66:f9                                                                              |
+| created_at            | 2025-01-06T10:43:38.020574+00:00                                                               |
+| extra                 | {}                                                                                             |
+| internal_info         | {}                                                                                             |
+| is_smartnic           | False                                                                                          |
+| local_link_connection | {'switch_id': 'c0:00:15:8c:33:78', 'port_id': 'Ethernet25/2', 'switch_info': 'demo-tor1b-a70'} |
+| node_uuid             | ddc7c763-74fc-4900-b9e6-5463233836b0                                                           |
+| physical_network      | None                                                                                           |
+| portgroup_uuid        | c3d3fcb3-7a92-4257-b944-736d222e8c4a                                                           |
+| pxe_enabled           | False                                                                                          |
+| updated_at            | 2025-11-06T09:52:46.355883+00:00                                                               |
+| uuid                  | 71899d54-546d-4fdd-8d8b-52ad986bf425                                                           |
++-----------------------+------------------------------------------------------------------------------------------------+</code></pre>
+
+      <h4>4. Activer le mode maintenance</h4>
+      <p>
+        Avant toute modification de configuration réseau, le nœud doit être placé en <strong>mode maintenance</strong>. Cela assure que ce nœud ne puisse pas être déployé durant toute l'opération :
+      </p>
+      
+      <pre><code class="language-bash">openstack baremetal node maintenance set &lt;node-id&gt;</code></pre>
+
+      <h4>5. Créer un groupe de ports (LACP Bond)</h4>
+      <p>
+        Le <strong>groupe de ports</strong> permet d’activer l’agrégation LACP entre plusieurs interfaces réseau.
+      </p>
+      
+      <div class="alert alert-tip">
+        <strong>Succès :</strong> Vous pouvez créer :
+        <ul>
+          <li>un <strong>groupe de ports unique</strong> pour un bond 1×4, ou<br /></li>
+          <li>deux <strong>groupes de ports</strong> pour des bonds 2×2.</li>
+        </ul>
+      </div>
+      
+      <p>
+        Utilisez le paramètre <code>--mode 802.3ad</code> pour activer LACP.
+      </p>
+      <p>
+        Le paramètre <code>--address &lt;MAC&gt;</code> <strong>ne doit PAS être égal à l'adresse MAC du port PXE</strong> s'il est utilisé. Sinon, vous pouvez omettre le paramètre ou définir la valeur MAC à partir de l'une des interfaces physiques que vous utiliserez.
+      </p>
+      <p>
+        Vous pouvez lister tous les ports avec <code>openstack baremetal port list --node &lt;node-id&gt; --long</code> et vérifier si PXE est utilisé ou non.
+      </p>
+      <p>
+        Remarque : il est recommandé de préfixer le nom du groupe de ports avec le nom du nœud (ex. : <code>&lt;node-name&gt;-&lt;name&gt;</code>) pour faciliter l'identification.
+      </p>
+      
+      <p><strong>Exemple :</strong></p>
+      
+      <pre><code class="language-bash">openstack baremetal port group create \
+  --node &lt;node_uuid&gt; \
+  --name node_name-pg-lacp \
+  --mode 802.3ad \
+  --address 00:00:00:20:00:01</code></pre>
+      
+      <p><strong>Exemple de sortie :</strong></p>
+      
+      <pre><code>+----------------------------+-------------------------------------------+
+| Champ                      | Valeur                                    |
++----------------------------+-------------------------------------------+
+| uuid                       | d082c2ab-5960-44e3-920d-3d6dfb6811e9      |
+| address                    | 00:00:00:20:00:01                         |
+| node_uuid                  | 88830859-5b16-4935-8f41-d381b754cbe5      |
+| name                       | node_name-pg-lacp                         |
+| mode                       | 802.3ad                                   |
+| standalone_ports_supported | True                                      |
++----------------------------+-------------------------------------------+</code></pre>
+
+      <h4>6. Associer les ports au groupe</h4>
+      <p>
+        Chaque port du nœud doit être associé au groupe de ports créé :
+      </p>
+      
+      <pre><code class="language-bash">openstack baremetal port set --port-group `&lt;port-group-id&gt;` `&lt;port-id&gt;`</code></pre>
+      
+      <p><strong>Exemple :</strong></p>
+      
+      <pre><code class="language-bash">openstack baremetal port set --port-group d082c2ab-5960-44e3-920d-3d6dfb6811e9 068a06b2-ebf9-48c9-a3c3-94016ca5e3da
+openstack baremetal port set --port-group d082c2ab-5960-44e3-920d-3d6dfb6811e9 4937d704-7517-4525-86d1-abecb94a7ce9
+openstack baremetal port set --port-group d082c2ab-5960-44e3-920d-3d6dfb6811e9 422eece6-dcfa-40cd-975d-ba8bb11c774e
+openstack baremetal port set --port-group d082c2ab-5960-44e3-920d-3d6dfb6811e9 34073903-92ad-47d1-a751-15aa96991415</code></pre>
+
+      <h4>7. Désactiver le mode maintenance</h4>
+      <p>
+        Une fois la configuration terminée, désactivez le mode maintenance :
+      </p>
+      
+      <pre><code class="language-bash">openstack baremetal node maintenance unset `&lt;node-id&gt;`</code></pre>
+
+      <h4>8. Créer une instance</h4>
+      <p>Une fois le LACP configuré, vous pouvez déployer le nœud sur le serveur :</p>
+      <pre><code class="language-bash">openstack server create \
+  --image &lt;image-name&gt; \
+  --flavor &lt;flavor-id&gt; \
+  --key-name &lt;keypair-name&gt; \
+  --nic net-id=&lt;network-id&gt; \
+  --availability-zone "nova::&lt;node-id&gt;" \
+  &lt;instance-name&gt;</code></pre>
+
+      <div class="alert alert-tip">
+        <p>Pour vous assurer que votre instance est déployée sur le nœud configuré avec LACP, utilisez la zone de disponibilité <code>nova::&lt;node-id&gt;</code>.</p>
+      </div>
+
+      <h3>Résumé des étapes</h3>
+      
+      <table>
+        <thead>
+          <tr>
+            <th>Étape</th>
+            <th>Action</th>
+            <th>Commande</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td>Transférer la propriété</td>
+            <td><code>openstack baremetal node set &lt;node-id&gt; --owner &lt;tenant-id&gt;</code></td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>Lister les ports</td>
+            <td><code>openstack baremetal port list --node &lt;node-id&gt;</code></td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td>Activer le mode maintenance</td>
+            <td><code>openstack baremetal node maintenance set &lt;node-id&gt;</code></td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td>Créer un groupe LACP</td>
+            <td><code>openstack baremetal port group create --node &lt;node-id&gt; --name &lt;port-group-name&gt; --mode 802.3ad</code></td>
+          </tr>
+          <tr>
+            <td>5</td>
+            <td>Associer les ports</td>
+            <td><code>openstack baremetal port set --port-group &lt;port-group-id&gt; &lt;port-id&gt;</code></td>
+          </tr>
+          <tr>
+            <td>6</td>
+            <td>Désactiver le mode maintenance</td>
+            <td><code>openstack baremetal node maintenance unset &lt;node-id&gt;</code></td>
+          </tr>
+          <tr>
+            <td>7</td>
+            <td>Créer une instance</td>
+            <td><code>openstack server create --image &lt;image-name&gt; --nic net-id=&lt;network-1&gt; --flavor &lt;flavor-id&gt; --key-name &lt;keypair-name&gt; --availability-zone "nova::&lt;node-id&gt;" &lt;instance-name&gt;</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Configuration du bonding au niveau OS</h3>
+      <p>
+        Après avoir configuré votre nœud dans OpenStack et déployé un système d'exploitation, il reste à configurer le réseau afin de bénéficier du réseau <strong>bonding</strong>, qui permet d'agréger plusieurs interfaces réseau pour plus de performance et de redondance.
+      </p>
+
+      <h4>Vérifier la configuration du bonding</h4>
+      <p>
+        Sur certaines images (comme <strong>Debian 12</strong> ou <strong>Ubuntu 22.04</strong>), la configuration du <strong>bonding</strong> est automatiquement détectée et configurée.
+      </p>
+      <p>
+        Cependant, d'autres distributions peuvent nécessiter un ajustement manuel.
+      </p>
+
+      <h5>1. Vérifier les bonds actifs</h5>
+
+      <pre><code class="language-bash">ls /proc/net/bonding/
+bond0</code></pre>
+
+      <h5>2. Vérifier les interfaces membres</h5>
+
+      <pre><code class="language-bash">cat /proc/net/bonding/bond0 | grep Interface
+Slave Interface: ens22f1np1
+Slave Interface: ens22f0np0
+Slave Interface: ens21f1np1
+Slave Interface: ens21f0np0</code></pre>
+
+      <h5>3. Vérifier la politique de hachage (<code>Transmit Hash Policy</code>)</h5>
+
+      <pre><code class="language-bash">cat /proc/net/bonding/* | grep Trans
+Transmit Hash Policy: layer2 (0)</code></pre>
+
+      <div class="alert alert-warning">
+        <strong>Avertissement :</strong> Pour exploiter toute la bande passante, configurez la politique <code>layer3+4</code> (par défaut, certains OS utilisent <code>layer2</code>, moins performante).
+        <br><br>
+        Plus de détails : <a href="https://help.ubuntu.com/community/UbuntuBonding?utm_source=chatgpt.com" target="_blank">Documentation Ubuntu Bonding</a>
+      </div>
+
+      <h4>Modifier la configuration</h4>
+
+      <h5>1. Changement à chaud (non persistant)</h5>
+      <p>
+        Si vous souhaitez tester votre configuration manuellement, vous pouvez utiliser la commande suivante :
+      </p>
+
+      <pre><code class="language-bash">sudo ip link set bond0 type bond xmit_hash_policy layer3+4</code></pre>
+
+      <p>
+        Attention, cette configuration sera réinitialisée si votre machine redémarre.
+      </p>
+
+      <h5>2. Changement persistant (exemple via Netplan et cloud-init)</h5>
+      <p>
+        Créez votre fichier de configuration (ex. <code>/etc/cloud/cloud.cfg.d/99-custom-network.cfg</code>) pour y inclure :
+      </p>
+
+      <pre><code class="language-yaml">network:
+  version: 2
+  ethernets:
+    ens21f0np0: {}
+    ens21f1np1: {}
+    ens22f0np0: {}
+    ens22f1np1: {}
+  bonds:
+    bond0:
+      dhcp4: true
+      interfaces:
+        - ens21f0np0
+        - ens21f1np1
+        - ens22f0np0
+        - ens22f1np1
+      macaddress: 00:00:00:20:00:23
+      parameters:
+        mode: 802.3ad
+        transmit-hash-policy: layer3+4
+        lacp-rate: fast
+        mii-monitor-interval: 100</code></pre>
+
+      <p>
+        Puis appliquez la configuration en rédémarrant l'instance.
+      </p>
+
+      <h4>Tester la bande passante avec <code>iperf3</code></h4>
+      <p>
+        Pour tester correctement LACP, vous devez disposer de <strong>2 nœuds</strong> dans le <strong>même réseau</strong>, tous deux configurés avec LACP.
+      </p>
+
+      <h5>Serveur Iperf3 (nœud 1)</h5>
+
+      <pre><code class="language-bash">iperf3 -s</code></pre>
+
+      <h5>Client Iperf3 (nœud 2)</h5>
+      <p>
+        Utilisez <code>-P</code> pour générer plusieurs flux parallèles, afin d’atteindre la bande passante maximale.
+      </p>
+
+      <pre><code class="language-bash">iperf3 -c &lt;ip-du-nœud&gt; -P 64</code></pre>
+
+      <p><strong>Exemple de résultat</strong></p>
+
+      <pre><code>[SUM] 0.0000-10.0121 sec   110 GBytes  94.0 Gbits/sec</code></pre>
+
+      <p>
+        Avec un lien 4×25 Gbps, vous devriez atteindre environ <strong>100 Gbps</strong>.
+        Il peux être nécessaire d'ajuster certains paramètres système pour exploiter pleinement cette capacité.
+      </p>
+
+      <h2>Conclusion</h2>
+      <p>
+        Vous avez configuré :
+      </p>
+      <ul>
+        <li>Le <strong>LACP (802.3ad)</strong> au niveau du nœud Baremetal OpenStack ;</li>
+        <li>Le <strong>paramétrage du bonding</strong> dans l’OS invité ;</li>
+        <li>Et validé la <strong>performance réseau</strong> via <code>iperf3</code>.</li>
+      </ul>
+      <p>
+        Votre instance est désormais prête à exploiter toute la bande passante disponible du lien agrégé.
+      </p>
+
+      <h2>Résumé</h2>
+      <ul>
+        <li>Le LACP (<strong>802.3ad</strong>) agrège plusieurs ports en un seul lien logique.</li>
+      </ul>
+
+      <button class="mark-complete-btn" type="button" aria-label="Marquer cette leçon comme terminée">
+        ✓ Marquer comme terminé
+      </button>
+      <div class="prev-next-nav" aria-label="Navigation entre les leçons"></div>
+    </main>
+  </div>
+  <footer class="site-footer" role="contentinfo">
+    <a href="https://github.com/opcp-openstack-first-steps" aria-label="Projet sur GitHub">GitHub</a> ·
+    <a href="../../LICENSE" aria-label="Licence du projet">Licence</a> ·
+    SkillHub Training — OVHcloud
+  </footer>
+  <script src="../assets/js/lessons.js"></script>
+  <script src="../assets/js/i18n.js"></script>
+  <script src="../assets/js/navigation.js"></script>
+  <script src="../assets/js/code-highlight.js"></script>
+  <script src="../assets/js/main.js"></script>
+    <script type="module" src="../js/scorm/scorm-bootstrap.js"></script>
+</body>
+</html>

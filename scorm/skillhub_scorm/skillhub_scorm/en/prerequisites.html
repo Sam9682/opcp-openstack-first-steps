@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkillHub — Prerequisites</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <header class="site-header" role="banner">
+    <div class="logo"><a href="index.html" aria-label="SkillHub home">SkillHub</a></div>
+    <div class="header-right">
+      <div class="lang-toggle" aria-label="Language selector"></div>
+      <div class="progress-bar-container" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Learning progress">
+        <div class="progress-bar-fill"></div>
+      </div>
+      <span class="progress-text">0% complete</span>
+      <button class="hamburger-btn" aria-label="Toggle navigation menu" aria-expanded="false">☰</button>
+    </div>
+  </header>
+  <div class="sidebar-overlay" aria-hidden="true"></div>
+  <div class="site-wrapper">
+    <aside class="sidebar" role="navigation" aria-label="Lesson navigation">
+      <nav id="sidebar-nav"></nav>
+    </aside>
+    <main class="main-content" role="main">
+      <div class="breadcrumbs" aria-label="Breadcrumb navigation"></div>
+
+      <h1>Prerequisites</h1>
+      <p class="lesson-meta">Difficulty: <strong>Beginner</strong> · Estimated time: <strong>15 min</strong></p>
+
+      <p>
+        Before running the labs, make sure your environment meets the following
+        requirements. This page walks you through each dependency and how to
+        verify it is correctly installed.
+      </p>
+
+      <h2>Minimum requirements</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Component</th>
+            <th>Minimum version</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Python</td>
+            <td><code>3.9</code></td>
+          </tr>
+          <tr>
+            <td>OpenStack CLI</td>
+            <td><code>10.0.0</code></td>
+          </tr>
+          <tr>
+            <td>macOS</td>
+            <td>Tahoe 26.5.2</td>
+          </tr>
+          <tr>
+            <td>Ubuntu</td>
+            <td>24 LTS</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>1. Bash environment</h2>
+      <p>
+        All exercises require a Bash environment. You can use:
+      </p>
+      <ul>
+        <li>GNU/Linux distributions (Ubuntu, CentOS, Fedora, etc.)</li>
+        <li>macOS</li>
+        <li>Windows with Windows Subsystem for Linux (WSL) and Ubuntu</li>
+      </ul>
+      <p>
+        If you're using Windows, install WSL Ubuntu with the following command:
+      </p>
+      <pre><code class="language-bash">wsl --install -d Ubuntu</code></pre>
+      <p>
+        After installation, launch Ubuntu from the Start menu and complete the setup process.
+      </p>
+
+      <h2>2. OpenStack CLI client</h2>
+      <p>
+        All exercises use the <code>openstack</code> command-line client.
+        Install it via pip:
+      </p>
+      <pre><code class="language-bash">sudo apt update &amp;&amp; sudo apt install -y python3 python3-pip python3-venv
+# Check python version. Python 3.9+ needed.
+python3 --version
+# Inside your working directory, generate a new python-venv then activate it
+python3 -m venv .venv
+source .venv/bin/activate
+# Install openstack client CLI (including ironic client)
+pip3 install python-openstackclient 
+pip3 install python-ironicclient
+# close your terminal session, then go back to your venv
+exit
+source .venv/bin/activate
+# Verify the presence of Ironic commands (baremetal). It should offers to use "baremetal" sub-commands
+openstack baremetal</code></pre>
+
+      <h2>3. Basic terminal knowledge</h2>
+      <p>
+        You should be comfortable running commands in a terminal (bash, zsh, or
+        PowerShell). All exercises are launched from the command line.
+      </p>
+
+      <h2>Quick validation script</h2>
+      <p>Run these commands to verify everything is in place:</p>
+      <pre><code class="language-bash"># Check Python version
+python3 --version
+
+# Check pip is available
+pip3 --version
+
+# Check the OpenStack CLI is installed
+openstack --version</code></pre>
+
+      <button class="mark-complete-btn" type="button" aria-label="Mark this lesson as complete">
+        ✓ Mark as Complete
+      </button>
+      <div class="prev-next-nav" aria-label="Lesson navigation"></div>
+    </main>
+  </div>
+  <footer class="site-footer" role="contentinfo">
+    <a href="https://github.com/opcp-openstack-first-steps" aria-label="Project on GitHub">GitHub</a> ·
+    <a href="../../LICENSE" aria-label="Project license">License</a> ·
+    SkillHub Training — OVHcloud
+  </footer>
+  <script src="../assets/js/lessons.js"></script>
+  <script src="../assets/js/i18n.js"></script>
+  <script src="../assets/js/navigation.js"></script>
+  <script src="../assets/js/code-highlight.js"></script>
+  <script src="../assets/js/main.js"></script>
+    <script type="module" src="../js/scorm/scorm-bootstrap.js"></script>
+</body>
+</html>

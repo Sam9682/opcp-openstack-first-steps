@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkillHub — Compute</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <header class="site-header" role="banner">
+    <div class="logo"><a href="index.html" aria-label="SkillHub home">SkillHub</a></div>
+    <div class="header-right">
+      <div class="lang-toggle" aria-label="Language selector"></div>
+      <div class="progress-bar-container" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Learning progress">
+        <div class="progress-bar-fill"></div>
+      </div>
+      <span class="progress-text">0% complete</span>
+      <button class="hamburger-btn" aria-label="Toggle navigation menu" aria-expanded="false">☰</button>
+    </div>
+  </header>
+  <div class="sidebar-overlay" aria-hidden="true"></div>
+  <div class="site-wrapper">
+    <aside class="sidebar" role="navigation" aria-label="Lesson navigation">
+      <nav id="sidebar-nav"></nav>
+    </aside>
+    <main class="main-content" role="main">
+      <div class="breadcrumbs" aria-label="Breadcrumb navigation"></div>
+
+      <h1>Compute</h1>
+      <p class="lesson-meta">Difficulty: <strong>Intermediate</strong> · Estimated time: <strong>25 min</strong></p>
+
+      <figure>
+        <img src="../assets/images/first-step-trail-compute.png"
+              alt="Learning trail"
+              loading="lazy">
+      </figure>
+
+
+      <ul>
+        <li>In the previous lesson, we created the networking infrastructure for the servers to communicate.</li>
+        <li>We will now deploy a compute server with the Nova ervice.</li>
+      </ul>
+
+      <figure>
+        <img src="../assets/images/opcp-architecture-nova.svg"
+             alt="OPCP architecture diagram with Nova highlighted in blue and every other component grayed out, showing Nova's role orchestrating Compute Nodes."
+             loading="lazy">
+        <figcaption>Where Nova sits in the OPCP architecture: it's the service that launches, resizes, and snapshots your instances on the Compute Nodes.</figcaption>
+      </figure>
+
+      <h2>1. Move a Node into Your Project</h2>
+      <p>
+        Before you can deploy an instance, an <strong>admin</strong> needs to assign a baremetal node to the project you created in the <a href="user-management.html">User Management</a> lesson. Nova can only schedule instances onto nodes that belong to your project.
+      </p>
+      <p class="warning-box">
+        You <strong>must</strong> be administrator to do the next
+      </p>
+      <p>
+        List the available nodes and note the <code>&lt;node-id&gt;</code> you want to use:
+      </p>
+      <pre><code class="language-bash">openstack baremetal node list</code></pre>
+      <p>
+        Then transfer ownership of that node to your project (<code>${OS_PROJECT_ID}</code> was set in the previous lesson):
+      </p>
+      <pre><code class="language-bash">openstack baremetal node set &lt;node-id&gt; --owner ${OS_PROJECT_ID}</code></pre>
+      <p>
+        Verify the node now belongs to your project:
+      </p>
+      <pre><code class="language-bash">openstack baremetal node show &lt;node-id&gt; -f value -c owner</code></pre>
+
+      <h2>2. SSH Key Pair — Generate and Register</h2>
+      <p>
+        To connect to your instance via SSH, you need a key pair. The public
+        key is injected into the instance at boot time, and you use the
+        corresponding private key to authenticate.
+      </p>
+
+      <h3>Generate a key pair locally</h3>
+      <pre><code class="language-bash"># Generate an Ed25519 SSH key pair (recommended)
+ssh-keygen -t ed25519 -C "${STUDENT_ID}@lab" -f ~/.ssh/${STUDENT_ID}-key -N ""
+
+# This creates two files:
+#   ~/.ssh/${STUDENT_ID}-key       (private key — keep it secret)
+#   ~/.ssh/${STUDENT_ID}-key.pub   (public key — uploaded to OpenStack)</code></pre>
+      <p>
+        You can also use RSA if Ed25519 is not supported:
+      </p>
+      <pre><code class="language-bash">ssh-keygen -t rsa -b 4096 -C "${STUDENT_ID}@lab" -f ~/.ssh/${STUDENT_ID}-key -N ""</code></pre>
+
+      <h3>Register the public key in OpenStack</h3>
+      <pre><code class="language-bash"># Import your public key into OpenStack
+openstack keypair create \
+  --public-key ~/.ssh/${STUDENT_ID}-key.pub \
+  ${STUDENT_ID}-keypair
+
+# Verify the keypair was registered
+openstack keypair show ${STUDENT_ID}-keypair</code></pre>
+
+      <h2>3. Launch an Instance</h2>
+      <p>
+        Use the <code>openstack</code> CLI to launch an instance with a specified
+        flavor, image, and your SSH key pair. Name it <code>${STUDENT_ID}-compute-instance</code>.
+      </p>
+      <p>
+      <div class="info-box">
+        Switch to the user you created in the "User Management" lab, that has the "member" role.
+      </div>
+    </p>
+      <p>
+        By default, OpenStack selects a host based on the chosen <strong>flavor</strong> and <strong>scheduler rules</strong>, which does not guarantee that the node you just configured will be used.
+      </p>
+      <p>
+        To ensure your instance will be deployed on this specific node, you can target it using its <strong>availability zone</strong>:
+      </p>
+      
+      <pre><code class="language-bash">openstack server create --availability-zone "nova::`&lt;node-id&gt;`"</code></pre>
+
+      <p>
+        Default images on OPCP Core have no password set, if you want to provide a password so you can log in through the instance's console, use Cloud-init files. Here is an example of basic user/password configuration for Debian 12 in cloud-init.yaml file (MUST start with #cloud-config line)</strong>:
+      </p>
+      
+      <pre><code class="language-bash">#cloud-config
+users:
+  - name: debian
+    lock_passwd: false
+    plain_text_passwd: 'debian'
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+ssh_pwauth: true </code></pre>
+
+      <pre><code class="language-bash"># Launch a compute instance
+openstack server create \
+  --flavor scale-1 \ # template of instance to use
+  --image "Debian 12 LVM OPCP" \ # system image to deploy
+  --network ${STUDENT_ID}-net \ 
+  --availability-zone "nova::`&lt;node-id&gt;`" \ # select specific node, needed when you pre-configured a specific node
+  --key-name ${STUDENT_ID}-keypair \ # public SSH key to use
+  --user-data ./cloud-init.yaml \ # Cloud init file
+  ${STUDENT_ID}-compute-instance # Instance name
+
+# Verify the instance is active (wait for ~ 20 min)
+openstack server show ${STUDENT_ID}-compute-instance -f value -c status</code></pre>
+
+      <h3>Connect to the instance via SSH</h3>
+      <pre><code class="language-bash"># Get the instance IP address
+IP=$(openstack server show ${STUDENT_ID}-compute-instance -f value -c addresses | grep -oP '[\d.]+')
+
+# Connect using your private key
+ssh -i ~/.ssh/${STUDENT_ID}-key ubuntu@$IP</code></pre>
+
+      <p>
+        If you configured a multi-NIC node before deploying, you can now bond its interfaces at the OS level for extra bandwidth and redundancy — see the optional <a href="lacp.html">LACP Configuration</a> appendix.
+      </p>
+      <p>
+        If you configured software RAID on this node before deploying, see the optional <a href="software-raid.html">Software RAID</a> appendix to verify the RAID configuration from the instance.
+      </p>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Transfer ownership of a baremetal node to your project with <code>openstack baremetal node set --owner</code> before deploying.</li>
+        <li>Generate an SSH key pair with <code>ssh-keygen</code> and register it with <code>openstack keypair create</code>.</li>
+        <li>Use <code>--key-name</code> when creating an instance to inject the public key.</li>
+        <li>Use <code>openstack server</code> commands to launch instances.</li>
+        <li>Flavors define the <strong>CPU, RAM, and disk</strong> allocated to an instance.</li>
+        <li>Missing flavor or image errors are reported with <strong>clear messages</strong> by the CLI.</li>
+        <li>See the <a href="lacp.html">LACP Configuration</a> appendix to bond network interfaces for extra bandwidth and redundancy.</li>
+        <li>See the <a href="software-raid.html">Software RAID</a> appendix to configure and verify software RAID state.</li>
+      </ul>
+
+      <button class="mark-complete-btn" type="button" aria-label="Mark this lesson as complete">
+        ✓ Mark as Complete
+      </button>
+      <div class="prev-next-nav" aria-label="Lesson navigation"></div>
+    </main>
+  </div>
+  <footer class="site-footer" role="contentinfo">
+    <a href="https://github.com/opcp-openstack-first-steps" aria-label="Project on GitHub">GitHub</a> ·
+    <a href="../../LICENSE" aria-label="Project license">License</a> ·
+    SkillHub Training — OVHcloud
+  </footer>
+  <script src="../assets/js/lessons.js"></script>
+  <script src="../assets/js/i18n.js"></script>
+  <script src="../assets/js/navigation.js"></script>
+  <script src="../assets/js/code-highlight.js"></script>
+  <script src="../assets/js/main.js"></script>
+    <script type="module" src="../js/scorm/scorm-bootstrap.js"></script>
+</body>
+</html>

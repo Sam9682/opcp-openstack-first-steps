@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 940 640" font-family="Arial, Helvetica, sans-serif">
+  <rect x="0" y="0" width="940" height="640" fill="#ffffff"/>
+
+  <text x="470" y="40" text-anchor="middle" font-size="26" font-weight="bold" fill="#000E9C">Comment les composants réseau s'assemblent</text>
+
+  <!-- Legend -->
+  <g font-size="15" fill="#1a1a2e">
+    <rect x="40" y="64" width="22" height="16" rx="8" fill="#eafaf1" stroke="#27ae60" stroke-width="3"/>
+    <text x="70" y="77">Réseau</text>
+
+    <rect x="250" y="64" width="22" height="16" rx="8" fill="#e8eaff" stroke="#4949FF" stroke-width="3"/>
+    <text x="280" y="77">Sous-réseau</text>
+
+    <line x1="460" y1="72" x2="500" y2="72" stroke="#f39c12" stroke-width="9" stroke-linecap="round"/>
+    <text x="512" y="77">Trafic vers l'instance</text>
+  </g>
+
+  <!-- Network A: vlan301-net, encapsulating its subnet -->
+  <rect x="40" y="140" width="380" height="160" rx="80" fill="#eafaf1" stroke="#27ae60" stroke-width="5"/>
+  <text x="230" y="178" text-anchor="middle" font-size="19" font-weight="bold" fill="#1a1a2e">vlan301-net</text>
+  <rect x="90" y="200" width="280" height="70" rx="35" fill="#e8eaff" stroke="#4949FF" stroke-width="4"/>
+  <text x="230" y="227" text-anchor="middle" font-size="17" font-weight="bold" fill="#1a1a2e">301-subnet</text>
+  <text x="230" y="250" text-anchor="middle" font-size="14" fill="#555">192.168.31.0/24</text>
+
+  <!-- Network B: vlan302-net, encapsulating its subnet -->
+  <rect x="40" y="440" width="380" height="160" rx="80" fill="#eafaf1" stroke="#27ae60" stroke-width="5"/>
+  <text x="230" y="478" text-anchor="middle" font-size="19" font-weight="bold" fill="#1a1a2e">vlan302-net</text>
+  <rect x="90" y="500" width="280" height="70" rx="35" fill="#e8eaff" stroke="#4949FF" stroke-width="4"/>
+  <text x="230" y="527" text-anchor="middle" font-size="17" font-weight="bold" fill="#1a1a2e">302-subnet</text>
+  <text x="230" y="550" text-anchor="middle" font-size="14" fill="#555">192.168.32.0/24</text>
+
+  <!-- Tubes: each network's traffic flowing directly to the instance -->
+  <path d="M420,235 L490,235 L490,320 L560,320" fill="none" stroke="#f39c12" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M420,535 L490,535 L490,390 L560,390" fill="none" stroke="#16a085" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Instance -->
+  <rect x="560" y="270" width="340" height="170" rx="20" fill="#eef0fb" stroke="#000E9C" stroke-width="5"/>
+  <text x="730" y="350" text-anchor="middle" font-size="16" font-weight="bold" fill="#1a1a2e">Instance bare-metal / VM</text>
+  <text x="730" y="373" text-anchor="middle" font-size="13" fill="#555">connectée aux deux réseaux</text>
+</svg>

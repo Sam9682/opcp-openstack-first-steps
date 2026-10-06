@@ -1,0 +1,133 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1250 720" font-family="Arial, Helvetica, sans-serif">
+  <defs>
+    <marker id="arrow-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#b0b0b0"/>
+    </marker>
+    <marker id="arrow-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#f39c12"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1250" height="720" fill="#ffffff"/>
+
+  <text x="625" y="24" text-anchor="middle" font-size="20" font-weight="bold" fill="#000E9C">OPCP Architecture Overview — Focus: Neutron</text>
+
+  <!-- Legend (grayed, OpenStack service entry kept live) -->
+  <g font-size="11" fill="#999999">
+    <rect x="30" y="38" width="14" height="14" fill="#e8eaff" stroke="#4949FF" stroke-width="2"/>
+    <text x="49" y="49" fill="#1a1a2e" font-weight="bold">OpenStack service</text>
+
+    <rect x="200" y="38" width="14" height="14" fill="#f5f5f5" stroke="#cccccc" stroke-width="2"/>
+    <text x="219" y="49">Identity (Keycloak)</text>
+
+    <rect x="375" y="38" width="14" height="14" fill="#f5f5f5" stroke="#cccccc" stroke-width="2"/>
+    <text x="394" y="49">OVHcloud automation</text>
+
+    <rect x="565" y="38" width="14" height="14" fill="#f5f5f5" stroke="#cccccc" stroke-width="2"/>
+    <text x="584" y="49">Open-source infra tooling</text>
+
+    <rect x="760" y="38" width="14" height="14" fill="#f5f5f5" stroke="#cccccc" stroke-width="2"/>
+    <text x="779" y="49">Monitoring</text>
+  </g>
+
+  <!-- Cloudstore — grayed -->
+  <rect x="385" y="65" width="280" height="70" rx="6" fill="#f5f5f5" stroke="#cccccc" stroke-width="2"/>
+  <text x="525" y="93" text-anchor="middle" font-size="12" font-weight="bold" fill="#999999">Cloudstore</text>
+  <text x="525" y="109" text-anchor="middle" font-size="10" fill="#aaaaaa">Cloud services: virtualisation + middleware</text>
+
+  <!-- Cloudstore -> OPCP Controller -->
+  <line x1="525" y1="135" x2="525" y2="155" stroke="#cccccc" stroke-width="3" marker-end="url(#arrow-gray)"/>
+
+  <!-- OPCP Controller boundary: grayed -->
+  <rect x="30" y="155" width="1140" height="340" rx="12" fill="none" stroke="#cccccc" stroke-width="2" stroke-dasharray="8 4"/>
+  <text x="46" y="178" font-size="14" font-weight="bold" fill="#999999">OPCP Controller</text>
+
+  <!-- OpenStack Core — grayed container, Neutron kept live inside -->
+  <rect x="55" y="190" width="470" height="185" rx="8" fill="#f5f5f5" stroke="#cccccc" stroke-width="2"/>
+  <text x="290" y="212" text-anchor="middle" font-size="13" font-weight="bold" fill="#999999">OpenStack Core</text>
+
+  <rect x="75" y="230" width="140" height="55" rx="6" fill="#fafafa" stroke="#cccccc" stroke-width="1.5"/>
+  <text x="145" y="252" text-anchor="middle" font-size="12" font-weight="bold" fill="#999999">Keystone</text>
+  <text x="145" y="267" text-anchor="middle" font-size="10" fill="#aaaaaa">Identity</text>
+
+  <rect x="225" y="230" width="140" height="55" rx="6" fill="#fafafa" stroke="#cccccc" stroke-width="1.5"/>
+  <text x="295" y="252" text-anchor="middle" font-size="12" font-weight="bold" fill="#999999">Horizon</text>
+  <text x="295" y="267" text-anchor="middle" font-size="10" fill="#aaaaaa">Dashboard (Web UI)</text>
+
+  <rect x="375" y="230" width="140" height="55" rx="6" fill="#fafafa" stroke="#cccccc" stroke-width="1.5"/>
+  <text x="445" y="252" text-anchor="middle" font-size="12" font-weight="bold" fill="#999999">Ironic</text>
+  <text x="445" y="267" text-anchor="middle" font-size="10" fill="#aaaaaa">Bare Metal Provisioning</text>
+
+  <rect x="75" y="300" width="140" height="55" rx="6" fill="#fafafa" stroke="#cccccc" stroke-width="1.5"/>
+  <text x="145" y="322" text-anchor="middle" font-size="12" font-weight="bold" fill="#999999">Glance</text>
+  <text x="145" y="337" text-anchor="middle" font-size="10" fill="#aaaaaa">Images</text>
+
+  <rect x="225" y="300" width="140" height="55" rx="6" fill="#fafafa" stroke="#cccccc" stroke-width="1.5"/>
+  <text x="295" y="322" text-anchor="middle" font-size="12" font-weight="bold" fill="#999999">Nova</text>
+  <text x="295" y="337" text-anchor="middle" font-size="10" fill="#aaaaaa">Compute</text>
+
+  <!-- Neutron — kept in full colour, the focus of this diagram -->
+  <rect x="375" y="300" width="140" height="55" rx="6" fill="#e8eaff" stroke="#4949FF" stroke-width="3.5"/>
+  <text x="445" y="322" text-anchor="middle" font-size="13" font-weight="bold" fill="#000E9C">Neutron</text>
+  <text x="445" y="337" text-anchor="middle" font-size="10" fill="#1a1a2e">Networking</text>
+
+  <!-- Keycloak — grayed -->
+  <rect x="700" y="200" width="190" height="70" rx="8" fill="#f5f5f5" stroke="#cccccc" stroke-width="2"/>
+  <text x="795" y="230" text-anchor="middle" font-size="12" font-weight="bold" fill="#999999">Keycloak</text>
+  <text x="795" y="246" text-anchor="middle" font-size="10" fill="#aaaaaa">Identity Provider (IAM)</text>
+  <line x1="525" y1="235" x2="700" y2="235" stroke="#cccccc" stroke-width="3" marker-end="url(#arrow-gray)" marker-start="url(#arrow-gray)"/>
+  <text x="612" y="225" text-anchor="middle" font-size="13" font-weight="bold" paint-order="stroke" stroke="#ffffff" stroke-width="4" stroke-linejoin="round" fill="#aaaaaa">federates</text>
+
+  <!-- Netbox — grayed -->
+  <rect x="940" y="200" width="190" height="70" rx="8" fill="#f5f5f5" stroke="#cccccc" stroke-width="2"/>
+  <text x="1035" y="230" text-anchor="middle" font-size="12" font-weight="bold" fill="#999999">Netbox</text>
+  <text x="1035" y="246" text-anchor="middle" font-size="10" fill="#aaaaaa">DCIM / IPAM</text>
+
+  <!-- NOG — grayed, but the Neutron -> NOG link stays live since it starts at Neutron -->
+  <rect x="370" y="390" width="170" height="70" rx="6" fill="#f5f5f5" stroke="#cccccc" stroke-width="2"/>
+  <text x="455" y="420" text-anchor="middle" font-size="12" font-weight="bold" fill="#999999">NOG</text>
+  <text x="455" y="436" text-anchor="middle" font-size="10" fill="#aaaaaa">Network Orchestration</text>
+  <path d="M445,355 L445,372 L455,372 L455,390" fill="none" stroke="#f39c12" stroke-width="3" marker-end="url(#arrow-orange)"/>
+  <text x="530" y="365" text-anchor="middle" font-size="13" font-weight="bold" paint-order="stroke" stroke="#ffffff" stroke-width="4" stroke-linejoin="round" fill="#f39c12">network created</text>
+
+  <!-- Grafana — grayed -->
+  <rect x="555" y="380" width="225" height="100" rx="10" fill="#f5f5f5" stroke="#cccccc" stroke-width="2"/>
+  <text x="667" y="405" text-anchor="middle" font-size="12" font-weight="bold" fill="#999999">Grafana</text>
+  <text x="667" y="421" text-anchor="middle" font-size="9" fill="#aaaaaa">Monitoring &amp; Observability</text>
+  <text x="667" y="437" text-anchor="middle" font-size="8" fill="#aaaaaa">Metrics via Prometheus</text>
+  <text x="667" y="449" text-anchor="middle" font-size="8" fill="#aaaaaa">Logs via Loki</text>
+  <text x="667" y="464" text-anchor="middle" font-size="8" fill="#aaaaaa">(OpenStack, Infra)</text>
+
+  <!-- Physical Infrastructure -> Netbox (documents inventory) — grayed -->
+  <line x1="1035" y1="540" x2="1035" y2="270" stroke="#cccccc" stroke-width="3" marker-end="url(#arrow-gray)"/>
+  <text x="1035" y="290" text-anchor="middle" font-size="13" font-weight="bold" paint-order="stroke" stroke="#ffffff" stroke-width="4" stroke-linejoin="round" fill="#aaaaaa">documents inventory</text>
+
+  <!-- Physical Infrastructure — grayed -->
+  <rect x="30" y="540" width="1140" height="150" rx="10" fill="#f5f5f5" stroke="#cccccc" stroke-width="2"/>
+  <text x="46" y="562" font-size="13" font-weight="bold" fill="#999999">Physical Infrastructure</text>
+
+  <rect x="100" y="580" width="340" height="90" rx="8" fill="#fafafa" stroke="#cccccc" stroke-width="1.5"/>
+  <text x="270" y="613" text-anchor="middle" font-size="12" font-weight="bold" fill="#999999">Compute Nodes</text>
+  <text x="270" y="629" text-anchor="middle" font-size="9" fill="#aaaaaa">Baremetal OS or Hypervisors</text>
+  <text x="270" y="643" text-anchor="middle" font-size="9" fill="#aaaaaa">(orchestrated by Nova)</text>
+
+  <rect x="500" y="580" width="340" height="90" rx="8" fill="#fafafa" stroke="#cccccc" stroke-width="1.5"/>
+  <text x="670" y="618" text-anchor="middle" font-size="12" font-weight="bold" fill="#999999">Network Switches</text>
+  <text x="670" y="634" text-anchor="middle" font-size="10" fill="#aaaaaa">(Physical Fabric)</text>
+
+  <!-- NOG -> Network Switches — grayed -->
+  <path d="M455,460 L455,520 L670,520 L670,580" fill="none" stroke="#cccccc" stroke-width="3" marker-end="url(#arrow-gray)"/>
+  <text x="590" y="513" text-anchor="middle" font-size="13" font-weight="bold" paint-order="stroke" stroke="#ffffff" stroke-width="4" stroke-linejoin="round" fill="#aaaaaa">pushes switch config</text>
+
+  <!-- Nova -> Compute Nodes — grayed -->
+  <path d="M295,355 L295,470 L260,470 L260,580" fill="none" stroke="#cccccc" stroke-width="3" marker-end="url(#arrow-gray)"/>
+  <text x="320" y="463" text-anchor="middle" font-size="13" font-weight="bold" paint-order="stroke" stroke="#ffffff" stroke-width="4" stroke-linejoin="round" fill="#aaaaaa">orchestrates</text>
+
+  <!-- Glance -> Compute Nodes — grayed -->
+  <path d="M145,355 L145,500 L180,500 L180,580" fill="none" stroke="#cccccc" stroke-width="3" marker-end="url(#arrow-gray)"/>
+  <text x="105" y="493" text-anchor="middle" font-size="13" font-weight="bold" paint-order="stroke" stroke="#ffffff" stroke-width="4" stroke-linejoin="round" fill="#aaaaaa">provides images</text>
+
+  <!-- Physical Infrastructure -> Grafana — grayed -->
+  <line x1="700" y1="540" x2="700" y2="480" stroke="#cccccc" stroke-width="3" stroke-dasharray="7 4" marker-end="url(#arrow-gray)"/>
+  <text x="735" y="515" text-anchor="middle" font-size="13" font-weight="bold" paint-order="stroke" stroke="#ffffff" stroke-width="4" stroke-linejoin="round" fill="#aaaaaa">metrics &amp; logs</text>
+</svg>
