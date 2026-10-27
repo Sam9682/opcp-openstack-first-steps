@@ -127,6 +127,44 @@ log_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
+# Normalize the Docker CLI environment before invoking docker/docker-compose.
+#
+# When this script is launched by the control plane / virtual operator, the
+# process can inherit a HOME that does not belong to the effective user (for
+# example HOME=/home/git from the Gitea service context). The Docker CLI and
+# buildx then try to read $HOME/.docker/config.json and
+# $HOME/.docker/buildx/instances, which the deploying user cannot access,
+# producing errors such as:
+#   WARNING: Error loading config file: open /home/git/.docker/config.json: permission denied
+#   stat /home/git/.docker/buildx/instances: permission denied
+#
+# We pin HOME to the real home of the effective user and point DOCKER_CONFIG at
+# an owned, writable directory so docker/buildx always read a reachable config.
+normalize_docker_env() {
+    # Resolve the effective user's real home from the passwd database rather
+    # than trusting an inherited HOME that may point elsewhere.
+    local real_home
+    real_home="$(getent passwd "$(id -un)" | cut -d: -f6)"
+    if [[ -z "$real_home" || ! -d "$real_home" ]]; then
+        real_home="${HOME}"
+    fi
+
+    if [[ "${HOME}" != "$real_home" ]]; then
+        log_warn "HOME was '${HOME}', resetting to '${real_home}' for Docker operations"
+        export HOME="$real_home"
+    fi
+
+    # Isolate the Docker config in a user-owned directory. This avoids reading
+    # a foreign user's ~/.docker and gives buildx a writable instances dir.
+    export DOCKER_CONFIG="${HOME}/.docker"
+    if ! mkdir -p "${DOCKER_CONFIG}" 2>/dev/null; then
+        # Fall back to a guaranteed-writable location if HOME is not writable.
+        DOCKER_CONFIG="$(mktemp -d "${TMPDIR:-/tmp}/docker-config.XXXXXX")"
+        export DOCKER_CONFIG
+        log_warn "Could not use ${HOME}/.docker, using temporary DOCKER_CONFIG=${DOCKER_CONFIG}"
+    fi
+}
+
 # Check if running as root
 if [[ $EUID -eq 0 ]]; then
    log_error "This script should not be run as root"
@@ -136,31 +174,31 @@ fi
 # Check prerequisites
 check_prerequisites() {
     log_info "Checking prerequisites..."
-    
+
     if ! command -v docker &> /dev/null; then
         log_error "Docker is not installed. Please install Docker first."
         exit 1
     fi
-    
+
     if ! command -v docker-compose &> /dev/null; then
         log_error "Docker Compose is not installed. Please install Docker Compose first."
         exit 1
     fi
-    
+
     log_info "Prerequisites check passed ✅"
 }
 
 # Generate secure passwords
 generate_secrets() {
     log_info "Generating secure secrets..."
-    
+
     if [[ ! -f "$ENV_FILE" ]]; then
         log_info "Creating production environment file..."
-        
+
         # Generate secure passwords
         DB_PASSWORD=$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-25)
         JWT_SECRET=$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-32)
-        
+
         cat > "$ENV_FILE" << EOF
 # Database Configuration (PostgreSQL)
 POSTGRES_USER=${NAME_OF_APPLICATION}
@@ -179,7 +217,7 @@ SSL_EMAIL=$EMAIL
 # Frontend
 REACT_APP_API_URL=https://$DOMAIN
 EOF
-        
+
         chmod 600 "$ENV_FILE"
         log_info "Environment file created with secure passwords ✅"
     else
@@ -202,7 +240,7 @@ generate_nginx_config() {
 # Setup SSL certificates
 setup_ssl() {
     log_info "Setting up SSL certificates..."
-    
+
     if [[ ! -d "ssl" ]]; then
         mkdir -p ssl
     fi
@@ -213,42 +251,42 @@ setup_ssl() {
     # Check for existing certificates in ~/.ssh/ or current ssl/ directory
     elif [[ -f "$HOME/.ssh/fullchain_domain.crt" && -f "$HOME/.ssh/privateKey_domain.key" ]]; then
         log_info "Using existing certificates from ~/.ssh/..."
-        
+
         # Remove any existing directories with same names
         rm -rf ssl/fullchain.pem ssl/privkey.pem
-        
+
         # Copy existing certificates
         cp "$HOME/.ssh/fullchain_domain.crt" ssl/fullchain.pem
         cp "$HOME/.ssh/privateKey_domain.key" ssl/privkey.pem
-        
+
         # Set proper permissions
         chmod 644 ssl/fullchain.pem
         chmod 600 ssl/privkey.pem
-        
+
         log_info "Existing certificates copied ✅"
     # Check for certificates in current ssl directory
     elif [[ -f "ssl/fullchain_domain.crt" && -f "ssl/privateKey_domain.key" ]]; then
         log_info "Using existing certificates from ssl/ directory..."
-        
+
         # Remove any existing directories with same names
         rm -rf ssl/fullchain.pem ssl/privkey.pem
-        
+
         # Copy existing certificates
         cp ssl/fullchain_domain.crt ssl/fullchain.pem
         cp ssl/privateKey_domain.key ssl/privkey.pem
-        
+
         # Set proper permissions
         chmod 644 ssl/fullchain.pem
         chmod 600 ssl/privkey.pem
-        
+
         log_info "Local certificates copied ✅"
     # Check if certbot is installed
     elif command -v certbot &> /dev/null; then
         log_info "Obtaining SSL certificate for $DOMAIN..."
-        
+
         # Stop nginx if running
         sudo systemctl stop nginx 2>/dev/null || true
-        
+
         # Get certificate
         sudo certbot certonly --standalone \
             -d "$DOMAIN" \
@@ -256,25 +294,25 @@ setup_ssl() {
             --agree-tos \
             --non-interactive \
             --quiet
-        
+
         # Copy certificates from letsencrypt
         sudo cp "/etc/letsencrypt/live/$DOMAIN/fullchain.pem" ssl/
         sudo cp "/etc/letsencrypt/live/$DOMAIN/privkey.pem" ssl/
         sudo chown -R $USER:$USER ssl/
-        
+
         log_info "SSL certificates obtained ✅"
     else
         log_warn "Certbot not found. Creating self-signed certificates for testing..."
-        
+
         # Create self-signed certificate for testing
         openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
             -keyout ssl/privkey.pem \
             -out ssl/fullchain.pem \
             -subj "/C=US/ST=State/L=City/O=Organization/CN=$DOMAIN"
-        
+
         log_warn "Self-signed certificate created. Replace with real certificate for production!"
     fi
-    
+
     # Final verification that certificates are files
     if [[ -f "ssl/fullchain.pem" && -f "ssl/privkey.pem" ]]; then
         log_info "SSL certificates verified as files ✅"
@@ -327,14 +365,14 @@ deploy_services() {
 # Verify deployment
 verify_deployment() {
     log_info "Verifying deployment..."
-    
+
     # Check if services are running by name pattern
     containers=$(docker ps -q --filter "name=${NAME_OF_APPLICATION}-.*-${USER_ID}-.*")
     if [[ -z "$containers" ]]; then
         log_error "Services are not running properly"
         return 1
     fi
-    
+
     # Test API health endpoint
     sleep 10
     if curl -f -s "https://${DOMAIN}:${HTTPS_PORT}/" > /dev/null; then
@@ -342,14 +380,14 @@ verify_deployment() {
     else
         log_warn "API health check failed, but services are running"
     fi
-    
+
     log_info "Deployment verification completed"
 }
 
 # Setup firewall
 setup_firewall() {
     log_info "Configuring firewall..."
-    
+
     if command -v ufw &> /dev/null; then
         # Configure UFW if available: open each non-empty port of the port set
         local name port
@@ -369,7 +407,7 @@ setup_firewall() {
 # Create backup script
 create_backup_script() {
     log_info "Creating backup script..."
-    
+
     mkdir -p ./scripts
 
     local env_prefix
@@ -411,7 +449,7 @@ else
     exit 1
 fi
 EOF
-    
+
     chmod +x ./scripts/backup.sh
     log_info "Backup script created ✅"
 }
@@ -428,7 +466,7 @@ start_services() {
     verify_deployment
     setup_firewall
     create_backup_script
-    
+
     log_info "Services started successfully ✅"
 }
 
@@ -500,7 +538,7 @@ check_status() {
     # Check docker status using docker container ls
     docker_status="IS_NOT_RUNNING"
     docker_ports="[]"
-    
+
     if docker container ls --filter "status=running" --format "{{.Names}}" | grep "^${NAME_OF_APPLICATION}-.*-${USER_ID}-.*$"; then
         docker_status="IS_RUNNING"
         # Extract all ports from running containers matching the pattern
@@ -509,7 +547,7 @@ check_status() {
             docker_ports=$(echo "$all_ports" | jq -R . | jq -s .)
         fi
     fi
-    
+
     # Get git remote URLs
     git_remotes=$(git remote -v 2>/dev/null | awk '{print $2}' | sort -u | jq -R . | jq -s . 2>/dev/null || echo '[]')
 
@@ -541,6 +579,10 @@ check_status() {
 # Main function - orchestrates the deployment process
 main() {
     calculate_ports
+
+    # Pin HOME/DOCKER_CONFIG to a reachable, user-owned location before any
+    # docker/docker-compose invocation (see normalize_docker_env).
+    normalize_docker_env
 
     case $COMMAND in
         "ps"|"--ps"|"-p")
