@@ -33,6 +33,8 @@ running_skillhub/docker-compose.override.yml
 
 # Kiro
 .kiro/
+.kiro
+.kiro/*
 
 # Logs
 *.log
