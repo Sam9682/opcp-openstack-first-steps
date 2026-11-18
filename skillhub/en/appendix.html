@@ -77,7 +77,6 @@ pip3 install python-openstackclient
 # Examples
 openstack server list
 openstack network create my-network
-openstack volume create --size 10 my-volume
 openstack endpoint list</code></pre>
 
       <h3>Option C — OpenStack SDK (Python)</h3>
@@ -210,7 +209,7 @@ ansible-galaxy collection install openstack.cloud</code></pre>
 
       <h2>Summary</h2>
       <ul>
-        <li>OpenStack is composed of independent services (Nova, Neutron, Cinder, Keystone, Glance).</li>
+        <li>OpenStack is composed of independent services (Nova, Neutron, Keystone, Glance).</li>
         <li>You can access the infrastructure via the <strong>REST API</strong>, the <strong>OpenStack CLI</strong>, the <strong>Python SDK</strong>, <strong>Terraform</strong>, or <strong>Ansible</strong>.</li>
         <li>The CLI is the simplest starting point; Terraform and Ansible are better suited for infrastructure as code.</li>
         <li>All approaches authenticate using the same <code>OS_*</code> environment variables or application credentials.</li>

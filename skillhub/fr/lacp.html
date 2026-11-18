@@ -81,14 +81,8 @@
 
       <h2>Prérequis</h2>
       <p>
-        Avant de commencer, assurez-vous de disposer des éléments suivants :
-      </p>
-      <ul>
-        <li>Disposer d'un service <a href="https://www.ovhcloud.com/fr/hosted-private-cloud/onprem-cloud-platform/" target="_blank">OPCP</a> actif.</li>
-        <li>Un accès <a href="/fr/guides/hosted-private-cloud/opcp/how-to-use-api-and-get-credentials.md" target="_blank">[OpenStack CLI configuré]</a> avec les droits nécessaires (clouds.yaml ou variables d’environnement).</li>
-        <li>Le rôle <strong>admin</strong> et/ou des nœuds transférés dans votre projet.</li>
-      </ul>
-      <p>
+        Avant de commencer, assurez-vous de disposer du rôle <strong>admin</strong> et/ou des nœuds transférés dans votre projet.
+
         LACP est une configuration réseau spécifique, nécessitant des connaissances réseau et système avancées. Nous vous conseillons d'appliquer ce guide si vous connaissez déjà l'un ou plusieurs des concepts suivants : configuration de nœuds au sein de OpenStack Ironic, gestion des ports au sein de OpenStack Neutron, et la connaissance de la CLI OpenStack.
       </p>
 
@@ -198,6 +192,16 @@
       <p>
         Vous pouvez lister tous les ports avec <code>openstack baremetal port list --node &lt;node-id&gt; --long</code> et vérifier si PXE est utilisé ou non.
       </p>
+      <pre><code class="language-bash">openstack baremetal port list --node &lt;node-id&gt; --fields pxe_enabled uuid address</code></pre>
+      <p><strong>Exemple de sortie :</strong></p>
+      <pre><code>+--------------------------------------+-------------------+-------------+
+| uuid                                 | address           | pxe_enabled |
++--------------------------------------+-------------------+-------------+
+| 8c367cef-7be9-44c3-8232-e05be8dac402 | e0:9d:73:79:bb:7c | True        |
+| deef9d45-71a4-4f86-af48-289d20e4fee8 | e0:9d:73:79:bb:7d | False       |
+| 8fe90cc0-93b6-47b5-9d68-0a56ecea1704 | e0:9d:73:ba:73:6c | False       |
+| a741e9b4-c54c-4970-bfba-3eafbdbfc269 | e0:9d:73:ba:73:6d | False       |
++--------------------------------------+-------------------+-------------+</code></pre>
       <p>
         Remarque : il est recommandé de préfixer le nom du groupe de ports avec le nom du nœud (ex. : <code>&lt;node-name&gt;-&lt;name&gt;</code>) pour faciliter l'identification.
       </p>
@@ -206,7 +210,7 @@
       
       <pre><code class="language-bash">openstack baremetal port group create \
   --node &lt;node_uuid&gt; \
-  --name node_name-pg-lacp \
+  --name ${STUDENT_ID}-pg-lacp \
   --mode 802.3ad \
   --address 00:00:00:20:00:01</code></pre>
       
@@ -218,7 +222,7 @@
 | uuid                       | d082c2ab-5960-44e3-920d-3d6dfb6811e9      |
 | address                    | 00:00:00:20:00:01                         |
 | node_uuid                  | 88830859-5b16-4935-8f41-d381b754cbe5      |
-| name                       | node_name-pg-lacp                         |
+| name                       | jdoe-pg-lacp                              |
 | mode                       | 802.3ad                                   |
 | standalone_ports_supported | True                                      |
 +----------------------------+-------------------------------------------+</code></pre>
@@ -271,36 +275,41 @@ openstack baremetal port set --port-group d082c2ab-5960-44e3-920d-3d6dfb6811e9 3
         <tbody>
           <tr>
             <td>1</td>
+            <td>Lister les nœuds</td>
+            <td><code>openstack baremetal node list</code></td>
+          </tr>
+          <tr>
+            <td>2</td>
             <td>Transférer la propriété</td>
             <td><code>openstack baremetal node set &lt;node-id&gt; --owner &lt;tenant-id&gt;</code></td>
           </tr>
           <tr>
-            <td>2</td>
+            <td>3</td>
             <td>Lister les ports</td>
             <td><code>openstack baremetal port list --node &lt;node-id&gt;</code></td>
           </tr>
           <tr>
-            <td>3</td>
+            <td>4</td>
             <td>Activer le mode maintenance</td>
             <td><code>openstack baremetal node maintenance set &lt;node-id&gt;</code></td>
           </tr>
           <tr>
-            <td>4</td>
+            <td>5</td>
             <td>Créer un groupe LACP</td>
             <td><code>openstack baremetal port group create --node &lt;node-id&gt; --name &lt;port-group-name&gt; --mode 802.3ad</code></td>
           </tr>
           <tr>
-            <td>5</td>
+            <td>6</td>
             <td>Associer les ports</td>
             <td><code>openstack baremetal port set --port-group &lt;port-group-id&gt; &lt;port-id&gt;</code></td>
           </tr>
           <tr>
-            <td>6</td>
+            <td>7</td>
             <td>Désactiver le mode maintenance</td>
             <td><code>openstack baremetal node maintenance unset &lt;node-id&gt;</code></td>
           </tr>
           <tr>
-            <td>7</td>
+            <td>8</td>
             <td>Créer une instance</td>
             <td><code>openstack server create --image &lt;image-name&gt; --nic net-id=&lt;network-1&gt; --flavor &lt;flavor-id&gt; --key-name &lt;keypair-name&gt; --availability-zone "nova::&lt;node-id&gt;" &lt;instance-name&gt;</code></td>
           </tr>

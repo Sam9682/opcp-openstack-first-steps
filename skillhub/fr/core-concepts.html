@@ -51,7 +51,7 @@
 
       <h3>Neutron - Service de Réseau</h3>
       <p>
-        Neutron fournit le réseau comme service pour OpenStack. Il permet aux utilisateurs de définir et de gérer les réseaux virtuels, les sous-réseaux, les routeurs et les pare-feux. Neutron supporte diverses topologies réseau et peut s'intégrer à l'infrastructure réseau physique.
+        Neutron fournit le réseau comme service pour OpenStack. Il permet aux utilisateurs de définir et de gérer les réseaux virtuels, les sous-réseaux et les pare-feux. Neutron supporte diverses topologies réseau et peut s'intégrer à l'infrastructure réseau physique.
       </p>
 
       <h3>Keystone - Service d'Identité</h3>
@@ -99,7 +99,7 @@
 
       <h3>Domaines, Projets, Utilisateurs, Groupes & Rôles</h3>
       <p>
-        Keystone organise le contrôle d'accès autour d'un petit ensemble de concepts liés entre eux. Un <strong>domaine</strong> est le conteneur de plus haut niveau : il regroupe un ensemble de projets, d'utilisateurs et de groupes gérés ensemble, et isole complètement les identités d'un domaine par rapport à un autre. Un <strong>projet</strong> (parfois appelé tenant) est l'endroit où résident réellement les ressources telles que les instances, les réseaux et les volumes. Un <strong>utilisateur</strong> est une personne ou un compte de service capable de s'authentifier, et les utilisateurs peuvent être rassemblés en <strong>groupes</strong> afin d'accorder l'accès à plusieurs personnes à la fois plutôt qu'une par une. Un <strong>rôle</strong> tel que admin, member ou reader définit ce qu'un utilisateur ou un groupe est autorisé à faire, et une attribution de rôle relie toujours un utilisateur ou un groupe à une portée précise — soit un seul projet, soit le domaine entier.
+        Keystone organise le contrôle d'accès autour d'un petit ensemble de concepts liés entre eux. Un <strong>domaine</strong> est le conteneur de plus haut niveau : il regroupe un ensemble de projets, d'utilisateurs et de groupes gérés ensemble, et isole complètement les identités d'un domaine par rapport à un autre. Un <strong>projet</strong> (parfois appelé tenant) est l'endroit où résident réellement les ressources telles que les instances et les réseaux. Un <strong>utilisateur</strong> est une personne ou un compte de service capable de s'authentifier, et les utilisateurs peuvent être rassemblés en <strong>groupes</strong> afin d'accorder l'accès à plusieurs personnes à la fois plutôt qu'une par une. Un <strong>rôle</strong> tel que admin, member ou reader définit ce qu'un utilisateur ou un groupe est autorisé à faire, et une attribution de rôle relie toujours un utilisateur ou un groupe à une portée précise — soit un seul projet, soit le domaine entier.
       </p>
       <figure>
         <img src="../assets/images/opcp-identity-concepts-fr.svg"
@@ -117,7 +117,7 @@
 
       <h3>Projets (Tenants)</h3>
       <p>
-        Les projets sont des unités organisationnelles dans OpenStack où les ressources telles que les instances, les réseaux et les volumes sont regroupées. Chaque projet dispose de son propre ensemble d'utilisateurs et d'autorisations, permettant l'isolement et la gestion des ressources.
+        Les projets sont des unités organisationnelles dans OpenStack où les ressources telles que les instances et les réseaux sont regroupées. Chaque projet dispose de son propre ensemble d'utilisateurs et d'autorisations, permettant l'isolement et la gestion des ressources.
       </p>
 
       <h3>Endpoints</h3>

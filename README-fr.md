@@ -27,16 +27,15 @@ SkillHub est un site statique multilingue (EN/FR) qui guide les apprenants à tr
 
 1. **Introduction** — aperçu et validation de la configuration
 2. **Prérequis** — configuration de l'environnement et outils
-3. **Concepts Fondamentaux** — services OpenStack fondamentaux (Nova, Neutron, Cinder, Keystone, Glance)
+3. **Concepts Fondamentaux** — services OpenStack fondamentaux (Nova, Neutron, Keystone, Glance)
 4. **Gestion des utilisateurs** — création d'utilisateurs dans Keycloak et attribution des rôles OPCP
 5. **Authentification** — authentification via Keystone avec des identifiants d'application
-6. **Réseau** — réseaux, sous-réseaux et routeurs (Neutron)
-7. **Stockage** — volumes et instantanés (Cinder)
-8. **Calcul** — instances et instantanés (Nova)
-9. **Configuration LACP** — agrégation de liens et configuration de bond (Neutron)
-10. **Résumé et Prochaines Étapes** — récapitulatif et apprentissage supplémentaire
-11. **Nettoyage des Ressources** — suppression des ressources de laboratoire
-12. **Annexe A - Accès à OpenStack** — concepts fondamentaux d'OpenStack (projets, services, points de terminaison)
+6. **Réseau** — réseaux et sous-réseaux (Neutron)
+7. **Calcul** — instances et instantanés (Nova)
+8. **Configuration LACP** — agrégation de liens et configuration de bond (Neutron)
+9. **Résumé et Prochaines Étapes** — récapitulatif et apprentissage supplémentaire
+10. **Nettoyage des Ressources** — suppression des ressources de laboratoire
+11. **Annexe A - Accès à OpenStack** — concepts fondamentaux d'OpenStack (projets, services, points de terminaison)
 
 Ouvrez `skillhub/index.html` dans un navigateur pour commencer. Le site détecte automatiquement la langue du navigateur et redirige vers la locale appropriée.
 

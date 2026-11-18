@@ -38,7 +38,7 @@
 
       <ul>
         <li>Dans la leçon précédente, vous avez appris à créer des utilisateurs et des clients pour interagir avec OpenStack.</li>
-        <li>Dans cette leçon, vous allez créer des réseaux, des sous-réseaux et des routeurs avec le CLI OpenStack pour connecter vos instances au monde extérieur ou entre elles.</li>
+        <li>Dans cette leçon, vous allez créer des réseaux et des sous-réseaux avec le CLI OpenStack pour connecter vos instances au monde extérieur ou entre elles.</li>
         <li>La gestion réseau d'OpenStack est assurée par le service Neutron.</li>
       </ul>
 
@@ -51,7 +51,7 @@
 
       <h2>Objectif</h2>
       <p>
-        Nous allons maintenant passer en revue les étapes pour configurer le réseau sur un nœud baremetal en utilisant le client CLI Openstack.
+        Nous allons maintenant passer en revue les étapes pour configurer le réseau sur un nœud baremetal en utilisant le client CLI OpenStack.
       </p>
 
       <figure>
@@ -80,10 +80,6 @@
       </p>
       
       <p>
-        Pour partager un réseau uniquement avec certains projets spécifiques, il est nécessaire d’utiliser le mécanisme <strong>Role-Based Access Control (RBAC)</strong> d’OpenStack : <a href="https://docs.openstack.org/neutron/pike/admin/config-rbac.html" target="_blank">Documentation RBAC Neutron</a>.
-      </p>
-      
-      <p>
         <strong>(Rôle admin uniquement)</strong> Par ailleurs, si vous souhaitez créer le réseau privé dans un <strong>VLAN particulier</strong>, vous pouvez le préciser à l’aide des paramètres suivants :
       </p>
       
@@ -96,7 +92,66 @@
         Par exemple, si vous souhaitez créer un réseau privé partagé dans le VLAN 2050 nommé <code>${STUDENT_ID}-net</code> :
       </p>
       
-      <pre><code class="language-bash">openstack network create --share --provider-network-type vlan --provider-physical-network physnet1 --provider-segment 2050 ${STUDENT_ID}-NET</code></pre>
+      <pre><code class="language-bash">openstack network create --share --provider-network-type vlan --provider-physical-network physnet1 --provider-segment 2050 ${STUDENT_ID}-net</code></pre>
+
+      <p><strong>Exemple de sortie :</strong></p>
+
+      <pre><code>+---------------------------+--------------------------------------+
+| Champ                     | Valeur                               |
++---------------------------+--------------------------------------+
+| admin_state_up            | UP                                   |
+| availability_zone_hints   |                                      |
+| availability_zones        |                                      |
+| created_at                | 2026-07-31T14:04:47Z                 |
+| description               |                                      |
+| dns_domain                | None                                 |
+| id                        | 89174a66-72f2-482b-a6a7-6186c7f61364 |
+| ipv4_address_scope        | None                                 |
+| ipv6_address_scope        | None                                 |
+| is_default                | None                                 |
+| is_vlan_transparent       | None                                 |
+| mtu                       | 1500                                 |
+| name                      | jdoe-net                             |
+| port_security_enabled     | True                                 |
+| project_id                | eedac8d5b9cf4a299072d2c0b53f7e03     |
+| provider:network_type     | vlan                                 |
+| provider:physical_network | physnet1                             |
+| provider:segmentation_id  | 2050                                 |
+| qos_policy_id             | None                                 |
+| revision_number           | 1                                    |
+| router:external           | Internal                             |
+| segments                  | None                                 |
+| shared                    | True                                 |
+| status                    | ACTIVE                               |
+| subnets                   |                                      |
+| tags                      |                                      |
+| tenant_id                 | eedac8d5b9cf4a299072d2c0b53f7e03     |
+| updated_at                | 2026-07-31T14:04:47Z                 |
++---------------------------+--------------------------------------+</code></pre>
+
+      <p>
+        Pour partager un réseau uniquement avec certains projets spécifiques, il est nécessaire d’utiliser le mécanisme <strong>Role-Based Access Control (RBAC)</strong> d’OpenStack : <a href="https://docs.openstack.org/neutron/pike/admin/config-rbac.html" target="_blank">Documentation RBAC Neutron</a>.
+      </p>
+
+      <pre><code class="language-bash">openstack network rbac create \
+  --target-project &lt;target_project_id&gt; \
+  --action access_as_shared \
+  --type network \
+  &lt;network_uuid&gt;</code></pre>
+      <p>Remplacez <code>&lt;target_project_id&gt;</code> par l'ID du projet avec lequel partager le réseau, et <code>&lt;network_uuid&gt;</code> par l'ID de votre réseau. <code>access_as_shared</code> est une valeur fixe.</p>
+
+      <p><strong>Exemple de sortie :</strong></p>
+
+      <pre><code>+-------------------+--------------------------------------+
+| Champ             | Valeur                               |
++-------------------+--------------------------------------+
+| action            | access_as_shared                     |
+| id                | dde0c8dc-d35a-4408-98bf-be4149abd043 |
+| object_id         | 89174a66-72f2-482b-a6a7-6186c7f61364 |
+| object_type       | network                              |
+| project_id        | eedac8d5b9cf4a299072d2c0b53f7e03     |
+| target_project_id | ab59a41615be4d73ad90e51957995976     |
++-------------------+--------------------------------------+</code></pre>
       
       <p>
         Une fois le réseau créé, vous pouvez le lister via la commande :
@@ -132,11 +187,11 @@
       <ul>
         <li>Neutron gère le réseau OpenStack</li>
         <li>Créez des réseaux avec <code>openstack network create</code></li>
-        <li>Spécifiez l'ID de segment pour le réseau si nécessaire</code></li>
+        <li>Spécifiez l'ID de segment pour le réseau si nécessaire</li>
         <li>Créez des sous-réseaux avec <code>openstack subnet create</code></li>
       </ul>
 
-      <p>Nous allons créer deployer un serveur dans ll'étape suivante</p>
+      <p>Dans l'étape suivante, nous allons déployer un serveur.</p>
 
       <button class="mark-complete-btn" type="button" aria-label="Marquer cette leçon comme terminée">
         ✓ Marquer comme terminé

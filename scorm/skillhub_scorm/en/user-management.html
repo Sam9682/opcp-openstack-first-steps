@@ -222,6 +222,9 @@
       <p>
         Click on Save.
       </p>
+      <div class="info-box">
+        <strong>If authentication fails with <code>401</code>:</strong> a client without this audience mapper still receives a token from Keycloak, but the token has no <code>keystone-default</code> entry in its <code>aud</code> claim. Keystone then rejects it and <code>openstack token issue</code> only prints <code>Unauthorized (HTTP 401)</code>. Running the same command with <code>--debug</code> shows the real cause: <code>invalid_token: "Reference token could not be introspected"</code>. In that case, go back to steps 3.3–3.5, make sure the <code>keystone-audience</code> mapper is attached to the client, and authenticate again.
+      </div>
 
       <h3>3.6. Retrieve the client credentials</h3>
       <p>

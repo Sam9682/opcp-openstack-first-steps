@@ -55,22 +55,13 @@
       prerequisites: ['core-concepts']
     },
     {
-      id: 'auth',
-      slug: 'authentication',
-      titleEN: 'Authentication',
-      titleFR: 'Authentification',
-      difficulty: 'beginner',
-      estimatedMinutes: 15,
-      prerequisites: ['user-management']
-    },
-    {
       id: 'networking',
       slug: 'networking',
       titleEN: 'Networking',
       titleFR: 'Réseau',
       difficulty: 'intermediate',
       estimatedMinutes: 20,
-      prerequisites: ['auth']
+      prerequisites: ['user-management']
     },
     {
       id: 'compute',

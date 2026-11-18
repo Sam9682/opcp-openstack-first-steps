@@ -36,7 +36,7 @@
       <p>
         Avant de plonger dans les services individuels, passons en revue les concepts
         fondamentaux d'OpenStack et découvrons les différentes façons d'interagir
-        avec la plateforme pour créer des réseaux, des instances, des volumes, etc.
+        avec la plateforme pour créer des réseaux, des instances, etc.
       </p>
 
       <h2>1. Accéder à l'environnement OpenStack</h2>
@@ -85,7 +85,6 @@ pip3 install python-openstackclient
 # Exemples
 openstack server list
 openstack network create my-network
-openstack volume create --size 10 my-volume
 openstack endpoint list</code></pre>
 
       <h3>Option C — OpenStack SDK (Python)</h3>
@@ -221,7 +220,7 @@ ansible-galaxy collection install openstack.cloud</code></pre>
 
       <h2>Résumé</h2>
       <ul>
-        <li>OpenStack est composé de services indépendants (Nova, Neutron, Cinder, Keystone, Glance).</li>
+        <li>OpenStack est composé de services indépendants (Nova, Neutron, Keystone, Glance).</li>
         <li>Vous pouvez accéder à l'infrastructure via l'<strong>API REST</strong>, le <strong>CLI OpenStack</strong>, le <strong>SDK Python</strong>, <strong>Terraform</strong> ou <strong>Ansible</strong>.</li>
         <li>Le CLI est le point de départ le plus simple ; Terraform et Ansible sont mieux adaptés à l'infrastructure as code.</li>
         <li>Toutes les approches s'authentifient via les mêmes variables d'environnement <code>OS_*</code> ou application credentials.</li>

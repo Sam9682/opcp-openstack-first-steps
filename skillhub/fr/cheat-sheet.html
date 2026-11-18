@@ -160,42 +160,6 @@
     }
   }' | python3 -m json.tool</code></pre>
 
-      <h2>RAID Logiciel (mdadm)</h2>
-
-      <h3>Lister les volumes — CLI</h3>
-      <pre><code class="language-bash">openstack volume list</code></pre>
-
-      <h3>Lister les volumes — curl</h3>
-      <pre><code class="language-bash">curl -s -X GET "$CINDER_ENDPOINT/volumes" \
-  -H "X-Auth-Token: $TOKEN" | python3 -m json.tool</code></pre>
-
-      <h3>Créer un volume — CLI</h3>
-      <pre><code class="language-bash">openstack volume create --size 10 my-volume</code></pre>
-
-      <h3>Créer un volume — curl</h3>
-      <pre><code class="language-bash">curl -s -X POST "$CINDER_ENDPOINT/volumes" \
-  -H "X-Auth-Token: $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "volume": {
-      "size": 10,
-      "name": "my-volume"
-    }
-  }' | python3 -m json.tool</code></pre>
-
-      <h3>Attacher un volume à un serveur — CLI</h3>
-      <pre><code class="language-bash">openstack server add volume my-instance my-volume</code></pre>
-
-      <h3>Attacher un volume à un serveur — curl</h3>
-      <pre><code class="language-bash">curl -s -X POST "$NOVA_ENDPOINT/servers/$SERVER_ID/os-volume_attachments" \
-  -H "X-Auth-Token: $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "volumeAttachment": {
-      "volumeId": "'"$VOLUME_ID"'"
-    }
-  }' | python3 -m json.tool</code></pre>
-
       <h2>Images (Glance)</h2>
 
       <h3>Lister les images — CLI</h3>

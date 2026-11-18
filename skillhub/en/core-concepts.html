@@ -51,7 +51,7 @@
 
       <h3>Neutron - Networking Service</h3>
       <p>
-        Neutron provides networking as a service for OpenStack. It allows users to define and manage virtual networks, subnets, routers, and firewalls. Neutron supports various network topologies and can integrate with physical network infrastructure.
+        Neutron provides networking as a service for OpenStack. It allows users to define and manage virtual networks, subnets, and firewalls. Neutron supports various network topologies and can integrate with physical network infrastructure.
       </p>
 
       <h3>Keystone - Identity Service</h3>
@@ -99,7 +99,7 @@
 
       <h3>Domains, Projects, Users, Groups & Roles</h3>
       <p>
-        Keystone organizes access control around a small set of related concepts. A <strong>domain</strong> is the highest-level container: it groups a set of projects, users, and groups that are managed together, and keeps identities in one domain fully isolated from another. A <strong>project</strong> (sometimes called a tenant) is where resources such as instances, networks, and volumes actually live. A <strong>user</strong> is a person or a service account that can authenticate, and users can be gathered into <strong>groups</strong> so that access can be granted to many people at once instead of one by one. A <strong>role</strong> such as admin, member, or reader defines what a user or group is allowed to do, and a role assignment always ties a user or group to a specific scope — either a single project or the entire domain.
+        Keystone organizes access control around a small set of related concepts. A <strong>domain</strong> is the highest-level container: it groups a set of projects, users, and groups that are managed together, and keeps identities in one domain fully isolated from another. A <strong>project</strong> (sometimes called a tenant) is where resources such as instances and networks actually live. A <strong>user</strong> is a person or a service account that can authenticate, and users can be gathered into <strong>groups</strong> so that access can be granted to many people at once instead of one by one. A <strong>role</strong> such as admin, member, or reader defines what a user or group is allowed to do, and a role assignment always ties a user or group to a specific scope — either a single project or the entire domain.
       </p>
       <figure>
         <img src="../assets/images/opcp-identity-concepts.svg"
@@ -117,7 +117,7 @@
 
       <h3>Projects (Tenants)</h3>
       <p>
-        Projects are organizational units in OpenStack where resources such as instances, networks, and volumes are grouped. Each project has its own set of users and permissions, allowing for resource isolation and management.
+        Projects are organizational units in OpenStack where resources such as instances and networks are grouped. Each project has its own set of users and permissions, allowing for resource isolation and management.
       </p>
 
       <h3>Endpoints</h3>

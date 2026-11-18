@@ -116,7 +116,7 @@ openstack keypair show ${STUDENT_ID}-keypair</code></pre>
       <pre><code class="language-bash">openstack server create --availability-zone "nova::`&lt;node-id&gt;`"</code></pre>
 
       <p>
-        Default images on OPCP Core have no password set, if you want to provide a password so you can log in through the instance's console, use Cloud-init files. Here is an example of basic user/password configuration for Debian 12 in cloud-init.yaml file (MUST start with #cloud-config line)</strong>:
+        Default images on OPCP Core have no password set, if you want to provide a password so you can log in through the instance's console, use Cloud-init files. Here is an example of basic user/password configuration for Debian 12 in cloud-init.yaml file (MUST start with #cloud-config line):
       </p>
       
       <pre><code class="language-bash">#cloud-config
@@ -138,7 +138,14 @@ openstack server create \
   ${STUDENT_ID}-compute-instance # Instance name
 
 # Verify the instance is active (wait for ~ 20 min)
-openstack server show ${STUDENT_ID}-compute-instance -f value -c status</code></pre>
+openstack server show ${STUDENT_ID}-compute-instance -f value -c status
+
+# If the status is ERROR, the fault column gives the reason
+openstack server show ${STUDENT_ID}-compute-instance -c status -c fault</code></pre>
+
+      <div class="info-box">
+        <strong>Note:</strong> <code>openstack server create</code> exits with code <code>0</code> and reports <code>status BUILD</code> even when the deployment is going to fail — it does not wait for the instance. A few minutes later the status switches to <code>ERROR</code> and the <code>fault</code> column explains why (that column only exists once a fault is recorded, so run the second command after the status turns <code>ERROR</code>). The most common cause is <code>No valid host was found</code>: no baremetal node matching the flavor is available to your project. Check step 1 (the node must be owned by your project and in the <code>available</code> provisioning state) and ask your administrator to free a node before retrying.
+      </div>
 
       <h3>Connect to the instance via SSH</h3>
       <pre><code class="language-bash"># Get the instance IP address

@@ -139,7 +139,14 @@ openstack server create \
   ${STUDENT_ID}-compute-instance # Nom de l'instance
 
 # Vérifier que l'instance est active (attendre ~20 minutes)
-openstack server show ${STUDENT_ID}-compute-instance -f value -c status</code></pre>
+openstack server show ${STUDENT_ID}-compute-instance -f value -c status
+
+# Si le statut est ERROR, la colonne fault en donne la raison
+openstack server show ${STUDENT_ID}-compute-instance -c status -c fault</code></pre>
+
+      <div class="info-box">
+        <strong>Note :</strong> <code>openstack server create</code> se termine avec le code <code>0</code> et affiche <code>status BUILD</code> même lorsque le déploiement va échouer — la commande n'attend pas l'instance. Quelques minutes plus tard, le statut passe à <code>ERROR</code> et la colonne <code>fault</code> en explique la raison (cette colonne n'existe qu'une fois un fault enregistré : lancez la seconde commande après le passage en <code>ERROR</code>). La cause la plus fréquente est <code>No valid host was found</code> : aucun nœud baremetal correspondant au flavor n'est disponible pour votre projet. Vérifiez l'étape 1 (le nœud doit appartenir à votre projet et être dans l'état de provisionnement <code>available</code>) et demandez à votre administrateur de libérer un nœud avant de réessayer.
+      </div>
 
       <h3>Se connecter à l'instance via SSH</h3>
       <pre><code class="language-bash"># Récupérer l'adresse IP de l'instance

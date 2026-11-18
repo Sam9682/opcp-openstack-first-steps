@@ -64,12 +64,9 @@
       <h2>Prérequis</h2>
       <p>Avant de commencer, assurez-vous de disposer des éléments suivants :</p>
       <ul>
-        <li>Un service <a href="https://www.ovhcloud.com/fr/hosted-private-cloud/onprem-cloud-platform/" target="_blank">OPCP</a> actif.</li>
-        <li>Un accès <a href="/fr/guides/hosted-private-cloud/opcp/how-to-use-api-and-get-credentials.md" target="_blank">CLI OpenStack configuré</a> avec les droits nécessaires (<code>clouds.yaml</code> ou variables d'environnement).</li>
         <li>Le rôle <strong>admin</strong> et/ou les nœuds transférés dans votre projet.</li>
         <li>Un nœud disponible (statut <code>available</code>) ou en mode maintenance.</li>
         <li>Une image système <strong>Linux</strong> (type GNU/Linux) est requise pour l'instance. Cette image doit inclure le paquet <code>mdadm</code> ou permettre son installation. Les appliances VMware et les systèmes d'exploitation Windows, par exemple, ne sont pas compatibles avec cette procédure.</li>
-        <li>Connaissances de base sur OpenStack Ironic et la gestion des nœuds baremetal.</li>
       </ul>
 
       <h2>Pourquoi utiliser un RAID logiciel ?</h2>
@@ -96,7 +93,7 @@
       <p>Avant toute modification de configuration, placez le nœud en <strong>mode maintenance</strong> :</p>
       <pre><code class="language-bash">openstack baremetal node maintenance set &lt;node-id&gt; --reason "Configuration RAID logiciel"</code></pre>
 
-      <h3>3. Niveaux de RAID supportés</h3>
+      <h3 id="raid-levels">3. Niveaux de RAID supportés</h3>
       <p>Ironic supporte plusieurs niveaux de RAID logiciel. Les valeurs suivantes sont acceptées dans la configuration JSON :</p>
 
       <table>
@@ -126,7 +123,7 @@
       <h3>4. Configurer le RAID logiciel</h3>
       <p>Ironic permet de configurer le RAID logiciel via l'interface <strong>agent</strong>. Cette configuration est appliquée automatiquement lors du déploiement d'une instance.</p>
 
-      <h4>4.1. Vérifier et activer l'interface agent si nécessaire</h4>
+      <h4 id="check-agent">4.1. Vérifier et activer l'interface agent si nécessaire</h4>
       <p>Avant de configurer le RAID, vérifiez l'interface RAID actuellement configurée sur le nœud :</p>
       <pre><code class="language-bash">openstack baremetal node show &lt;node-id&gt; -f json | jq '.raid_interface'</code></pre>
 

@@ -46,7 +46,13 @@
       <h2>Objective</h2>
       <p>
         LACP configuration must be applied to the node before deploying an instance,
-        so that network interfaces are properly aggregated. This guide explains how to configure a node (physical server) in OPCP to enable LACP (Link Aggregation Control Protocol)
+        so that network interfaces are properly aggregated.
+      </p>
+      <p>
+        <strong>This guide explains how to configure a node (physical server) in OPCP to enable LACP (Link Aggregation Control Protocol)</strong>.
+      </p>
+      <p>
+        We will also see how to configure <strong>bonding</strong> (the logical association of several network interfaces into a single virtual interface) at the level of your instance, in order to take full advantage of <strong>LACP</strong>.
       </p>
 
       <figure>
@@ -71,18 +77,43 @@
         <li><strong>Increase resilience:</strong> Each OPCP server benefits from 4 25G interfaces. Each server is connected to two network switches (A&B) to ensure resilience in case of hardware failure of one of them. LACP allows creating resilient virtual interfaces in case of hardware failure by aggregating two network cards connected to different switches.</li>
       </ul>
 
+      <h2>Prerequisites</h2>
+      <p>
+        Before you start, make sure you have the <strong>admin</strong> role and/or nodes transferred to your project.
+
+        LACP is a specific network configuration that requires advanced network and system knowledge. We recommend following this guide if you are already familiar with one or more of the following concepts: node configuration in OpenStack Ironic, port management in OpenStack Neutron, and the OpenStack CLI.
+      </p>
+
       <h2>Configuration</h2>
 
       <h3>Node Configuration</h3>
 
-      <h4>1. Transfer Node Ownership (Admin Only)</h4>
+      <h4>1. List Nodes</h4>
+      <p>
+        The list of nodes available in your project can be displayed with the following command:
+      </p>
+
+      <pre><code class="language-bash">openstack baremetal node list</code></pre>
+
+      <p><strong>Example output:</strong></p>
+
+      <pre><code>+--------------------------------------+----------------+--------------------------------------+-------------+--------------------+-------------+
+| UUID                                 | Name           | Instance UUID                        | Power State | Provisioning State | Maintenance |
++--------------------------------------+----------------+--------------------------------------+-------------+--------------------+-------------+
+| 88830859-5b16-4935-8f41-d381b754cbe5 | SERVER-1       | None                                 | power off   | available          | False       |
+| 726bb7e9-3b20-4a44-99d7-2af747983781 | SERVER-2       | None                                 | power off   | available          | False       |
+| af711edf-a579-491e-b474-3c03639ed99b | SERVER-3       | 83b7083b-bbdd-4327-941c-ee91197818c5 | None        | active             | True        |
++--------------------------------------+----------------+--------------------------------------+-------------+--------------------+-------------+</code></pre>
+      <p>Choose a node that has no "Instance UUID" (the value is None), whose "Provisioning State" is <strong>"available"</strong> and whose "Maintenance" is <strong>False</strong>.</p>
+
+      <h4>2. Transfer Node Ownership (Admin Only)</h4>
       <p>
         An admin can transfer ownership of a node to a given project:
       </p>
       
       <pre><code class="language-bash">openstack baremetal node set &lt;node-id&gt; --owner &lt;project-id&gt;</code></pre>
 
-      <h4>2. List Network Ports</h4>
+      <h4>3. List Network Ports</h4>
       <p>
         Each physical network card, called Network Interface Card (NIC), of a node is represented in OpenStack by a port.
       </p>
@@ -130,14 +161,14 @@
 | uuid                  | 71899d54-546d-4fdd-8d8b-52ad986bf425                                                           |
 +-----------------------+------------------------------------------------------------------------------------------------+</code></pre>
 
-      <h4>3. Enable Maintenance Mode</h4>
+      <h4>4. Enable Maintenance Mode</h4>
       <p>
         Before any network configuration modification, the node must be placed in <strong>maintenance mode</strong>. This ensures that this node cannot be deployed during the operation:
       </p>
       
       <pre><code class="language-bash">openstack baremetal node maintenance set &lt;node-id&gt;</code></pre>
 
-      <h4>4. Create a Port Group (LACP Bond)</h4>
+      <h4>5. Create a Port Group (LACP Bond)</h4>
       <p>
         The <strong>port group</strong> allows enabling LACP aggregation between multiple network interfaces.
       </p>
@@ -160,8 +191,8 @@
         You can list all ports with <code>openstack baremetal port list --node &lt;node-id&gt; --long</code> and check if PXE is used or not.
       </p>
       <pre><code class="language-bash">openstack baremetal port list --node &lt;node-id&gt; --fields pxe_enabled uuid address</code></pre>
-      <p>Output</p>
-      <pre><code class="language-bash">+--------------------------------------+-------------------+-------------+
+      <p><strong>Example output:</strong></p>
+      <pre><code>+--------------------------------------+-------------------+-------------+
 | uuid                                 | address           | pxe_enabled |
 +--------------------------------------+-------------------+-------------+
 | 8c367cef-7be9-44c3-8232-e05be8dac402 | e0:9d:73:79:bb:7c | True        |
@@ -170,39 +201,31 @@
 | a741e9b4-c54c-4970-bfba-3eafbdbfc269 | e0:9d:73:ba:73:6d | False       |
 +--------------------------------------+-------------------+-------------+</code></pre>
       <p>
-        Note: <strong>It is recommended to prefix the port group name with the node name (e.g. <code>&lt;node-name&gt;-&lt;name&gt;</code>) to facilitate identification.</strong>
-        In this exercice, to ease the cleanup at the end of it, <strong>we will omit the node name in following example.</strong>
+        Note: it is recommended to prefix the port group name with the node name (e.g. <code>&lt;node-name&gt;-&lt;name&gt;</code>) to facilitate identification.
       </p>
-      
+
       <p><strong>Example:</strong></p>
-      
+
       <pre><code class="language-bash">openstack baremetal port group create \
   --node &lt;node_uuid&gt; \
   --name ${STUDENT_ID}-pg-lacp \
   --mode 802.3ad \
-  --address e0:9d:73:79:bb:7c</code></pre>
-      
-      <p><strong>Example output:</strong></p>
-      
-      <pre><code>+----------------------------+--------------------------------------+
-| Field                      | Value                                |
-+----------------------------+--------------------------------------+
-| uuid                       | 68484ee0-ed39-462c-a049-4e20bb294b2b |
-| address                    | e0:9d:73:79:bb:7c                    |
-| created_at                 | 2026-06-11T11:30:41.197987+00:00     |
-| extra                      | {}                                   |
-| standalone_ports_supported | True                                 |
-| node_uuid                  | 48b7b966-c8e3-415d-b286-c097224043aa |
-| name                       | jdoe-pg-lacp                         |
-| updated_at                 | None                                 |
-| internal_info              | {}                                   |
-| mode                       | 802.3ad                              |
-| properties                 | {}                                   |
-| physical_network           |                                      |
-| category                   |                                      |
-+----------------------------+--------------------------------------+</code></pre>
+  --address 00:00:00:20:00:01</code></pre>
 
-      <h4>5. Associate Ports with the Group</h4>
+      <p><strong>Example output:</strong></p>
+
+      <pre><code>+----------------------------+-------------------------------------------+
+| Field                      | Value                                     |
++----------------------------+-------------------------------------------+
+| uuid                       | d082c2ab-5960-44e3-920d-3d6dfb6811e9      |
+| address                    | 00:00:00:20:00:01                         |
+| node_uuid                  | 88830859-5b16-4935-8f41-d381b754cbe5      |
+| name                       | jdoe-pg-lacp                              |
+| mode                       | 802.3ad                                   |
+| standalone_ports_supported | True                                      |
++----------------------------+-------------------------------------------+</code></pre>
+
+      <h4>6. Associate Ports with the Group</h4>
       <p>
         Each port of the node must be associated with the created port group:
       </p>
@@ -216,15 +239,14 @@ openstack baremetal port set --port-group d082c2ab-5960-44e3-920d-3d6dfb6811e9 4
 openstack baremetal port set --port-group d082c2ab-5960-44e3-920d-3d6dfb6811e9 422eece6-dcfa-40cd-975d-ba8bb11c774e
 openstack baremetal port set --port-group d082c2ab-5960-44e3-920d-3d6dfb6811e9 34073903-92ad-47d1-a751-15aa96991415</code></pre>
 
-      <h4>6. Disable Maintenance Mode</h4>
+      <h4>7. Disable Maintenance Mode</h4>
       <p>
         Once the configuration is complete, disable maintenance mode:
       </p>
       <pre><code class="language-bash">openstack baremetal node maintenance unset `&lt;node-id&gt;`</code></pre>
 
-
-      <h4>7. Create instance</h3>
-      <p>Once RAID is configured, you can deploy the node on the server :</p>
+      <h4>8. Create an Instance</h4>
+      <p>Once LACP is configured, you can deploy an instance on the node:</p>
       <pre><code class="language-bash">openstack server create \
   --image &lt;image-name&gt; \
   --flavor &lt;flavor-id&gt; \
@@ -234,7 +256,7 @@ openstack baremetal port set --port-group d082c2ab-5960-44e3-920d-3d6dfb6811e9 3
   &lt;instance-name&gt;</code></pre>
 
       <div class="alert alert-tip">
-        <p>To make sure your instance is deployed on the node configured with RAID, use availability-zone <code>nova::&lt;node-id&gt;</code>.</p>
+        <p>To make sure your instance is deployed on the node configured with LACP, use the availability zone <code>nova::&lt;node-id&gt;</code>.</p>
       </div>
       
       <h3>Summary of Steps</h3>
@@ -250,36 +272,41 @@ openstack baremetal port set --port-group d082c2ab-5960-44e3-920d-3d6dfb6811e9 3
         <tbody>
           <tr>
             <td>1</td>
+            <td>List nodes</td>
+            <td><code>openstack baremetal node list</code></td>
+          </tr>
+          <tr>
+            <td>2</td>
             <td>Transfer ownership</td>
             <td><code>openstack baremetal node set &lt;node-id&gt; --owner &lt;tenant-id&gt;</code></td>
           </tr>
           <tr>
-            <td>2</td>
+            <td>3</td>
             <td>List ports</td>
             <td><code>openstack baremetal port list --node &lt;node-id&gt;</code></td>
           </tr>
           <tr>
-            <td>3</td>
+            <td>4</td>
             <td>Enable maintenance mode</td>
             <td><code>openstack baremetal node maintenance set &lt;node-id&gt;</code></td>
           </tr>
           <tr>
-            <td>4</td>
+            <td>5</td>
             <td>Create LACP group</td>
             <td><code>openstack baremetal port group create --node &lt;node-id&gt; --name &lt;port-group-name&gt; --mode 802.3ad</code></td>
           </tr>
           <tr>
-            <td>5</td>
+            <td>6</td>
             <td>Associate ports</td>
             <td><code>openstack baremetal port set --port-group &lt;port-group-id&gt; &lt;port-id&gt;</code></td>
           </tr>
           <tr>
-            <td>6</td>
+            <td>7</td>
             <td>Disable maintenance mode</td>
             <td><code>openstack baremetal node maintenance unset &lt;node-id&gt;</code></td>
           </tr>
           <tr>
-            <td>7</td>
+            <td>8</td>
             <td>Create instance</td>
             <td><code>openstack server create --image &lt;image-name&gt; --nic net-id=&lt;network-1&gt; --flavor &lt;flavor-id&gt; --key-name &lt;keypair-name&gt; --availability-zone "nova::&lt;node-id&gt;" &lt;instance-name&gt;</code></td>
           </tr>

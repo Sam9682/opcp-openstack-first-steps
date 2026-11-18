@@ -225,6 +225,9 @@
       <p>
         Cliquez sur Save.
       </p>
+      <div class="info-box">
+        <strong>Si l'authentification échoue avec <code>401</code> :</strong> un client sans ce mapper d'audience reçoit tout de même un token de Keycloak, mais ce token ne contient pas <code>keystone-default</code> dans son claim <code>aud</code>. Keystone le rejette alors et <code>openstack token issue</code> affiche seulement <code>Unauthorized (HTTP 401)</code>. La même commande lancée avec <code>--debug</code> montre la cause réelle : <code>invalid_token: "Reference token could not be introspected"</code>. Dans ce cas, reprenez les étapes 3.3 à 3.5, vérifiez que le mapper <code>keystone-audience</code> est bien rattaché au client, puis authentifiez-vous à nouveau.
+      </div>
 
       <h3>3.6. Récupérer les identifiants du client</h3>
       <p>
@@ -275,7 +278,7 @@ export https_proxy=&lt;url-proxy-si-necessaire&gt;</code></pre>
       <p>Pas besoin de copier quoi que ce soit de ce qui s'affiche, l'objectif était de vérifier que l'authentification a réussi.</p>
       <h2>4. Créer un nouveau projet</h2>
       <p>
-        Avant de créer des utilisateurs, vous devrez peut-être créer des projets OpenStack (également appelés tenants). Les projets sont des unités organisationnelles dans OpenStack où les ressources telles que les instances, réseaux et volumes sont regroupées.
+        Avant de créer des utilisateurs, vous devrez peut-être créer des projets OpenStack (également appelés tenants). Les projets sont des unités organisationnelles dans OpenStack où les ressources telles que les instances et réseaux sont regroupées.
       </p>
       <p>
         Dans OPCP, les projets sont généralement créés via l'interface en ligne de commande. Voici comment créer un nouveau projet :

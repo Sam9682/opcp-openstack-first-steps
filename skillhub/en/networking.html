@@ -37,8 +37,8 @@
 
 
       <ul>
-        <li>In the previous lesson, you have learnt how to create users and clients to interract with Openstack.</li>
-        <li>In this lesson you will create networks, subnets, and routers with the Openstack CLI to connect your instances to the outside world or to each other.</li>
+        <li>In the previous lesson, you learned how to create users and clients to interact with OpenStack.</li>
+        <li>In this lesson you will create networks and subnets with the OpenStack CLI to connect your instances to the outside world or to each other.</li>
         <li>OpenStack networking is handled by the Neutron service.</li>
       </ul>
 
@@ -51,7 +51,7 @@
 
       <h2>Objective</h2>
       <p>
-        We will now go through the steps to configure network on baremetal node using Openstack CLI client.
+        We will now go through the steps to configure the network on a baremetal node using the OpenStack CLI client.
       </p>
 
       <figure>
@@ -62,24 +62,40 @@
       </figure>
 
       <h2>Create a private network and subnet</h2>
+
+      <h3>Step 1: Create the private network</h3>
       <p>
         Before deploying your instance, it is generally necessary to create a <strong>private network</strong> so that it is accessible within your local infrastructure.
         If you already have a private network with a subnet on your project that you want to use, you can skip the creation step and directly list your networks to retrieve the name or ID of the network concerned.
       </p>
-      <p class="warning-box">
-        You <strong>must</strong> be administrator to do the next
+
+      <pre><code class="language-bash">openstack network create ${STUDENT_ID}-net</code></pre>
+
+      <p>
+        By default, a network is only visible to the project that created it (as well as administrators) and the segment ID is generated automatically.
       </p>
 
-      <h3>Step 1: Create the private network</h3>
-      
+      <p>
+        If you want to create a network <strong>shared between all your projects</strong>, you can use the <code>--share</code> parameter.
+      </p>
 
-      <pre><code class="language-bash">openstack network create ${STUDENT_ID}-net
---provider-network-type vlan
+      <p>
+        <strong>(Admin role only)</strong> In addition, if you want to create the private network in a <strong>specific VLAN</strong>, you can specify it with the following parameters:
+      </p>
+
+      <pre><code class="language-bash">--provider-network-type vlan
 --provider-physical-network physnet1 # Static value in OPCP
 --provider-segment $VLAN_ID # Neutron segment-id</code></pre>
-      <p>Result looks like this : </p>
 
-        <pre><code class="language-bash"> +---------------------------+--------------------------------------+
+      <p>
+        For example, if you want to create a shared private network in VLAN 2050 named <code>${STUDENT_ID}-net</code>:
+      </p>
+
+      <pre><code class="language-bash">openstack network create --share --provider-network-type vlan --provider-physical-network physnet1 --provider-segment 2050 ${STUDENT_ID}-net</code></pre>
+
+      <p><strong>Example output:</strong></p>
+
+      <pre><code>+---------------------------+--------------------------------------+
 | Field                     | Value                                |
 +---------------------------+--------------------------------------+
 | admin_state_up            | UP                                   |
@@ -99,30 +115,33 @@
 | project_id                | eedac8d5b9cf4a299072d2c0b53f7e03     |
 | provider:network_type     | vlan                                 |
 | provider:physical_network | physnet1                             |
-| provider:segmentation_id  | 2056                                 |
+| provider:segmentation_id  | 2050                                 |
 | qos_policy_id             | None                                 |
 | revision_number           | 1                                    |
 | router:external           | Internal                             |
 | segments                  | None                                 |
-| shared                    | False                                |
+| shared                    | True                                 |
 | status                    | ACTIVE                               |
 | subnets                   |                                      |
 | tags                      |                                      |
 | tenant_id                 | eedac8d5b9cf4a299072d2c0b53f7e03     |
 | updated_at                | 2026-07-31T14:04:47Z                 |
 +---------------------------+--------------------------------------+</code></pre>
-      <p>
-        By default, a network is only visible to the project that created it (as well as administrators).
-        We will share the network only with specific projects, you need to use OpenStack's <strong>Role-Based Access Control (RBAC)</strong> mechanism: <a href="https://docs.openstack.org/neutron/pike/admin/config-rbac.html" target="_blank">Neutron RBAC Documentation</a>.
-      </p>
-          
-      <pre><code class="language-bash">openstack network rbac create 
-        --target-project <em>target_project_id # must adapt</em>
-        --action access_as_shared # Fixed value
-        --type network <em>network_uuid # must adapt</em></code></pre>
 
-      <p>Example output :</p>
-      <pre><code class="language-bash">+-------------------+--------------------------------------+
+      <p>
+        To share a network only with specific projects, you need to use OpenStack's <strong>Role-Based Access Control (RBAC)</strong> mechanism: <a href="https://docs.openstack.org/neutron/pike/admin/config-rbac.html" target="_blank">Neutron RBAC Documentation</a>.
+      </p>
+
+      <pre><code class="language-bash">openstack network rbac create \
+  --target-project &lt;target_project_id&gt; \
+  --action access_as_shared \
+  --type network \
+  &lt;network_uuid&gt;</code></pre>
+      <p>Replace <code>&lt;target_project_id&gt;</code> with the ID of the project you want to share the network with, and <code>&lt;network_uuid&gt;</code> with the ID of your network. <code>access_as_shared</code> is a fixed value.</p>
+
+      <p><strong>Example output:</strong></p>
+
+      <pre><code>+-------------------+--------------------------------------+
 | Field             | Value                                |
 +-------------------+--------------------------------------+
 | action            | access_as_shared                     |
@@ -132,34 +151,42 @@
 | project_id        | eedac8d5b9cf4a299072d2c0b53f7e03     |
 | target_project_id | ab59a41615be4d73ad90e51957995976     |
 +-------------------+--------------------------------------+</code></pre>
-      
+
       <p>
         Once the network is created, you can list it using the command:
       </p>
-      
+
       <pre><code class="language-bash">openstack network list --name ${STUDENT_ID}-net</code></pre>
-      
+
       <p>
         If needed, you can list all networks by removing the <code>--name</code> argument.
       </p>
 
       <h3>Step 2: Create the subnet</h3>
       <p>
-        By defat, the only element needed to create a subnet on your network is the CIDR you want to configure and the network you just created:
+        By default, the only element needed to create a subnet on your network is the CIDR you want to configure and the network you just created:
       </p>
-      
+
       <pre><code class="language-bash">openstack subnet create --network ${STUDENT_ID}-net --subnet-range 192.168.120.0/24 ${STUDENT_ID}-subnet</code></pre>
-      
+
+      <p>
+        However, if you want to specify an <em>allocation pool</em>, you can do so with additional parameters.
+        For example, to create a subnet with the CIDR 192.168.120.0/24 that allocates only 50 IP addresses from the CIDR and uses a specific gateway, you can use the following command:
+      </p>
+
+      <pre><code class="language-bash">openstack subnet create --network ${STUDENT_ID}-net --subnet-range 192.168.120.0/24 --allocation-pool start=192.168.120.11,end=192.168.120.60 --gateway 192.168.120.8 ${STUDENT_ID}-subnet</code></pre>
+
       <p>
         This subnet can then be used to deploy an instance, allowing OpenStack to assign an IP address to it during installation.
       </p>
-      <p><strong>INFO :</strong> At this point, any instance can be deployed by giving network name at creation : it will create a Neutron Standard port and attach it to given network. If you want to use multiple networks on a single port, follow Trunk instructions below.</p>
+
+      <p><strong>INFO:</strong> At this point, any instance can be deployed by giving the network name at creation: it will create a standard Neutron port and attach it to the given network. If you want to use multiple networks on a single port, follow the instructions in the <a href="appendix-trunk-setup.html">Setup Neutron Trunk</a> appendix.</p>
 
       <h2>Summary</h2>
       <ul>
         <li>Neutron handles OpenStack networking</li>
         <li>Create networks with <code>openstack network create</code></li>
-        <li>Specify segment ID for network if needed</code></li>
+        <li>Specify segment ID for network if needed</li>
         <li>Create subnets with <code>openstack subnet create</code></li>
       </ul>
 
